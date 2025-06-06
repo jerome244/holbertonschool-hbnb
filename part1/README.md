@@ -242,9 +242,7 @@ __________________________________________________
 L'utilisateur Thierry Martin est né le 22 avril 1970 à Clermont-Ferrand
 ```
 
-## 🔁 API Interaction Flow
-
-### 📊 Sequence Diagrams
+## 🔁 Sequence Diagrams
 
 The following sequence diagrams illustrate the flow of API calls, demonstrating interactions between components:
 
