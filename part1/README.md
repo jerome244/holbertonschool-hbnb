@@ -14,7 +14,7 @@ Welcome to the documentation for our **HBnB Project**. This document provides a 
 
 The system follows a layered architecture, ensuring separation of concerns and maintainability. Below is a high-level package diagram illustrating said structure:
 
-![High-Level Architecture Diagram](diagrams/PackageDiagram.drawio.png)
+![High-Level Architecture Diagram](img/PackageDiagram.drawio.png)
 
 #### The package diagram features the following:
 
