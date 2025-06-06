@@ -1,7 +1,7 @@
 # Holberton - HBnB Project - Part 1 - Project Documention
 
 <p align="center">
-  <img src="img/hbnbLogo.png" />
+  <img src="img/hbnbLogo.png" alt="HBnB Logo" />
 </p>
 
 ## :checkered_flag: Introduction
@@ -14,7 +14,9 @@ Welcome to the documentation for our **HBnB Project**. This document provides a 
 
 The system follows a layered architecture, ensuring separation of concerns and maintainability. Below is a high-level package diagram illustrating said structure:
 
-![High-Level Architecture Diagram](img/PackageDiagram.drawio.png)
+<p align="center">
+  <img src="img/PackageDiagram.drawio.png" alt="Package Diagram image" />
+</p>
 
 #### The package diagram features the following:
 
