@@ -44,37 +44,6 @@ The core business logic is encapsulated in well-defined classes and interfaces, 
 
 These components work together to enforce business rules and ensure domain integrity.
 
----
-
-## 🔁 API Interaction Flow
-
-### 📊 Sequence Diagrams
-
-The following sequence diagrams illustrate the flow of selected API calls, demonstrating interactions between components and data movement across the system:
-
-#### 🔍 Example: `GET /items/{id}`
-
-![Sequence Diagram - Get Item](path/to/sequence-get-item.png)
-
-- **Client** sends request to API Gateway.
-- **Controller** delegates to the facade.
-- **Facade** interacts with business logic and data layer.
-- **Response** returned to the client with the item data.
-
-#### ➕ Example: `POST /items`
-
-![Sequence Diagram - Create Item](path/to/sequence-create-item.png)
-
-- **Client** submits item data.
-- **Validation** and **transformation** handled in the logic layer.
-- **Database** updated, and confirmation returned.
-
----
-
-## 🧾 Appendix
-
-- All diagrams are located in the `docs/diagrams/` folder.
-- For setup instructions, see the [Getting Started Guide](./GETTING_STARTED.md).
 ```mermaid
 classDiagram
 direction LR
@@ -150,3 +119,34 @@ direction LR
     Place "1" <--> "0.." Booking
     Place o-- "0.." Amenity : features
 ```
+
+## 🔁 API Interaction Flow
+
+### 📊 Sequence Diagrams
+
+The following sequence diagrams illustrate the flow of selected API calls, demonstrating interactions between components and data movement across the system:
+
+#### 🔍 Example: `GET /items/{id}`
+
+![Sequence Diagram - Get Item](path/to/sequence-get-item.png)
+
+- **Client** sends request to API Gateway.
+- **Controller** delegates to the facade.
+- **Facade** interacts with business logic and data layer.
+- **Response** returned to the client with the item data.
+
+#### ➕ Example: `POST /items`
+
+![Sequence Diagram - Create Item](path/to/sequence-create-item.png)
+
+- **Client** submits item data.
+- **Validation** and **transformation** handled in the logic layer.
+- **Database** updated, and confirmation returned.
+
+---
+
+## 🧾 Appendix
+
+- All diagrams are located in the `docs/diagrams/` folder.
+- For setup instructions, see the [Getting Started Guide](./GETTING_STARTED.md).
+
