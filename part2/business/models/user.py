@@ -27,7 +27,7 @@ class User(BaseModel):
         phone_number: str | None = None,
         **kwargs,
     ):
-        super().__init__(**kwargs)          # id / timestamps
+        super().__init__(**kwargs)  # id / timestamps
         self.__username = username
         self.__email = email
         self.__first_name = first_name
