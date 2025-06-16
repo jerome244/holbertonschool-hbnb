@@ -24,9 +24,9 @@ class BaseModel:
             Exception: If initialization encounters unexpected errors.
         """
 
-        self.__id = id if id else uuid.uuid4()
-        self.__creation_date = creation_date if creation_date else datetime.now()
-        self.__update_date = update_date if update_date else datetime.now()
+        self.__id = id or uuid.uuid4()
+        self.__creation_date = creation_date or datetime.now()
+        self.__update_date = update_date or datetime.now()
 
     @property
     def id(self):
