@@ -6,23 +6,20 @@ class User(BaseModel):
     """
     User – represents a system user.
 
-    Attributes
-    ----------
+    Args
+    ----
     username : str
-        Unique username.
     email : str
-        Email address.
+    **kwargs : dict
+        Optional keys: id, creation_date, update_date
     """
 
-    def __init__(self, username, email,
-                 id=None, creation_date=None, update_date=None):
-        super().__init__(id=id,
-                         creation_date=creation_date,
-                         update_date=update_date)
+    def __init__(self, username: str, email: str, **kwargs):
+        super().__init__(**kwargs)          # handles id / timestamps
         self.__username = username
         self.__email = email
 
-    # ----------------------- username ----------------------- #
+    # ---------------- username ---------------- #
     @property
     def username(self):
         return self.__username
@@ -32,11 +29,11 @@ class User(BaseModel):
         if not isinstance(value, str):
             raise TypeError("Username must be a string")
         if not (2 <= len(value) <= 32):
-            raise ValueError("Username must be between 2 and 32 characters")
+            raise ValueError("Username length 2-32 chars")
         self.update_date = datetime.now()
         self.__username = value
 
-    # ------------------------ email ------------------------- #
+    # ----------------- email ------------------ #
     @property
     def email(self):
         return self.__email
@@ -46,15 +43,23 @@ class User(BaseModel):
         if not isinstance(value, str):
             raise TypeError("Email must be a string")
         if "@" not in value or len(value) > 128:
-            raise ValueError("Invalid email format or too long")
+            raise ValueError("Invalid email format / too long")
         self.update_date = datetime.now()
         self.__email = value
 
-    # -------------------- representation -------------------- #
+    # --------------- helpers ------------------ #
+    def to_dict(self):
+        return {
+            "id": str(self.id),
+            "creation_date": self.creation_date.isoformat(),
+            "update_date": self.update_date.isoformat(),
+            "username": self.username,
+            "email": self.email,
+        }
+
     def __repr__(self):
         return (
-            f"User(username={self.username!r}, email={self.email!r}, "
-            f"id={self.id})"
+            f"User(username={self.username!r}, email={self.email!r}, id={self.id})"
         )
 
     __str__ = __repr__
