@@ -10,14 +10,29 @@ class User(BaseModel):
     ----
     username : str
     email : str
+    first_name : str, optional
+    last_name : str, optional
+    phone_number : str, optional
     **kwargs : dict
-        Optional keys: id, creation_date, update_date
+        Optional keys passed to BaseModel (id, creation_date, update_date)
     """
 
-    def __init__(self, username: str, email: str, **kwargs):
-        super().__init__(**kwargs)          # handles id / timestamps
+    # -------------------- constructor -------------------- #
+    def __init__(
+        self,
+        username: str,
+        email: str,
+        first_name: str | None = None,
+        last_name: str | None = None,
+        phone_number: str | None = None,
+        **kwargs,
+    ):
+        super().__init__(**kwargs)          # id / timestamps
         self.__username = username
         self.__email = email
+        self.__first_name = first_name
+        self.__last_name = last_name
+        self.__phone_number = phone_number
 
     # ---------------- username ---------------- #
     @property
@@ -47,6 +62,44 @@ class User(BaseModel):
         self.update_date = datetime.now()
         self.__email = value
 
+    # -------------- first_name ---------------- #
+    @property
+    def first_name(self):
+        return self.__first_name
+
+    @first_name.setter
+    def first_name(self, value):
+        if value is not None and not isinstance(value, str):
+            raise TypeError("first_name must be a string or None")
+        self.update_date = datetime.now()
+        self.__first_name = value
+
+    # -------------- last_name ----------------- #
+    @property
+    def last_name(self):
+        return self.__last_name
+
+    @last_name.setter
+    def last_name(self, value):
+        if value is not None and not isinstance(value, str):
+            raise TypeError("last_name must be a string or None")
+        self.update_date = datetime.now()
+        self.__last_name = value
+
+    # ------------ phone_number ---------------- #
+    @property
+    def phone_number(self):
+        return self.__phone_number
+
+    @phone_number.setter
+    def phone_number(self, value):
+        if value is not None and not isinstance(value, str):
+            raise TypeError("phone_number must be a string or None")
+        if value and len(value) > 32:
+            raise ValueError("phone_number must be ≤ 32 characters")
+        self.update_date = datetime.now()
+        self.__phone_number = value
+
     # --------------- helpers ------------------ #
     def to_dict(self):
         return {
@@ -55,11 +108,16 @@ class User(BaseModel):
             "update_date": self.update_date.isoformat(),
             "username": self.username,
             "email": self.email,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "phone_number": self.phone_number,
         }
 
     def __repr__(self):
         return (
-            f"User(username={self.username!r}, email={self.email!r}, id={self.id})"
+            f"User(username={self.username!r}, email={self.email!r}, "
+            f"first_name={self.first_name!r}, last_name={self.last_name!r}, "
+            f"phone_number={self.phone_number!r}, id={self.id})"
         )
 
     __str__ = __repr__
