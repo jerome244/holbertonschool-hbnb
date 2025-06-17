@@ -1,4 +1,4 @@
-from user import User
+from .user import User
 from datetime import datetime
 from typing import TYPE_CHECKING
 
