@@ -1,9 +1,9 @@
-from base import BaseModel
+from .base import BaseModel
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from place import Place
+    from .place import Place
 
 
 class Booking(BaseModel):

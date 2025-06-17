@@ -1,9 +1,9 @@
-from base import BaseModel
+from .base import BaseModel
 from datetime import datetime
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from booking import Booking
+    from .booking import Booking
 
 
 class Review(BaseModel):

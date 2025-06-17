@@ -4,166 +4,317 @@ from datetime import datetime
 from app.persistence.repository import InMemoryRepository
 from app.models.user import User
 from app.models.host import Host
-
+from app.models.place import Place
+from app.models.review import Review
+from app.models.amenity import Amenity
+from app.models.booking import Booking
 
 class HBnBFacade:
     def __init__(self):
-        # Repositories for each model
         self.user_repo    = InMemoryRepository()
         self.host_repo    = InMemoryRepository()
-        self.place_repo   = InMemoryRepository()   # stubbed for later
-        self.review_repo  = InMemoryRepository()   # stubbed for later
-        self.amenity_repo = InMemoryRepository()   # stubbed for later
+        self.place_repo   = InMemoryRepository()
+        self.review_repo  = InMemoryRepository()
+        self.amenity_repo = InMemoryRepository()
+        self.booking_repo = InMemoryRepository()
 
-    # ----------------------- USERS ----------------------------
-
-    def create_user(self, user_data):
-        """Create a new user, error on duplicate email."""
-        if self.user_repo.get_by_attribute('email', user_data['email']):
-            raise ValueError(f"Email '{user_data['email']}' is already in use")
-
-        user = User(
-            first_name=user_data['first_name'],
-            last_name =user_data['last_name'],
-            email     =user_data['email'],
-            is_admin  =user_data.get('is_admin', False)
+    # ----------- USERS -----------
+    def create_user(self, data):
+        if self.user_repo.get_by_attribute('email', data['email']):
+            raise ValueError(f"Email '{data['email']}' is already in use")
+        u = User(
+            first_name=data['first_name'],
+            last_name =data['last_name'],
+            email     =data['email'],
+            is_admin  =data.get('is_admin', False)
         )
-        self.user_repo.add(user)
-
+        self.user_repo.add(u)
         return {
-            'id'         : user.id,
-            'first_name' : user.first_name,
-            'last_name'  : user.last_name,
-            'email'      : user.email,
-            'is_admin'   : user.is_admin
+            'id': u.id,
+            'first_name': u.first_name,
+            'last_name': u.last_name,
+            'email': u.email,
+            'is_admin': u.is_admin
         }
 
     def get_all_users(self):
-        """Return list of all users."""
-        return [
-            {
-                'id'         : u.id,
-                'first_name' : u.first_name,
-                'last_name'  : u.last_name,
-                'email'      : u.email,
-                'is_admin'   : u.is_admin
-            }
-            for u in self.user_repo.get_all()
-        ]
+        return [self.get_user(u.id) for u in self.user_repo.get_all()]
 
-    def get_user(self, user_id):
-        """Fetch a user by ID or raise KeyError."""
-        u = self.user_repo.get(user_id)
+    def get_user(self, uid):
+        u = self.user_repo.get(uid)
         if not u:
-            raise KeyError(f"User not found: {user_id}")
+            raise KeyError(f"User not found: {uid}")
         return {
-            'id'         : u.id,
-            'first_name' : u.first_name,
-            'last_name'  : u.last_name,
-            'email'      : u.email,
-            'is_admin'   : u.is_admin
+            'id': u.id,
+            'first_name': u.first_name,
+            'last_name': u.last_name,
+            'email': u.email,
+            'is_admin': u.is_admin
         }
 
-    def update_user(self, user_id, user_data):
-        """Update fields on an existing user, enforce email uniqueness."""
-        u = self.user_repo.get(user_id)
+    def update_user(self, uid, data):
+        u = self.user_repo.get(uid)
         if not u:
-            raise KeyError(f"User not found: {user_id}")
-
-        new_email = user_data.get('email')
-        if new_email and new_email != u.email:
-            if self.user_repo.get_by_attribute('email', new_email):
-                raise ValueError(f"Email '{new_email}' is already in use")
-
-        for field in ('first_name', 'last_name', 'email', 'is_admin'):
-            if field in user_data:
-                setattr(u, field, user_data[field])
+            raise KeyError(f"User not found: {uid}")
+        if 'email' in data and data['email'] != u.email \
+           and self.user_repo.get_by_attribute('email', data['email']):
+            raise ValueError(f"Email '{data['email']}' is already in use")
+        for fld in ('first_name','last_name','email','is_admin'):
+            if fld in data:
+                setattr(u, fld, data[fld])
         u.updated_at = datetime.now()
+        return self.get_user(uid)
 
-        return {
-            'id'         : u.id,
-            'first_name' : u.first_name,
-            'last_name'  : u.last_name,
-            'email'      : u.email,
-            'is_admin'   : u.is_admin
-        }
+    def delete_user(self, uid):
+        if not self.user_repo.get(uid):
+            raise KeyError(f"User not found: {uid}")
+        self.user_repo.delete(uid)
 
-    def delete_user(self, user_id):
-        """Remove a user by ID or raise KeyError."""
-        if not self.user_repo.get(user_id):
-            raise KeyError(f"User not found: {user_id}")
-        self.user_repo.delete(user_id)
-
-    # ----------------------- HOSTS ----------------------------
-
-    def create_host(self, host_data):
-        """Create a new host, error on duplicate email."""
-        if self.host_repo.get_by_attribute('email', host_data['email']):
-            raise ValueError(f"Email '{host_data['email']}' already in use")
-
-        host = Host(
-            first_name=host_data['first_name'],
-            last_name =host_data['last_name'],
-            email     =host_data['email']
+    # ----------- HOSTS -----------
+    def create_host(self, data):
+        if self.host_repo.get_by_attribute('email', data['email']):
+            raise ValueError(f"Email '{data['email']}' already in use")
+        h = Host(
+            first_name=data['first_name'],
+            last_name =data['last_name'],
+            email     =data['email']
         )
-        self.host_repo.add(host)
-
+        self.host_repo.add(h)
         return {
-            'id'         : host.id,
-            'first_name' : host.first_name,
-            'last_name'  : host.last_name,
-            'email'      : host.email
+            'id': h.id,
+            'first_name': h.first_name,
+            'last_name': h.last_name,
+            'email': h.email
         }
 
     def get_all_hosts(self):
-        """Return list of all hosts."""
+        return [self.get_host(h.id) for h in self.host_repo.get_all()]
+
+    def get_host(self, hid):
+        h = self.host_repo.get(hid)
+        if not h:
+            raise KeyError(f"Host not found: {hid}")
+        return {
+            'id': h.id,
+            'first_name': h.first_name,
+            'last_name': h.last_name,
+            'email': h.email
+        }
+
+    def update_host(self, hid, data):
+        h = self.host_repo.get(hid)
+        if not h:
+            raise KeyError(f"Host not found: {hid}")
+        if 'email' in data and data['email'] != h.email \
+           and self.host_repo.get_by_attribute('email', data['email']):
+            raise ValueError(f"Email '{data['email']}' already in use")
+        for fld in ('first_name','last_name','email'):
+            if fld in data:
+                setattr(h, fld, data[fld])
+        h.updated_at = datetime.now()
+        return self.get_host(hid)
+
+    def delete_host(self, hid):
+        if not self.host_repo.get(hid):
+            raise KeyError(f"Host not found: {hid}")
+        self.host_repo.delete(hid)
+
+    # ----------- PLACES -----------
+    def create_place(self, data):
+        host = self.host_repo.get(data['host_id'])
+        if not host:
+            raise KeyError(f"Host not found: {data['host_id']}")
+        p = Place(
+            title=data['title'],
+            capacity=data['capacity'],
+            price=data['price'],
+            latitude=data['latitude'],
+            longitude=data['longitude'],
+            description=data.get('description', ""),
+            host=host
+        )
+        self.place_repo.add(p)
+        return self.get_place(p.id)
+
+    def get_all_places(self):
+        return [self.get_place(p.id) for p in self.place_repo.get_all()]
+
+    def get_place(self, pid):
+        p = self.place_repo.get(pid)
+        if not p:
+            raise KeyError(f"Place not found: {pid}")
+        return {
+            'id': p.id,
+            'title': p.title,
+            'capacity': p.capacity,
+            'price': p.price,
+            'latitude': p.latitude,
+            'longitude': p.longitude,
+            'description': p.description,
+            'host_id': p.host.id
+        }
+
+    def update_place(self, pid, data):
+        p = self.place_repo.get(pid)
+        if not p:
+            raise KeyError(f"Place not found: {pid}")
+        if 'host_id' in data and data['host_id'] != p.host.id:
+            new_h = self.host_repo.get(data['host_id'])
+            if not new_h:
+                raise KeyError(f"Host not found: {data['host_id']}")
+            p.host = new_h
+        for fld in ('title','capacity','price','latitude','longitude','description'):
+            if fld in data:
+                setattr(p, fld, data[fld])
+        p.updated_at = datetime.now()
+        return self.get_place(pid)
+
+    def delete_place(self, pid):
+        if not self.place_repo.get(pid):
+            raise KeyError(f"Place not found: {pid}")
+        self.place_repo.delete(pid)
+
+    # ----------- REVIEWS -----------
+    def add_review(self, pid, data):
+        p = self.place_repo.get(pid)
+        if not p:
+            raise KeyError(f"Place not found: {pid}")
+        r = Review(
+            user_id=data['user_id'],
+            rating=data['rating'],
+            comment=data.get('comment', "")
+        )
+        self.review_repo.add(r)
+        p.add_review(r)
+        return {
+            'id': r.id,
+            'user_id': r.user_id,
+            'rating': r.rating,
+            'comment': r.comment
+        }
+
+    def get_reviews(self, pid):
+        p = self.place_repo.get(pid)
+        if not p:
+            raise KeyError(f"Place not found: {pid}")
         return [
-            {
-                'id'         : h.id,
-                'first_name' : h.first_name,
-                'last_name'  : h.last_name,
-                'email'      : h.email
-            }
-            for h in self.host_repo.get_all()
+            {'id': r.id, 'user_id': r.user_id, 'rating': r.rating, 'comment': r.comment}
+            for r in p.reviews
         ]
 
-    def get_host(self, host_id):
-        """Fetch a host by ID or raise KeyError."""
-        h = self.host_repo.get(host_id)
-        if not h:
-            raise KeyError(f"Host not found: {host_id}")
+    def delete_review(self, review_id):
+        r = self.review_repo.get(review_id)
+        if not r:
+            raise KeyError(f"Review not found: {review_id}")
+        for p in self.place_repo.get_all():
+            if r in p.reviews:
+                p.reviews.remove(r)
+                break
+        self.review_repo.delete(review_id)
+
+    # ----------- AMENITIES -----------
+    def create_amenity(self, data):
+        a = Amenity(name=data['name'])
+        self.amenity_repo.add(a)
+        return {'id': a.id, 'name': a.name}
+
+    def get_all_amenities(self):
+        return [{'id': a.id, 'name': a.name} for a in self.amenity_repo.get_all()]
+
+    def delete_amenity(self, aid):
+        a = self.amenity_repo.get(aid)
+        if not a:
+            raise KeyError(f"Amenity not found: {aid}")
+        for p in self.place_repo.get_all():
+            if a in p.amenities:
+                p.amenities.remove(a)
+        self.amenity_repo.delete(aid)
+
+    def add_amenity(self, pid, aid):
+        p = self.place_repo.get(pid)
+        a = self.amenity_repo.get(aid)
+        if not p:
+            raise KeyError(f"Place not found: {pid}")
+        if not a:
+            raise KeyError(f"Amenity not found: {aid}")
+        p.add_amenity(a)
+        return {'place_id': pid, 'amenity_id': aid, 'name': a.name}
+
+    def get_amenities(self, pid):
+        p = self.place_repo.get(pid)
+        if not p:
+            raise KeyError(f"Place not found: {pid}")
+        return [{'id': a.id, 'name': a.name} for a in p.amenities]
+
+    # ----------- AVERAGE RATING -----------
+    def get_average_rating(self, pid):
+        p = self.place_repo.get(pid)
+        if not p:
+            raise KeyError(f"Place not found: {pid}")
+        return {'place_id': pid, 'avg_rating': p.get_average_rating()}
+
+    # ----------- BOOKINGS -----------
+    def create_booking(self, data):
+        p = self.place_repo.get(data['place_id'])
+        if not p:
+            raise KeyError(f"Place not found: {data['place_id']}")
+        try:
+            ch = datetime.fromisoformat(data['checkin_date'])
+        except Exception:
+            raise ValueError("checkin_date must be ISO8601 string")
+        b = Booking(
+            guest_count=data['guest_count'],
+            checkin_date=ch,
+            night_count=data['night_count'],
+            place=p
+        )
+        self.booking_repo.add(b)
         return {
-            'id'         : h.id,
-            'first_name' : h.first_name,
-            'last_name'  : h.last_name,
-            'email'      : h.email
+            'id': b.id,
+            'place_id': p.id,
+            'guest_count': b.guest_count,
+            'checkin_date': b.checkin_date.isoformat(),
+            'night_count': b.night_count,
+            'total_price': b.total_price
         }
 
-    def update_host(self, host_id, host_data):
-        """Update fields on an existing host, enforce email uniqueness."""
-        h = self.host_repo.get(host_id)
-        if not h:
-            raise KeyError(f"Host not found: {host_id}")
+    def get_all_bookings(self):
+        return [self.get_booking(b.id) for b in self.booking_repo.get_all()]
 
-        new_email = host_data.get('email')
-        if new_email and new_email != h.email:
-            if self.host_repo.get_by_attribute('email', new_email):
-                raise ValueError(f"Email '{new_email}' already in use")
-
-        for field in ('first_name', 'last_name', 'email'):
-            if field in host_data:
-                setattr(h, field, host_data[field])
-        h.updated_at = datetime.now()
-
+    def get_booking(self, bid):
+        b = self.booking_repo.get(bid)
+        if not b:
+            raise KeyError(f"Booking not found: {bid}")
         return {
-            'id'         : h.id,
-            'first_name' : h.first_name,
-            'last_name'  : h.last_name,
-            'email'      : h.email
+            'id': b.id,
+            'place_id': b.place.id,
+            'guest_count': b.guest_count,
+            'checkin_date': b.checkin_date.isoformat(),
+            'night_count': b.night_count,
+            'total_price': b.total_price
         }
 
-    def delete_host(self, host_id):
-        """Remove a host by ID or raise KeyError."""
-        if not self.host_repo.get(host_id):
-            raise KeyError(f"Host not found: {host_id}")
-        self.host_repo.delete(host_id)
+    def update_booking(self, bid, data):
+        b = self.booking_repo.get(bid)
+        if not b:
+            raise KeyError(f"Booking not found: {bid}")
+        if 'guest_count' in data:
+            b.guest_count = data['guest_count']
+        if 'night_count' in data:
+            b.night_count = data['night_count']
+            b._Booking__total_price = b.night_count * b._Booking__place.price
+        if 'checkin_date' in data:
+            try:
+                b._Booking__checkin_date = datetime.fromisoformat(data['checkin_date'])
+            except Exception:
+                raise ValueError("checkin_date must be ISO8601 string")
+        b.updated_at = datetime.now()
+        return self.get_booking(bid)
+
+    def delete_booking(self, bid):
+        if not self.booking_repo.get(bid):
+            raise KeyError(f"Booking not found: {bid}")
+        self.booking_repo.delete(bid)
+
+# singleton instance
+facade = HBnBFacade()
