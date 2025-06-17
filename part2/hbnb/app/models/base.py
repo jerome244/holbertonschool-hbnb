@@ -7,28 +7,28 @@ class BaseModel:
     Base class for all models providing ID and timestamp fields.
     """
 
-    def __init__(self, id=None, creation_date=None, update_date=None):
+    def __init__(self, id=None, created_at=None, updated_at=None):
         self.__id = id or str(uuid.uuid4())
-        self.__creation_date = creation_date or datetime.now()
-        self.__update_date = update_date or datetime.now()
+        self.__created_at = created_at or datetime.now()
+        self.__updated_at = updated_at or datetime.now()
 
     @property
     def id(self):
         return self.__id
 
     @property
-    def creation_date(self):
-        return self.__creation_date
+    def created_at(self):
+        return self.__created_at
 
     @property
-    def update_date(self):
-        return self.__update_date
+    def updated_at(self):
+        return self.__updated_at
 
-    @update_date.setter
-    def update_date(self, value):
+    @updated_at.setter
+    def updated_at(self, value):
         if not isinstance(value, datetime):
-            raise TypeError("update_date must be a datetime object")
-        self.__update_date = value
+            raise TypeError("updated_at must be a datetime object")
+        self.__updated_at = value
 
     def to_dict(self):
         return self.__dict__

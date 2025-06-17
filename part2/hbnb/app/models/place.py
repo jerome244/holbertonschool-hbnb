@@ -1,39 +1,47 @@
+from datetime import datetime
+from host import Host
 from base import BaseModel
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    # from user import Host
+    """
+    Check for circular import /!\
+    """
+    # Used to validate host type
     from amenity import Amenity
     from review import Review
 
 
 class Place(BaseModel):
-    def __init__(self, name, description, capacity, price_per_night, address, host, **kwargs):
+    def __init__(self, title, capacity, price, latitude, longitude, host, description="", **kwargs):
         super().__init__(**kwargs)
-        self.__name = name
-        self.__description = description
+        self.__title = title
         self.__capacity = capacity
-        self.__price_per_night = price_per_night
-        self.__address = address
+        self.__price = price
+        self.__latitude = latitude
+        self.__longitude = longitude
+        if not isinstance(host, Host):
+            raise TypeError("host must be an instance of the Host class")
         self.__host = host
         if hasattr(host, "add_place"):
             host.add_place(self)
+        self.__description = description
 
         self.__amenities = []
         self.__reviews = []
 
     # ----------------------- name ----------------------- #
     @property
-    def name(self):
-        return self.__name
+    def title(self):
+        return self.__title
 
-    @name.setter
-    def name(self, name):
-        if not isinstance(name, str):
+    @title.setter
+    def title(self, title):
+        if not isinstance(title, str):
             raise TypeError("Name must be of type string")
-        if not (2 <= len(name) <= 32):
-            raise ValueError("Name length must be between 2 and 32 characters")
-        self.__name = name
+        if len(title) > 100:
+            raise ValueError("Title length must not exceed 100 characters")
+        self.__title = title
 
     # ----------------------- description ----------------------- #
     @property
@@ -47,6 +55,7 @@ class Place(BaseModel):
         if not (2 <= len(description) <= 1024):
             raise ValueError("Description length must be between 2 and 1024 characters")
         self.__description = description
+        self.update_date = datetime.now()
 
     # ----------------------- capacity ----------------------- #
     @property
@@ -60,54 +69,89 @@ class Place(BaseModel):
         if not (1 <= capacity <= 64):
             raise ValueError("Capacity must be between 1 and 64")
         self.__capacity = capacity
+        self.update_date = datetime.now()
 
     # ----------------------- price per night ----------------------- #
     @property
-    def price_per_night(self):
-        return self.__price_per_night
+    def price(self):
+        return self.__price
 
-    @price_per_night.setter
-    def price_per_night(self, price_per_night):
-        if not isinstance(price_per_night, int):
-            raise TypeError("Price per night must be of type int")
-        if not (1 <= price_per_night <= 9999):
-            raise ValueError("Price per night must be between 1 and 9999")
-        self.__price_per_night = price_per_night
+    @price.setter
+    def price(self, price):
+        if not isinstance(price, (int, float)):
+            raise TypeError("Price must be of type int or float")
+        if price < 0:
+            raise ValueError("Price must be a positive number")
+        self.__price = price
+        self.update_date = datetime.now()
 
-    # ----------------------- address ----------------------- #
+    # ----------------------- latitude ----------------------- #
     @property
-    def address(self):
-        return self.__address
+    def latitude(self):
+        return self.__latitude
 
-    @address.setter
-    def address(self, address):
-        if not isinstance(address, str):
-            raise TypeError("Address must be of type string")
-        if not (2 <= len(address) <= 1024):
-            raise ValueError("Address length must be between 2 and 1024 characters")
-        self.__address = address
+    @latitude.setter
+    def latitude(self, latitude):
+        if not isinstance(latitude, float):
+            raise TypeError("Latitude must be of type float")
+        if latitude < -90.0 and latitude > 90.0:
+            raise ValueError("Latitude length must be between -90 and 90 degres")
+        self.__latitude = latitude
+        self.update_date = datetime.now()
+
+    # ----------------------- longitude ----------------------- #
+
+    @property
+    def longitude(self):
+        return self.__longitude
+
+    @longitude.setter
+    def longitude(self, longitude):
+        if not isinstance(longitude, float):
+            raise TypeError("Longitude must be of type float")
+        if longitude < -180.0 and longitude > 180.0:
+            raise ValueError("Longitude length must be between -180 and 180 degres")
+        self.__longitude = longitude
+        self.update_date = datetime.now()
+
 
     # ----------------------- host ----------------------- #
+
     @property
     def host(self):
         return self.__host
 
+    # ----------------------- Amenities ----------------------- #
+
+    @property
+    def amenities(self):
+        return self.__amenities
+
+ # ----------------------- Reviews ----------------------- #
+
+    @property
+    def reviews(self):
+        return self.__reviews
+
     # ----------------------- Methods ----------------------- #
+
     def add_amenities(self, amenity):
         from amenity import Amenity
         if not isinstance(amenity, Amenity):
             raise TypeError("Must add an Amenity instance")
         self.__amenities.append(amenity)
+        self.update_date = datetime.now()
 
     def add_review(self, review):
         from review import Review
         if not isinstance(review, Review):
             raise TypeError("Must add a Review instance")
         self.__reviews.append(review)
+        self.update_date = datetime.now()
 
     def get_average_rating(self):
         if not self.__reviews:
-            raise AttributeError("No review found in reviews")
+            return 0
         total = 0
         for review in self.__reviews:
             total += review.rating

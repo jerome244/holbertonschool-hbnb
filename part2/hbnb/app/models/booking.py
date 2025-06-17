@@ -72,3 +72,8 @@ class Booking(BaseModel):
     @property
     def rating(self):
         return self.__rating
+
+    # ----------------------- review ----------------------- #
+    @property
+    def review(self):
+        return self.__review

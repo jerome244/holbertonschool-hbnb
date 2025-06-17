@@ -1,5 +1,6 @@
 from base import BaseModel
 import re
+from datetime import datetime
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -7,13 +8,12 @@ if TYPE_CHECKING:
 
 
 class User(BaseModel):
-    def __init__(self, first_name, last_name, email, phone, password, **kwargs):
+    def __init__(self, first_name, last_name, email, is_admin=False, **kwargs):
         super().__init__(**kwargs)
         self.__first_name = first_name
         self.__last_name = last_name
+        self.__is_admin = is_admin
         self.__email = email
-        self.__phone = phone
-        self.__password = password
         self.__bookings = []
 
     # ----------------------- First name ------------------------ #
@@ -25,9 +25,10 @@ class User(BaseModel):
     def first_name(self, first_name):
         if not isinstance(first_name, str):
             raise TypeError("First name must be of type str")
-        if not (2 <= len(first_name) <= 16):
-            raise ValueError("First name length must be between 2 and 16 characters")
+        if len(first_name) > 50:
+            raise ValueError("First name length must not exceed 50 characters")
         self.__first_name = first_name
+        self.update_date = datetime.now()
 
     # ------------------------ Last name ------------------------ #
     @property
@@ -38,9 +39,10 @@ class User(BaseModel):
     def last_name(self, last_name):
         if not isinstance(last_name, str):
             raise TypeError("Last name must be of type str")
-        if not (2 <= len(last_name) <= 16):
-            raise ValueError("Last name length must be between 2 and 16 characters")
+        if len(last_name) > 50:
+            raise ValueError("Last name length must not exceed 50 characters")
         self.__last_name = last_name
+        self.update_date = datetime.now()
 
     # -------------------------- Email -------------------------- #
     @property
@@ -55,37 +57,30 @@ class User(BaseModel):
         if not email_regex.match(email):
             raise ValueError("Email must have valid mail address format")
         self.__email = email
+        self.update_date = datetime.now()
 
-    # -------------------------- Phone -------------------------- #
-    @property
-    def phone(self):
-        return self.__phone
-
-    @phone.setter
-    def phone(self, phone):
-        phone_regex = re.compile(r'^\+\d{1,3}[-\s]?\d{1,4}([-\s]?\d{2,5}){1,4}$')
-        if not isinstance(phone, str):
-            raise TypeError("Phone number must be of type str")
-        if not phone_regex.match(phone):
-            raise ValueError("Phone number must have valid format")
-        self.__phone = phone
-
-    # ----------------------- First name ------------------------ #
+    # ------------------------ Is Admin ------------------------ #
 
     @property
-    def password(self):
-        return self.__password
+    def is_admin(self):
+        return self.__is_admin
 
-    @password.setter
-    def password(self, password):
-        if not isinstance(password, str):
-            raise TypeError("Password must be of type str")
-        if not (2 <= len(password) <= 16):
-            raise ValueError("Password length must be between 8 and 32 characters")
-        self.__password = password
+    @is_admin.setter
+    def is_admin(self, value):
+        if not isinstance(value, bool):
+            raise TypeError("Is Admin must be of type bool")
+        self.is_admin = value
+        self.update_date = datetime.now()
+
+    # ------------------------ Bookings ------------------------ #
+
+    @property
+    def bookings(self):
+        return self.__bookings
 
     # -------------------------- Methods -------------------------- #
-    def booking(self, booking):
+
+    def add_booking(self, booking):
         from booking import Booking
         if not isinstance(booking, Booking):
             raise TypeError("booking must be a Booking instance")
