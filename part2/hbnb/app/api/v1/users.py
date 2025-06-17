@@ -5,22 +5,27 @@ from http import HTTPStatus
 
 ns = Namespace('users', description='Operations on users')
 
-# Input/output model for Swagger & automatic validation
+# Define the output model with examples
 user_model = ns.model('User', {
-    'id':         fields.String(readOnly=True, description='UUID'),
-    'first_name': fields.String(required=True, max_length=50),
-    'last_name':  fields.String(required=True, max_length=50),
-    'email':      fields.String(required=True, pattern='[^@]+@[^@]+\\.[^@]+'),
-    'is_admin':   fields.Boolean(default=False),
-    'created_at': fields.DateTime(readOnly=True),
-    'updated_at': fields.DateTime(readOnly=True),
+    'id':         fields.String(readOnly=True, description='UUID', example='8ed15bfa-f180-4e47-9de5-268183921659'),
+    'first_name': fields.String(required=True, max_length=50, description="User's first name", example='John'),
+    'last_name':  fields.String(required=True, max_length=50, description="User's last name", example='Doe'),
+    'email':      fields.String(required=True, pattern='[^@]+@[^@]+\\.[^@]+',
+                               description='User email address', example='john.doe@example.com'),
+    'is_admin':   fields.Boolean(default=False, description='Admin flag', example=False),
+    'created_at': fields.DateTime(readOnly=True, description='Creation timestamp', example='2025-06-17T15:10:11.206009'),
+    'updated_at': fields.DateTime(readOnly=True, description='Last-modified timestamp', example='2025-06-17T15:10:11.206015'),
 })
 
+# Define the input model with examples
 create_user_model = ns.model('NewUser', {
-    'first_name': fields.String(required=True, max_length=50),
-    'last_name':  fields.String(required=True, max_length=50),
-    'email':      fields.String(required=True, pattern='[^@]+@[^@]+\\.[^@]+'),
-    'is_admin':   fields.Boolean(default=False),
+    'first_name': fields.String(required=True, max_length=50,
+                                description="User's first name", example='Alice'),
+    'last_name':  fields.String(required=True, max_length=50,
+                                description="User's last name", example='Smith'),
+    'email':      fields.String(required=True, pattern='[^@]+@[^@]+\\.[^@]+',
+                                description='User email address', example='alice.smith@example.com'),
+    'is_admin':   fields.Boolean(default=False, description='Admin flag', example=False),
 })
 
 @ns.route('/')
@@ -52,7 +57,7 @@ class User(Resource):
             abort(HTTPStatus.NOT_FOUND)
         return user
 
-    @ns.expect(user_model, validate=True)
+    @ns.expect(create_user_model, validate=True)
     @ns.marshal_with(user_model)
     def patch(self, user_id):
         """Update an existing user"""
