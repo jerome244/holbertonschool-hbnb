@@ -1,5 +1,3 @@
-# app/services/facade.py
-
 from datetime import datetime
 from app.persistence.repository import InMemoryRepository
 from app.models.user import User
