@@ -13,7 +13,7 @@ class Booking(BaseModel):
         self.guest_count = guest_count
         self.__checkin_date = checkin_date
         self.__night_count = night_count
-        self.__total_price = self.night_count * self.__place.price_per_night
+        self.__total_price = self.night_count * self.__place.price
         self.__checkout_date = self.checkin_date + timedelta(days=self.night_count)
         self.__rating = None
         self.__review = None

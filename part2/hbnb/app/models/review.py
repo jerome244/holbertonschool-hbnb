@@ -18,7 +18,7 @@ class Review(BaseModel):
         super().__init__(**kwargs)
         self.__booking = booking
         self.__text = text
-        self.__rating = None
+        self.__rating = rating
 
     # ----------------------- rating ----------------------- #
 

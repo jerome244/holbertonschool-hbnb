@@ -135,7 +135,7 @@ class Place(BaseModel):
 
     # ----------------------- Methods ----------------------- #
 
-    def add_amenities(self, amenity):
+    def add_amenity(self, amenity):
         from amenity import Amenity
         if not isinstance(amenity, Amenity):
             raise TypeError("Must add an Amenity instance")

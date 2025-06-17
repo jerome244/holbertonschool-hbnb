@@ -3,7 +3,7 @@ from datetime import datetime
 
 
 class Amenity(BaseModel):
-    def __init__(self, name, description, **kwargs):
+    def __init__(self, name, **kwargs):
         super().__init__(**kwargs)
         self.__name = name
 
