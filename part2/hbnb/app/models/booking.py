@@ -7,18 +7,33 @@ if TYPE_CHECKING:
 
 
 class Booking(BaseModel):
-    def __init__(self, guest_count, checkin_date, night_count, place, **kwargs):
+    def __init__(self, guest_count, checkin_date, night_count, place, user, **kwargs):
         super().__init__(**kwargs)
+
         self.__place = place
         self.guest_count = guest_count
-        self.__checkin_date = checkin_date
+        self.checkin_date = checkin_date
         self.__night_count = night_count
+        self.__user = user
         self.__total_price = self.night_count * self.__place.price
         self.__checkout_date = self.checkin_date + timedelta(days=self.night_count)
         self.__rating = None
         self.__review = None
 
+        user.add_booking(self)
+
+    #----------------------- Place -----------------------#
+
+    @property
+    def place(self):
+        return self.__place
+
+    @place.setter
+    def place(self, place):
+        self.__place = place
+
     # ----------------------- guest count ----------------------- #
+
     @property
     def guest_count(self):
         return self.__guest_count
@@ -26,11 +41,12 @@ class Booking(BaseModel):
     @guest_count.setter
     def guest_count(self, guest_count):
         if guest_count > self.__place.capacity:
-            raise ValueError(f"Number of guests exceeds {self.__place.name}'s capacity")
+            raise ValueError(f"Number of guests exceeds {self.__place.title}'s capacity")
         self.__guest_count = guest_count
         self.update_date = datetime.now()
 
     # ----------------------- checkin ----------------------- #
+
     @property
     def checkin_date(self):
         return self.__checkin_date
@@ -45,6 +61,7 @@ class Booking(BaseModel):
         self.update_date = datetime.now()
 
     # ----------------------- night count ----------------------- #
+
     @property
     def night_count(self):
         return self.__night_count
@@ -58,15 +75,27 @@ class Booking(BaseModel):
         self.__night_count = night_count
         self.update_date = datetime.now()
 
-    # ----------------------- checkout ----------------------- #
+    # ------------------------- user ------------------------- #
+
     @property
-    def checkout_date(self):
-        return self.__checkout_date
+    def user(self):
+         return self.__user
+
+    @user.setter
+    def user(self, user):
+        self.__user = user
 
     # ----------------------- total price ----------------------- #
+
     @property
     def total_price(self):
         return self.__total_price
+
+    # ----------------------- checkout ----------------------- #
+
+    @property
+    def checkout_date(self):
+        return self.__checkout_date
 
     # ----------------------- rating ----------------------- #
     @property
@@ -74,6 +103,13 @@ class Booking(BaseModel):
         return self.__rating
 
     # ----------------------- review ----------------------- #
+
     @property
     def review(self):
         return self.__review
+
+    @review.setter
+    def review(self, review):
+        if self.review:
+            raise ValueError("This Booking already has a review")
+        self.__review = review

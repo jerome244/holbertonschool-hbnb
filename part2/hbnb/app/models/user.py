@@ -13,7 +13,7 @@ class User(BaseModel):
         self.__first_name = first_name
         self.__last_name = last_name
         self.__is_admin = is_admin
-        self.__email = email
+        self.email = email
         self.__bookings = []
 
     # ----------------------- First name ------------------------ #
@@ -85,3 +85,11 @@ class User(BaseModel):
         if not isinstance(booking, Booking):
             raise TypeError("booking must be a Booking instance")
         self.__bookings.append(booking)
+
+    def leave_review(self, booking, rating, comment):
+        from review import Review
+        if booking not in self.__bookings:
+            raise Exception("User cannot review a booking they did not make.")
+        if booking.review:
+            raise Exception("Booking already has a review.")
+        Review(booking, rating, comment)

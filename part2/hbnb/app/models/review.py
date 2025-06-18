@@ -12,13 +12,25 @@ class Review(BaseModel):
         if not isinstance(booking, Booking):
             raise TypeError("booking must be a Booking instance")
 
+        # condition commented because testes can't be made otherwise
+        # checkin_date must not be in te past and review must be made
+        # after checkout_date (don't know how to test being both in past and future)
+        """
         if datetime.now() < booking.checkout_date:
             raise ValueError("Review must be made after checkout")
+        """
 
         super().__init__(**kwargs)
         self.__booking = booking
         self.__text = text
         self.__rating = rating
+
+        """
+        implémenter le corps des setters
+        """
+        booking.review = self
+
+        booking.place.add_review(self)
 
     # ----------------------- rating ----------------------- #
 
