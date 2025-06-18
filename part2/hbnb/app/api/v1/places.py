@@ -1,4 +1,3 @@
-# app/api/v1/places.py
 from flask_restx import Namespace, Resource, fields
 from app import facade
 
@@ -8,37 +7,37 @@ ns = Namespace('places', description='Place listings with amenities')
 place_model = ns.model('Place', {
     'id':          fields.String(readonly=True),
     'title':       fields.String(required=True),
-    'capacity':    fields.Integer(required=True),
-    'price':       fields.Float(required=True),
+    'capacity':    fields.Integer(required=True, description='Number of guests'),
+    'price':       fields.Float(required=True, description='Price per night'),
     'latitude':    fields.Float(required=True),
     'longitude':   fields.Float(required=True),
-    'host_id':     fields.String(required=True),
+    'host_id':     fields.String(required=True, attribute='host.id', description='UUID of the host'),
     'description': fields.String,
-    'amenity_ids': fields.List(fields.String, description='List of amenity IDs')
+    'amenity_ids': fields.List(fields.String, description='List of amenity IDs'),
 })
 
 # Creation model allows optional amenity_ids
 place_create_model = ns.model('PlaceCreate', {
     'title':        fields.String(required=True),
-    'capacity':     fields.Integer(required=True),
-    'price':        fields.Float(required=True),
+    'capacity':     fields.Integer(required=True, description='Number of guests'),
+    'price':        fields.Float(required=True, description='Price per night'),
     'latitude':     fields.Float(required=True),
     'longitude':    fields.Float(required=True),
-    'host_id':      fields.String(required=True),
+    'host_id':      fields.String(required=True, description='UUID of the host'),
     'description':  fields.String,
-    'amenity_ids':  fields.List(fields.String, description='Optional list of amenity IDs')
+    'amenity_ids':  fields.List(fields.String, description='Optional list of amenity IDs'),
 })
 
 # Partial update for PATCH, now including amenity_ids
 place_patch_model = ns.model('PlacePatch', {
     'title':       fields.String,
-    'capacity':    fields.Integer,
-    'price':       fields.Float,
+    'capacity':    fields.Integer(description='Number of guests'),
+    'price':       fields.Float(description='Price per night'),
     'latitude':    fields.Float,
     'longitude':   fields.Float,
-    'host_id':     fields.String,
+    'host_id':     fields.String(description='UUID of the host'),
     'description': fields.String,
-    'amenity_ids': fields.List(fields.String, description='Optional list of amenity IDs')
+    'amenity_ids': fields.List(fields.String, description='Optional list of amenity IDs'),
 })
 
 @ns.route('/')
@@ -57,26 +56,31 @@ class PlaceList(Resource):
         """Create a new place, optionally with amenities"""
         payload = dict(ns.payload)
 
+        # Validate capacity and price
+        if payload.get('capacity', 0) <= 0:
+            ns.abort(400, "Capacity must be greater than 0")
+        if payload.get('price', 0.0) <= 0:
+            ns.abort(400, "Price must be greater than 0")
+
+        # Remove amenity_ids to avoid constructor errors
+        amenity_ids = payload.pop('amenity_ids', []) or []
+
         # Validate host
         host_id = payload['host_id']
         if not facade.get_host(host_id):
             ns.abort(400, "Host not found")
 
-        # Extract amenity_ids
-        amenity_ids = payload.pop('amenity_ids', None)
-        valid_amenities = []
-        if amenity_ids:
-            for aid in amenity_ids:
-                a = facade.get_amenity(aid)
-                if a:
-                    valid_amenities.append(a)
-        # Create place
+        # Create the place without amenities
         place = facade.create_place(payload)
-        # Mutate existing list instead of reassigning
-        place.amenities.clear()
-        for a in valid_amenities:
-            place.amenities.append(a)
-        place.amenity_ids = [a.id for a in place.amenities]
+
+        # Attach each amenity, ignoring invalid IDs
+        for aid in amenity_ids:
+            amenity = facade.get_amenity(aid)
+            if amenity:
+                place.add_amenity(amenity)
+
+        # Expose amenity_ids in response
+        place.amenity_ids = [a.id for a in getattr(place, 'amenities', [])]
         return place, 201
 
 @ns.route('/<string:place_id>')
@@ -96,22 +100,24 @@ class PlaceDetail(Resource):
         payload = dict(ns.payload)
         place = facade.get_place(place_id) or ns.abort(404)
 
-        # Validate host if updating
-        if 'host_id' in payload and not facade.get_host(payload['host_id']):
-            ns.abort(400, "Host not found")
+        # Validate capacity and price if present
+        if 'capacity' in payload and payload['capacity'] <= 0:
+            ns.abort(400, "Capacity must be greater than 0")
+        if 'price' in payload and payload['price'] <= 0:
+            ns.abort(400, "Price must be greater than 0")
 
-        # Handle amenities if included in patch
+        # Handle amenities if included in patch (ignore invalid IDs)
         if 'amenity_ids' in payload:
             ids = payload.pop('amenity_ids') or []
-            valid = []
+            place.amenities.clear()
             for aid in ids:
                 amenity = facade.get_amenity(aid)
                 if amenity:
-                    valid.append(amenity)
-            # mutate in-place
-            place.amenities.clear()
-            for a in valid:
-                place.amenities.append(a)
+                    place.add_amenity(amenity)
+
+        # Validate host if updating
+        if 'host_id' in payload and not facade.get_host(payload['host_id']):
+            ns.abort(400, "Host not found")
 
         # Update other fields
         updated = facade.update_place(place_id, payload)
@@ -125,3 +131,19 @@ class PlaceDetail(Resource):
             ns.abort(404)
         facade.delete_place(place_id)
         return '', 204
+
+# ——— Expose model’s get_average_rating() ———
+
+@ns.route('/<string:place_id>/rating')
+class PlaceRating(Resource):
+    def get(self, place_id):
+        place = facade.get_place(place_id) or ns.abort(404, 'Place not found')
+        return {'average_rating': place.get_average_rating()}
+
+# ——— Raw dict via BaseModel.to_dict() ———
+
+@ns.route('/<string:place_id>/raw')
+class PlaceRaw(Resource):
+    def get(self, place_id):
+        place = facade.get_place(place_id) or ns.abort(404, 'Place not found')
+        return place.to_dict()

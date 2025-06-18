@@ -1,70 +1,59 @@
-import re
 from flask_restx import Namespace, Resource, fields
 from app import facade
 
-ns = Namespace('hosts', description='Host operations')
+ns = Namespace('hosts', description='Host management')
 
-EMAIL_RE = re.compile(r"^[^@]+@[^@]+\.[^@]+$")
-
+# Define core Host fields
 host_model = ns.model('Host', {
     'id':         fields.String(readonly=True),
     'first_name': fields.String(required=True),
     'last_name':  fields.String(required=True),
     'email':      fields.String(required=True),
+    'is_admin':   fields.Boolean,
+})
+
+host_create = ns.clone('HostCreate', host_model, {})
+host_patch  = ns.clone('HostPatch', host_model, {
+    'first_name': fields.String,
+    'last_name':  fields.String,
+    'email':      fields.String,
+    'is_admin':   fields.Boolean,
 })
 
 @ns.route('/')
 class HostList(Resource):
     @ns.marshal_list_with(host_model)
     def get(self):
-        """List all hosts"""
         return facade.list_hosts()
 
-    @ns.expect(host_model, validate=True)
+    @ns.expect(host_create, validate=True)
     @ns.marshal_with(host_model, code=201)
     def post(self):
-        """Create a new host"""
-        payload = ns.payload
-        email = payload.get('email', '').strip()
-        if not EMAIL_RE.match(email):
-            ns.abort(400, "Invalid email address")
-        if any(h.email.lower() == email.lower() for h in facade.list_hosts()):
-            ns.abort(400, "Email already in use")
-        host = facade.create_host(payload)
-        return host, 201
+        return facade.create_host(ns.payload), 201
 
 @ns.route('/<string:host_id>')
-@ns.response(404, 'Host not found')
 class HostDetail(Resource):
     @ns.marshal_with(host_model)
     def get(self, host_id):
-        """Fetch a host by ID"""
-        host = facade.get_host(host_id)
-        if not host:
-            ns.abort(404, f"Host {host_id} doesn't exist")
+        host = facade.get_host(host_id) or ns.abort(404)
         return host
 
-    @ns.expect(host_model, validate=True)
+    @ns.expect(host_patch, validate=True)
     @ns.marshal_with(host_model)
     def patch(self, host_id):
-        """Partially update a host"""
-        payload = ns.payload
-        host = facade.get_host(host_id)
-        if not host:
-            ns.abort(404, f"Host {host_id} doesn't exist")
-        if 'email' in payload:
-            email = payload['email'].strip()
-            if not EMAIL_RE.match(email):
-                ns.abort(400, "Invalid email address")
-            if any(h.email.lower()==email.lower() and h.id!=host_id for h in facade.list_hosts()):
-                ns.abort(400, "Email already in use")
-        updated = facade.update_host(host_id, payload)
-        return updated
+        host = facade.update_host(host_id, ns.payload) or ns.abort(404)
+        return host
 
-    @ns.response(204, 'Host deleted')
     def delete(self, host_id):
-        """Delete a host"""
         if not facade.get_host(host_id):
-            ns.abort(404, f"Host {host_id} doesn't exist")
+            ns.abort(404)
         facade.delete_host(host_id)
         return '', 204
+
+# —— Expose aggregated host.rating ——
+
+@ns.route('/<string:host_id>/rating')
+class HostRating(Resource):
+    def get(self, host_id):
+        host = facade.get_host(host_id) or ns.abort(404, 'Host not found')
+        return {'host_rating': host.rating}
