@@ -51,7 +51,7 @@ class User(BaseModel):
 
     @email.setter
     def email(self, email):
-        email_regex = re.compile(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$')
+        email_regex = re.compile(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
         if not isinstance(email, str):
             raise TypeError("Email must be of type str")
         if not email_regex.match(email):
@@ -82,12 +82,14 @@ class User(BaseModel):
 
     def add_booking(self, booking):
         from booking import Booking
+
         if not isinstance(booking, Booking):
             raise TypeError("booking must be a Booking instance")
         self.__bookings.append(booking)
 
     def leave_review(self, booking, rating, comment):
         from review import Review
+
         if booking not in self.__bookings:
             raise Exception("User cannot review a booking they did not make.")
         if booking.review:

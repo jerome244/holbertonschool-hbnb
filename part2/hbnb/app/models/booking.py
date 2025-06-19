@@ -22,7 +22,7 @@ class Booking(BaseModel):
 
         user.add_booking(self)
 
-    #----------------------- Place -----------------------#
+    # ----------------------- Place -----------------------#
 
     @property
     def place(self):
@@ -41,7 +41,9 @@ class Booking(BaseModel):
     @guest_count.setter
     def guest_count(self, guest_count):
         if guest_count > self.__place.capacity:
-            raise ValueError(f"Number of guests exceeds {self.__place.title}'s capacity")
+            raise ValueError(
+                f"Number of guests exceeds {self.__place.title}'s capacity"
+            )
         self.__guest_count = guest_count
         self.update_date = datetime.now()
 
@@ -79,7 +81,7 @@ class Booking(BaseModel):
 
     @property
     def user(self):
-         return self.__user
+        return self.__user
 
     @user.setter
     def user(self, user):

@@ -2,21 +2,22 @@
 
 from datetime import datetime, timedelta
 from app.persistence.repository import InMemoryRepository
-from app.models.user     import User
-from app.models.host     import Host
-from app.models.place    import Place
-from app.models.amenity  import Amenity
-from app.models.booking  import Booking
-from app.models.review   import Review
+from app.models.user import User
+from app.models.host import Host
+from app.models.place import Place
+from app.models.amenity import Amenity
+from app.models.booking import Booking
+from app.models.review import Review
+
 
 class HBnBFacade:
     def __init__(self):
-        self.user_repo     = InMemoryRepository()
-        self.host_repo     = InMemoryRepository()
-        self.place_repo    = InMemoryRepository()
-        self.amenity_repo  = InMemoryRepository()
-        self.booking_repo  = InMemoryRepository()
-        self.review_repo   = InMemoryRepository()
+        self.user_repo = InMemoryRepository()
+        self.host_repo = InMemoryRepository()
+        self.place_repo = InMemoryRepository()
+        self.amenity_repo = InMemoryRepository()
+        self.booking_repo = InMemoryRepository()
+        self.review_repo = InMemoryRepository()
 
     # ---- Users ----
     def create_user(self, data):
@@ -68,7 +69,11 @@ class HBnBFacade:
         host = self.get_host(hid)
         if not host:
             return None
-        owned = [p for p in self.list_places() if getattr(p, 'host', None) and p.host.id == hid]
+        owned = [
+            p
+            for p in self.list_places()
+            if getattr(p, "host", None) and p.host.id == hid
+        ]
         seen = set()
         unique = []
         for p in owned:
@@ -79,18 +84,22 @@ class HBnBFacade:
 
     # ---- Places ----
     def create_place(self, data):
-        lat = float(data.pop('latitude', 0.0) or 0.0)
-        lon = float(data.pop('longitude', 0.0) or 0.0)
-        host_id = data.pop('host_id', None)
+        lat = float(data.pop("latitude", 0.0) or 0.0)
+        lon = float(data.pop("longitude", 0.0) or 0.0)
+        host_id = data.pop("host_id", None)
         if host_id is None:
             raise ValueError("Missing required field: host_id")
         host = self.get_host(host_id)
         if not host:
             return None
 
-        title = data.get('title')
+        title = data.get("title")
         for existing in self.list_places():
-            if getattr(existing, 'host', None) and existing.host.id == host_id and existing.title == title:
+            if (
+                getattr(existing, "host", None)
+                and existing.host.id == host_id
+                and existing.title == title
+            ):
                 return None
 
         place = Place(host=host, latitude=lat, longitude=lon, **data)
@@ -135,19 +144,19 @@ class HBnBFacade:
 
     # ---- Bookings ----
     def create_booking(self, data):
-        user = self.get_user(data['user_id'])
-        place = self.get_place(data['place_id'])
+        user = self.get_user(data["user_id"])
+        place = self.get_place(data["place_id"])
 
-        checkin = data['checkin_date']
+        checkin = data["checkin_date"]
         if isinstance(checkin, str):
             checkin = datetime.fromisoformat(checkin)
 
         booking = Booking(
             user=user,
             place=place,
-            guest_count=data['guest_count'],
+            guest_count=data["guest_count"],
             checkin_date=checkin,
-            night_count=data['night_count']
+            night_count=data["night_count"],
         )
         self.booking_repo.add(booking)
         return booking
@@ -169,14 +178,14 @@ class HBnBFacade:
 
     # ---- Reviews ----
     def create_review(self, data):
-        booking_obj = self.get_booking(data.pop('booking_id'))
+        booking_obj = self.get_booking(data.pop("booking_id"))
         if not booking_obj:
             raise ValueError("Booking not found")
         # swap text & rating so Review.__init__(self, booking, text, rating) receives correctly
         booking_obj.user.leave_review(
             booking_obj,
-            data.get('text'),     # becomes the review text
-            data.get('rating')    # becomes the numeric rating
+            data.get("text"),  # becomes the review text
+            data.get("rating"),  # becomes the numeric rating
         )
         review_obj = booking_obj.review
         self.review_repo.add(review_obj)

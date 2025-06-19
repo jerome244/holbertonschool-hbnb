@@ -13,7 +13,17 @@ if TYPE_CHECKING:
 
 
 class Place(BaseModel):
-    def __init__(self, title, capacity, price, latitude, longitude, host, description="", **kwargs):
+    def __init__(
+        self,
+        title,
+        capacity,
+        price,
+        latitude,
+        longitude,
+        host,
+        description="",
+        **kwargs
+    ):
         super().__init__(**kwargs)
         self.__title = title
         self.__capacity = capacity
@@ -114,7 +124,6 @@ class Place(BaseModel):
         self.__longitude = longitude
         self.update_date = datetime.now()
 
-
     # ----------------------- host ----------------------- #
 
     @property
@@ -127,7 +136,7 @@ class Place(BaseModel):
     def amenities(self):
         return self.__amenities
 
- # ----------------------- Reviews ----------------------- #
+    # ----------------------- Reviews ----------------------- #
 
     @property
     def reviews(self):
@@ -137,6 +146,7 @@ class Place(BaseModel):
 
     def add_amenity(self, amenity):
         from amenity import Amenity
+
         if not isinstance(amenity, Amenity):
             raise TypeError("Must add an Amenity instance")
         self.__amenities.append(amenity)
@@ -144,6 +154,7 @@ class Place(BaseModel):
 
     def add_review(self, review):
         from review import Review
+
         if not isinstance(review, Review):
             raise TypeError("Must add a Review instance")
         self.__reviews.append(review)

@@ -26,11 +26,13 @@ class Host(User):
         self.__rating = total / len(self.__owned_places)
         return self.__rating
 
-
     def add_place(self, place):
         from place import Place
+
         if not isinstance(place, Place):
             raise TypeError("Must add a Place instance")
-        if not any(existing_place.id == place.id for existing_place in self.owned_places):
+        if not any(
+            existing_place.id == place.id for existing_place in self.owned_places
+        ):
             self.__owned_places.append(place)
             self.update_date = datetime.now()

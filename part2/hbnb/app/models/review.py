@@ -9,6 +9,7 @@ if TYPE_CHECKING:
 class Review(BaseModel):
     def __init__(self, booking, text, rating=None, **kwargs):
         from booking import Booking
+
         if not isinstance(booking, Booking):
             raise TypeError("booking must be a Booking instance")
 
