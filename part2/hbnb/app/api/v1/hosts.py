@@ -5,24 +5,26 @@ from app import facade
 
 ns = Namespace("hosts", description="Host management")
 
+# Full Host model returned by GET/POST/PATCH
 host_model = ns.model(
     "Host",
     {
-        "id": fields.String(readOnly=True),
-        "first_name": fields.String(required=True),
-        "last_name": fields.String(required=True),
-        "email": fields.String(required=True),
-        "is_admin": fields.Boolean,
+        "id":         fields.String(readOnly=True, description="Unique host identifier"),
+        "first_name": fields.String(required=True, description="Host's first name"),
+        "last_name":  fields.String(required=True, description="Host's last name"),
+        "email":      fields.String(required=True, description="Host's email address"),
+        "is_admin":   fields.Boolean(description="Host admin status"),
     },
 )
 
-patch_model = ns.model(
-    "HostPatch",
+# Separate model for creating a Host (no client-supplied 'id')
+create_host_model = ns.model(
+    "HostCreate",
     {
-        "first_name": fields.String,
-        "last_name": fields.String,
-        "email": fields.String,
-        "is_admin": fields.Boolean,
+        "first_name": fields.String(required=True, description="Host's first name"),
+        "last_name":  fields.String(required=True, description="Host's last name"),
+        "email":      fields.String(required=True, description="Host's email address"),
+        "is_admin":   fields.Boolean(required=True, description="Host admin status"),
     },
 )
 
@@ -34,18 +36,18 @@ class HostList(Resource):
         """List all hosts"""
         return facade.list_hosts()
 
-    @ns.expect(host_model, validate=True)
+    @ns.expect(create_host_model, validate=True)
     @ns.marshal_with(host_model, code=201)
     def post(self):
-        """Create a new host, error if email already in use"""
+        """Create a new host; server generates the ID"""
         data = ns.payload
 
-        # Validate email uniqueness
-        email = data.get("email", "").strip().lower()
+        # Normalize & enforce unique email
+        email = data["email"].strip().lower()
         if any(h.email.lower() == email for h in facade.list_hosts()):
             ns.abort(400, f"Host with email {email} already exists")
 
-        # Delegate creation
+        # Delegate to facade; returned Host will have server-generated ID
         return facade.create_host(data), 201
 
 
@@ -59,7 +61,7 @@ class HostDetail(Resource):
             ns.abort(404, f"Host {host_id} not found")
         return host
 
-    @ns.expect(patch_model, validate=True)
+    @ns.expect(host_model, validate=True)
     @ns.marshal_with(host_model)
     def patch(self, host_id):
         """Partially update a host, with email uniqueness enforced"""
@@ -68,13 +70,11 @@ class HostDetail(Resource):
         if not host:
             ns.abort(404, f"Host {host_id} not found")
 
+        # If email is changing, check duplicates
         if "email" in data:
             new_email = data["email"].strip().lower()
-            # check other hosts for duplicate
-            if any(
-                h.email.lower() == new_email and h.id != host_id
-                for h in facade.list_hosts()
-            ):
+            if any(h.email.lower() == new_email and h.id != host_id
+                   for h in facade.list_hosts()):
                 ns.abort(400, f"Email {new_email} already in use")
             data["email"] = new_email
 
@@ -92,13 +92,13 @@ class HostDetail(Resource):
 @ns.route("/<string:host_id>/rating")
 class HostRating(Resource):
     def get(self, host_id):
+        """Get a host’s rating"""
         host = facade.get_host(host_id) or ns.abort(404)
         return {"host_rating": host.rating}
 
 
-# Owned-places endpoint unchanged
+# Owned-places endpoint (unchanged)
 from app.api.v1.places import place_model
-
 
 @ns.route("/<string:host_id>/owned_places")
 class HostOwnedPlaces(Resource):
