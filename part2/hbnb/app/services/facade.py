@@ -1,6 +1,6 @@
-# facade.py
+# app/services/facade.py
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from app.persistence.repository import InMemoryRepository
 from app.models.user     import User
 from app.models.host     import Host
@@ -73,8 +73,8 @@ class HBnBFacade:
         if not host:
             return None
 
-        # Gather all places where place.host == host, dedupe by ID
-        owned = [p for p in self.list_places() if getattr(p, 'host', None) and p.host.id == hid]
+        owned = [p for p in self.list_places()
+                 if getattr(p, 'host', None) and p.host.id == hid]
         seen = set()
         unique = []
         for p in owned:
@@ -85,15 +85,8 @@ class HBnBFacade:
 
     # ---- Places ----
     def create_place(self, data):
-        """
-        Expects data to include 'host_id'. Returns None if host not found or
-        a Place with the same title already exists for that host.
-        """
-        # Pop lat/lon or default
         lat = float(data.pop('latitude', 0.0) or 0.0)
         lon = float(data.pop('longitude', 0.0) or 0.0)
-
-        # Host lookup
         host_id = data.pop('host_id', None)
         if host_id is None:
             raise ValueError("Missing required field: host_id")
@@ -101,13 +94,12 @@ class HBnBFacade:
         if not host:
             return None
 
-        # **Duplicate check**: same title + same host
         title = data.get('title')
         for existing in self.list_places():
-            if getattr(existing, 'host', None) and existing.host.id == host_id and existing.title == title:
+            if getattr(existing, 'host', None) and \
+               existing.host.id == host_id and existing.title == title:
                 return None
 
-        # Instantiate and save
         place = Place(
             host=host,
             latitude=lat,
@@ -132,14 +124,9 @@ class HBnBFacade:
         return place
 
     def delete_place(self, pid):
-        """
-        Remove the Place from both the repository.
-        Returns the deleted Place, or None if not found.
-        """
         place = self.get_place(pid)
         if not place:
             return None
-
         self.place_repo.delete(pid)
         return place
 
@@ -160,12 +147,37 @@ class HBnBFacade:
 
     # ---- Bookings ----
     def create_booking(self, data):
+        """
+        Expects data to include:
+         - user_id (str)
+         - place_id (str)
+         - guest_count (int)
+         - checkin_date (date or ISO string)
+         - night_count (int)
+        Computes checkout internally.
+        """
+        # Resolve user & place
+        user = self.get_user(data['user_id'])
+        place = self.get_place(data['place_id'])
+
+        # Normalize check-in to datetime
+        checkin = data['checkin_date']
+        if isinstance(checkin, str):
+            checkin = datetime.fromisoformat(checkin)
+
+        # Grab counts
+        guest_count = data['guest_count']
+        night_count = data['night_count']
+
+        # Instantiate Booking (assumes Booking handles checkout calculation)
         booking = Booking(
-            user=self.get_user(data['user_id']),
-            place=self.get_place(data['place_id']),
-            check_in=data['check_in'],
-            check_out=data['check_out']
+            user=user,
+            place=place,
+            guest_count=guest_count,
+            checkin_date=checkin,
+            night_count=night_count
         )
+
         self.booking_repo.add(booking)
         return booking
 
@@ -177,6 +189,16 @@ class HBnBFacade:
 
     def delete_booking(self, bid):
         self.booking_repo.delete(bid)
+
+    def get_user_bookings(self, uid):
+        """
+        Return all Booking instances made by the given user,
+        or None if the user does not exist.
+        """
+        user = self.get_user(uid)
+        if not user:
+            return None
+        return [b for b in self.list_bookings() if b.user.id == uid]
 
     # ---- Reviews ----
     def create_review(self, data):

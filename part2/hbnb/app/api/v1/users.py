@@ -1,7 +1,9 @@
-# app/api/users.py
+# app/api/v1/users.py
+
 import re
 from flask_restx import Namespace, Resource, fields
 from app import facade
+from app.api.v1.bookings import booking_output as booking_model
 
 ns = Namespace('users', description='Operations on user accounts')
 
@@ -38,16 +40,13 @@ class UserList(Resource):
         payload = ns.payload
         email = payload.get('email', '').strip()
 
-        # Validate email format
         if not EMAIL_RE.match(email):
             ns.abort(400, "Invalid email address")
 
-        # Enforce uniqueness
         if any(u.email.lower() == email.lower() for u in facade.list_users()):
             ns.abort(400, "Email already in use")
 
-        new_user = facade.create_user(payload)
-        return new_user, 201
+        return facade.create_user(payload), 201
 
 @ns.route('/<string:user_id>')
 @ns.response(404, 'User not found')
@@ -69,7 +68,6 @@ class UserDetail(Resource):
         if not user:
             ns.abort(404, f"User {user_id} doesn't exist")
 
-        # If updating email, validate format & uniqueness
         if 'email' in payload:
             email = payload['email'].strip()
             if not EMAIL_RE.match(email):
@@ -78,8 +76,7 @@ class UserDetail(Resource):
                    for u in facade.list_users()):
                 ns.abort(400, "Email already in use")
 
-        updated = facade.update_user(user_id, payload)
-        return updated
+        return facade.update_user(user_id, payload)
 
     @ns.response(204, 'User deleted')
     def delete(self, user_id):
@@ -88,3 +85,28 @@ class UserDetail(Resource):
             ns.abort(404, f"User {user_id} doesn't exist")
         facade.delete_user(user_id)
         return '', 204
+
+# --- New endpoint: list bookings owned by a user ---
+@ns.route('/<string:user_id>/bookings')
+@ns.response(404, 'User not found')
+class UserBookings(Resource):
+    @ns.marshal_list_with(booking_model)
+    def get(self, user_id):
+        """List all bookings for a given user"""
+        if not facade.get_user(user_id):
+            ns.abort(404, f"User {user_id} doesn't exist")
+
+        bookings = facade.get_user_bookings(user_id) or []
+        return [
+            {
+                'id':            b.id,
+                'user_id':       b.user.id,
+                'place_id':      b.place.id,
+                'guest_count':   b.guest_count,
+                'checkin_date':  b.checkin_date.date(),
+                'night_count':   b.night_count,
+                'total_price':   b.place.price * b.night_count * b.guest_count,
+                'checkout_date': b.checkout_date.date(),
+            }
+            for b in bookings
+        ]
