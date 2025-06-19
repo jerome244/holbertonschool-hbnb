@@ -324,3 +324,6 @@ More than one review was added to a given booking and raised Value Error
 No error message, meaning every test went through as asserted values are as expected.
 
 ### Testing API Endpoints and HTTP Methods
+
+---
+Authors - [DESSAIGNE Théo](https://github.com/Theo-D) & [TRAN Jérôme](https://github.com/jerome244)
