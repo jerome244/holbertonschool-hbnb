@@ -35,7 +35,6 @@ class ReviewList(Resource):
         reviews = facade.list_reviews()
         result = []
         for r in reviews:
-            # Coerce rating to int or None
             try:
                 rating = int(r.rating)
             except Exception:
@@ -55,8 +54,7 @@ class ReviewList(Resource):
         payload = request.json.copy()
 
         # Validate booking exists
-        booking = facade.get_booking(payload.get('booking_id'))
-        if not booking:
+        if not facade.get_booking(payload.get('booking_id')):
             ns.abort(400, 'Booking not found')
 
         # Validate text
@@ -66,17 +64,22 @@ class ReviewList(Resource):
         payload['text'] = text
 
         # Validate rating
-        rating = payload.get('rating')
         try:
-            rating = int(rating)
+            rating = int(payload.get('rating'))
         except Exception:
             ns.abort(400, 'Rating must be an integer between 1 and 5')
         if not (1 <= rating <= 5):
             ns.abort(400, 'Rating must be between 1 and 5')
         payload['rating'] = rating
 
-        # Create review
-        review = facade.create_review(payload)
+        # Create review and handle duplicate
+        try:
+            review = facade.create_review(payload)
+        except Exception as e:
+            msg = str(e)
+            if 'already has a review' in msg:
+                ns.abort(400, msg)
+            ns.abort(500, 'Could not create review')
 
         # Coerce rating for output
         try:

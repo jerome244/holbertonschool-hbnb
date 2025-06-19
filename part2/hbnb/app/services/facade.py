@@ -65,16 +65,10 @@ class HBnBFacade:
         self.host_repo.delete(hid)
 
     def get_host_owned_places(self, hid):
-        """
-        Return the list of unique Place instances owned by the host,
-        or None if the host does not exist.
-        """
         host = self.get_host(hid)
         if not host:
             return None
-
-        owned = [p for p in self.list_places()
-                 if getattr(p, 'host', None) and p.host.id == hid]
+        owned = [p for p in self.list_places() if getattr(p, 'host', None) and p.host.id == hid]
         seen = set()
         unique = []
         for p in owned:
@@ -96,16 +90,10 @@ class HBnBFacade:
 
         title = data.get('title')
         for existing in self.list_places():
-            if getattr(existing, 'host', None) and \
-               existing.host.id == host_id and existing.title == title:
+            if getattr(existing, 'host', None) and existing.host.id == host_id and existing.title == title:
                 return None
 
-        place = Place(
-            host=host,
-            latitude=lat,
-            longitude=lon,
-            **data
-        )
+        place = Place(host=host, latitude=lat, longitude=lon, **data)
         self.place_repo.add(place)
         return place
 
@@ -147,37 +135,20 @@ class HBnBFacade:
 
     # ---- Bookings ----
     def create_booking(self, data):
-        """
-        Expects data to include:
-         - user_id (str)
-         - place_id (str)
-         - guest_count (int)
-         - checkin_date (date or ISO string)
-         - night_count (int)
-        Computes checkout internally.
-        """
-        # Resolve user & place
         user = self.get_user(data['user_id'])
         place = self.get_place(data['place_id'])
 
-        # Normalize check-in to datetime
         checkin = data['checkin_date']
         if isinstance(checkin, str):
             checkin = datetime.fromisoformat(checkin)
 
-        # Grab counts
-        guest_count = data['guest_count']
-        night_count = data['night_count']
-
-        # Instantiate Booking (assumes Booking handles checkout calculation)
         booking = Booking(
             user=user,
             place=place,
-            guest_count=guest_count,
+            guest_count=data['guest_count'],
             checkin_date=checkin,
-            night_count=night_count
+            night_count=data['night_count']
         )
-
         self.booking_repo.add(booking)
         return booking
 
@@ -191,10 +162,6 @@ class HBnBFacade:
         self.booking_repo.delete(bid)
 
     def get_user_bookings(self, uid):
-        """
-        Return all Booking instances made by the given user,
-        or None if the user does not exist.
-        """
         user = self.get_user(uid)
         if not user:
             return None
@@ -205,10 +172,11 @@ class HBnBFacade:
         booking_obj = self.get_booking(data.pop('booking_id'))
         if not booking_obj:
             raise ValueError("Booking not found")
+        # swap text & rating so Review.__init__(self, booking, text, rating) receives correctly
         booking_obj.user.leave_review(
             booking_obj,
-            data.get('rating'),
-            data.get('text')
+            data.get('text'),     # becomes the review text
+            data.get('rating')    # becomes the numeric rating
         )
         review_obj = booking_obj.review
         self.review_repo.add(review_obj)
