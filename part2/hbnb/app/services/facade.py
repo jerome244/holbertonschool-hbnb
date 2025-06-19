@@ -1,3 +1,5 @@
+# facade.py
+
 from datetime import datetime
 from app.persistence.repository import InMemoryRepository
 from app.models.user     import User
@@ -9,12 +11,12 @@ from app.models.review   import Review
 
 class HBnBFacade:
     def __init__(self):
-        self.user_repo    = InMemoryRepository()
-        self.host_repo    = InMemoryRepository()
-        self.place_repo   = InMemoryRepository()
-        self.amenity_repo = InMemoryRepository()
-        self.booking_repo = InMemoryRepository()
-        self.review_repo  = InMemoryRepository()
+        self.user_repo     = InMemoryRepository()
+        self.host_repo     = InMemoryRepository()
+        self.place_repo    = InMemoryRepository()
+        self.amenity_repo  = InMemoryRepository()
+        self.booking_repo  = InMemoryRepository()
+        self.review_repo   = InMemoryRepository()
 
     # ---- Users ----
     def create_user(self, data):
@@ -62,10 +64,56 @@ class HBnBFacade:
     def delete_host(self, hid):
         self.host_repo.delete(hid)
 
+    def get_host_owned_places(self, hid):
+        """
+        Return the list of unique Place instances owned by the host,
+        or None if the host does not exist.
+        """
+        host = self.get_host(hid)
+        if not host:
+            return None
+
+        # Gather all places where place.host == host, dedupe by ID
+        owned = [p for p in self.list_places() if getattr(p, 'host', None) and p.host.id == hid]
+        seen = set()
+        unique = []
+        for p in owned:
+            if p.id not in seen:
+                seen.add(p.id)
+                unique.append(p)
+        return unique
+
     # ---- Places ----
     def create_place(self, data):
-        host = self.get_host(data.pop('host_id'))
-        place = Place(host=host, **data)
+        """
+        Expects data to include 'host_id'. Returns None if host not found or
+        a Place with the same title already exists for that host.
+        """
+        # Pop lat/lon or default
+        lat = float(data.pop('latitude', 0.0) or 0.0)
+        lon = float(data.pop('longitude', 0.0) or 0.0)
+
+        # Host lookup
+        host_id = data.pop('host_id', None)
+        if host_id is None:
+            raise ValueError("Missing required field: host_id")
+        host = self.get_host(host_id)
+        if not host:
+            return None
+
+        # **Duplicate check**: same title + same host
+        title = data.get('title')
+        for existing in self.list_places():
+            if getattr(existing, 'host', None) and existing.host.id == host_id and existing.title == title:
+                return None
+
+        # Instantiate and save
+        place = Place(
+            host=host,
+            latitude=lat,
+            longitude=lon,
+            **data
+        )
         self.place_repo.add(place)
         return place
 
@@ -84,7 +132,16 @@ class HBnBFacade:
         return place
 
     def delete_place(self, pid):
+        """
+        Remove the Place from both the repository.
+        Returns the deleted Place, or None if not found.
+        """
+        place = self.get_place(pid)
+        if not place:
+            return None
+
         self.place_repo.delete(pid)
+        return place
 
     # ---- Amenities ----
     def create_amenity(self, data):
@@ -103,37 +160,14 @@ class HBnBFacade:
 
     # ---- Bookings ----
     def create_booking(self, data):
-        guest_count   = data.pop('guest_count')
-        checkin_input = data.pop('checkin_date')
-        night_count   = data.pop('night_count')
-
-        # Parse check-in date
-        if isinstance(checkin_input, str):
-            try:
-                iso_str = checkin_input
-                if iso_str.endswith('Z'):
-                    iso_str = iso_str[:-1] + '+00:00'
-                checkin_date = datetime.fromisoformat(iso_str)
-            except (ValueError, TypeError):
-                raise TypeError("Checkin_date must be datetime format")
-        elif isinstance(checkin_input, datetime):
-            checkin_date = checkin_input
-        else:
-            raise TypeError("Checkin_date must be datetime format")
-
-        user  = self.get_user(data.pop('user_id'))
-        place = self.get_place(data.pop('place_id'))
-
-        booking_obj = Booking(
-            guest_count,
-            checkin_date,
-            night_count,
-            place,
-            user,
-            **data
+        booking = Booking(
+            user=self.get_user(data['user_id']),
+            place=self.get_place(data['place_id']),
+            check_in=data['check_in'],
+            check_out=data['check_out']
         )
-        self.booking_repo.add(booking_obj)
-        return booking_obj
+        self.booking_repo.add(booking)
+        return booking
 
     def get_booking(self, bid):
         return self.booking_repo.get(bid)
@@ -141,30 +175,19 @@ class HBnBFacade:
     def list_bookings(self):
         return self.booking_repo.get_all()
 
-    def update_booking(self, bid, data):
-        booking_obj = self.get_booking(bid)
-        if not booking_obj:
-            return None
-        for k, v in data.items():
-            setattr(booking_obj, k, v)
-        return booking_obj
-
     def delete_booking(self, bid):
         self.booking_repo.delete(bid)
 
     # ---- Reviews ----
     def create_review(self, data):
-        booking_id = data.pop('booking_id')
-        rating     = data.pop('rating', None)
-        text       = data.pop('text', None)
-
-        booking_obj = self.get_booking(booking_id)
+        booking_obj = self.get_booking(data.pop('booking_id'))
         if not booking_obj:
             raise ValueError("Booking not found")
-
-        # Pass text first, then rating
-        booking_obj.user.leave_review(booking_obj, text, rating)
-
+        booking_obj.user.leave_review(
+            booking_obj,
+            data.get('rating'),
+            data.get('text')
+        )
         review_obj = booking_obj.review
         self.review_repo.add(review_obj)
         return review_obj
@@ -174,14 +197,6 @@ class HBnBFacade:
 
     def list_reviews(self):
         return self.review_repo.get_all()
-
-    def update_review(self, rid, data):
-        review_obj = self.get_review(rid)
-        if not review_obj:
-            return None
-        for k, v in data.items():
-            setattr(review_obj, k, v)
-        return review_obj
 
     def delete_review(self, rid):
         self.review_repo.delete(rid)
