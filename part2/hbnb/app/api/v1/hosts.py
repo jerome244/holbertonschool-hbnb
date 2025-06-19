@@ -1,5 +1,3 @@
-# app/api/v1/hosts.py
-
 from flask_restx import Namespace, Resource, fields
 from app import facade
 
@@ -9,11 +7,11 @@ ns = Namespace("hosts", description="Host management")
 host_model = ns.model(
     "Host",
     {
-        "id":         fields.String(readOnly=True, description="Unique host identifier"),
+        "id": fields.String(readOnly=True, description="Unique host identifier"),
         "first_name": fields.String(required=True, description="Host's first name"),
-        "last_name":  fields.String(required=True, description="Host's last name"),
-        "email":      fields.String(required=True, description="Host's email address"),
-        "is_admin":   fields.Boolean(description="Host admin status"),
+        "last_name": fields.String(required=True, description="Host's last name"),
+        "email": fields.String(required=True, description="Host's email address"),
+        "is_admin": fields.Boolean(description="Host admin status"),
     },
 )
 
@@ -22,9 +20,9 @@ create_host_model = ns.model(
     "HostCreate",
     {
         "first_name": fields.String(required=True, description="Host's first name"),
-        "last_name":  fields.String(required=True, description="Host's last name"),
-        "email":      fields.String(required=True, description="Host's email address"),
-        "is_admin":   fields.Boolean(required=True, description="Host admin status"),
+        "last_name": fields.String(required=True, description="Host's last name"),
+        "email": fields.String(required=True, description="Host's email address"),
+        "is_admin": fields.Boolean(required=True, description="Host admin status"),
     },
 )
 
@@ -73,8 +71,10 @@ class HostDetail(Resource):
         # If email is changing, check duplicates
         if "email" in data:
             new_email = data["email"].strip().lower()
-            if any(h.email.lower() == new_email and h.id != host_id
-                   for h in facade.list_hosts()):
+            if any(
+                h.email.lower() == new_email and h.id != host_id
+                for h in facade.list_hosts()
+            ):
                 ns.abort(400, f"Email {new_email} already in use")
             data["email"] = new_email
 
@@ -99,6 +99,7 @@ class HostRating(Resource):
 
 # Owned-places endpoint (unchanged)
 from app.api.v1.places import place_model
+
 
 @ns.route("/<string:host_id>/owned_places")
 class HostOwnedPlaces(Resource):

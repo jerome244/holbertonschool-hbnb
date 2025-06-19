@@ -1,5 +1,3 @@
-# app/api/v1/places.py
-
 from flask_restx import Namespace, Resource, fields
 from app import facade
 
