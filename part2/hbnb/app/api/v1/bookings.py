@@ -1,3 +1,5 @@
+# app/api/v1/bookings.py
+
 from flask import request
 from flask_restx import Namespace, Resource, fields
 from datetime import datetime, timedelta, date
@@ -26,15 +28,15 @@ booking_patch = ns.model('BookingPatch', {
 # 2) Output model with ordered fields
 booking_output = ns.inherit('Booking', booking_input, {
     'id':            fields.String(readOnly=True, description='Booking UUID'),
-    'user_id':       fields.String(readOnly=True),
-    'place_id':      fields.String(readOnly=True),
-    'guest_count':   fields.Integer(readOnly=True),
-    'checkin_date':  fields.Date(readOnly=True),
-    'night_count':   fields.Integer(readOnly=True),
     'total_price':   fields.Float(readOnly=True, description='Computed total price'),
     'checkout_date': fields.Date(readOnly=True, description='Computed check-out date'),
 })
 
+# 3) Output model for booking rating
+rating_output = ns.model('BookingRating', {
+    'booking_id': fields.String(readOnly=True, description='Booking UUID'),
+    'rating':     fields.Float(readOnly=True, description='Rating for this booking'),
+})
 
 @ns.route('/')
 class BookingList(Resource):
@@ -118,7 +120,6 @@ class BookingList(Resource):
             'checkout_date': booking.checkout_date.date(),
         }, 201
 
-
 @ns.route('/<string:booking_id>')
 class BookingDetail(Resource):
     @ns.marshal_with(booking_output)
@@ -183,7 +184,6 @@ class BookingDetail(Resource):
                 ns.abort(400, "User not found")
             booking.user = new_user
 
-        # Return the updated booking
         return {
             'id':            booking.id,
             'user_id':       booking.user.id,
@@ -201,3 +201,29 @@ class BookingDetail(Resource):
             ns.abort(404, f"Booking {booking_id} not found")
         facade.delete_booking(booking_id)
         return '', 204
+
+# --- New endpoint: get rating for a booking ---
+@ns.route('/<string:booking_id>/rating')
+@ns.response(404, 'Booking or rating not found')
+class BookingRating(Resource):
+    @ns.marshal_with(rating_output)
+    def get(self, booking_id):
+        """Get the rating for a specific booking"""
+        booking = facade.get_booking(booking_id)
+        if not booking:
+            ns.abort(404, f"Booking {booking_id} not found")
+
+        # Pull and coerce rating
+        review = getattr(booking, 'review', None)
+        if not review or not hasattr(review, 'rating'):
+            ns.abort(404, f"No rating found for booking {booking_id}")
+
+        try:
+            rating_value = float(review.rating)
+        except (ValueError, TypeError):
+            ns.abort(500, 'Stored rating is invalid')
+
+        return {
+            'booking_id': booking_id,
+            'rating':     rating_value
+        }

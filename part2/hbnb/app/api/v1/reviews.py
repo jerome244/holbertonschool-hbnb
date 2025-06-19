@@ -1,44 +1,58 @@
+# app/api/v1/reviews.py
+
+from flask import request
 from flask_restx import Namespace, Resource, fields
 from app import facade
 
 ns = Namespace('reviews', description='Review operations')
 
-# Shared fields
-rating_field = fields.Integer(description='Rating between 1 and 5')
+# Response model for a review
+review_output = ns.model('Review', {
+    'id':         fields.String(readOnly=True, description='Review UUID'),
+    'booking_id': fields.String(readOnly=True, description='UUID of the associated booking'),
+    'text':       fields.String(description='Review text'),
+    'rating':     fields.Integer(description='Rating between 1 and 5'),
+})
 
-# 1) Input model for POST
+# Input model for POST
 review_input = ns.model('ReviewInput', {
     'booking_id': fields.String(required=True, description='UUID of the booking'),
     'text':       fields.String(required=True, description='Review text'),
-    'rating':     rating_field,
+    'rating':     fields.Integer(required=True, description='Rating between 1 and 5'),
 })
 
-# 1b) Patch model (all fields optional)
+# Patch model for PATCH
 review_patch = ns.model('ReviewPatch', {
     'text':   fields.String(description='Review text'),
-    'rating': rating_field,
-})
-
-# 2) Response model (explicitly expose booking_id via attribute)
-review_model = ns.model('Review', {
-    'id':         fields.String(readOnly=True, description='Review UUID'),
-    'booking_id': fields.String(attribute='booking.id', description='UUID of the associated booking'),
-    'text':       fields.String(description='Review text'),
-    'rating':     rating_field,
+    'rating': fields.Integer(description='Rating between 1 and 5'),
 })
 
 @ns.route('/')
 class ReviewList(Resource):
-    @ns.marshal_list_with(review_model)
+    @ns.marshal_list_with(review_output)
     def get(self):
         """List all reviews"""
-        return facade.list_reviews()
+        reviews = facade.list_reviews()
+        result = []
+        for r in reviews:
+            # Coerce rating to int or None
+            try:
+                rating = int(r.rating)
+            except Exception:
+                rating = None
+            result.append({
+                'id':         r.id,
+                'booking_id': r.booking.id,
+                'text':       r.text,
+                'rating':     rating,
+            })
+        return result
 
     @ns.expect(review_input, validate=True)
-    @ns.marshal_with(review_model, code=201)
+    @ns.marshal_with(review_output, code=201)
     def post(self):
         """Create a new review"""
-        payload = ns.payload.copy()
+        payload = request.json.copy()
 
         # Validate booking exists
         booking = facade.get_booking(payload.get('booking_id'))
@@ -49,58 +63,86 @@ class ReviewList(Resource):
         text = payload.get('text', '').strip()
         if not text:
             ns.abort(400, 'Review text cannot be empty')
+        payload['text'] = text
 
-        # Validate rating type and range
+        # Validate rating
         rating = payload.get('rating')
-        if rating is not None:
-            try:
-                rating = int(rating)
-            except (ValueError, TypeError):
-                ns.abort(400, 'Rating must be an integer between 1 and 5')
-            if not (1 <= rating <= 5):
-                ns.abort(400, 'Rating must be between 1 and 5')
-            payload['rating'] = rating
+        try:
+            rating = int(rating)
+        except Exception:
+            ns.abort(400, 'Rating must be an integer between 1 and 5')
+        if not (1 <= rating <= 5):
+            ns.abort(400, 'Rating must be between 1 and 5')
+        payload['rating'] = rating
 
-        # Create via facade
+        # Create review
         review = facade.create_review(payload)
-        return review, 201
+
+        # Coerce rating for output
+        try:
+            out_rating = int(review.rating)
+        except Exception:
+            out_rating = None
+
+        return {
+            'id':         review.id,
+            'booking_id': review.booking.id,
+            'text':       review.text,
+            'rating':     out_rating,
+        }, 201
 
 @ns.route('/<string:review_id>')
 class ReviewDetail(Resource):
-    @ns.marshal_with(review_model)
+    @ns.marshal_with(review_output)
     def get(self, review_id):
         """Fetch a review by ID"""
-        review = facade.get_review(review_id)
-        if not review:
+        r = facade.get_review(review_id)
+        if not r:
             ns.abort(404, f"Review {review_id} not found")
-        return review
+        try:
+            rating = int(r.rating)
+        except Exception:
+            rating = None
+        return {
+            'id':         r.id,
+            'booking_id': r.booking.id,
+            'text':       r.text,
+            'rating':     rating,
+        }
 
     @ns.expect(review_patch, validate=True)
-    @ns.marshal_with(review_model)
+    @ns.marshal_with(review_output)
     def patch(self, review_id):
         """Update an existing review"""
-        review = facade.get_review(review_id)
-        if not review:
+        r = facade.get_review(review_id)
+        if not r:
             ns.abort(404, f"Review {review_id} not found")
 
-        payload = ns.payload.copy()
+        payload = request.json.copy()
 
-        # Validate text if provided
         if 'text' in payload:
             text = payload.get('text', '').strip()
             if not text:
                 ns.abort(400, 'Review text cannot be empty')
-            review.text = text
+            r.text = text
 
-        # Validate rating if provided
         if 'rating' in payload:
-            rating = payload.get('rating')
             try:
-                rating = int(rating)
-            except (ValueError, TypeError):
+                rating = int(payload.get('rating'))
+            except Exception:
                 ns.abort(400, 'Rating must be an integer between 1 and 5')
             if not (1 <= rating <= 5):
                 ns.abort(400, 'Rating must be between 1 and 5')
-            review.rating = rating
+            r.rating = rating
 
-        return review
+        try:
+            out_rating = int(r.rating)
+        except Exception:
+            out_rating = None
+
+        return {
+            'id':         r.id,
+            'booking_id': r.booking.id,
+            'text':       r.text,
+            'rating':     out_rating,
+        }

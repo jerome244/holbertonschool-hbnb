@@ -24,6 +24,12 @@ patch_user_model = ns.model('UserPatch', {
     'is_admin':   fields.Boolean(description='Admin flag'),
 })
 
+# Output model for average booking rating per user
+avg_rating_output = ns.model('UserBookingAverageRating', {
+    'user_id':        fields.String(readonly=True, description='User UUID'),
+    'average_rating': fields.Float(readonly=True, description='Average rating across all bookings'),
+})
+
 EMAIL_RE = re.compile(r"^[^@]+@[^@]+\.[^@]+$")
 
 @ns.route('/')
@@ -110,3 +116,33 @@ class UserBookings(Resource):
             }
             for b in bookings
         ]
+
+# --- New endpoint: average rating across a user’s bookings ---
+@ns.route('/<string:user_id>/bookings/rating')
+@ns.response(404, 'User not found or no ratings available')
+class UserBookingsAverageRating(Resource):
+    @ns.marshal_with(avg_rating_output)
+    def get(self, user_id):
+        """Get the average rating across all bookings for a given user"""
+        user = facade.get_user(user_id)
+        if not user:
+            ns.abort(404, f"User {user_id} not found")
+
+        bookings = facade.get_user_bookings(user_id) or []
+        ratings = []
+        for b in bookings:
+            review = getattr(b, 'review', None)
+            if review and hasattr(review, 'rating'):
+                try:
+                    ratings.append(float(review.rating))
+                except (ValueError, TypeError):
+                    continue
+
+        if not ratings:
+            ns.abort(404, f"No ratings found for user {user_id}")
+
+        average = sum(ratings) / len(ratings)
+        return {
+            'user_id':        user_id,
+            'average_rating': average
+        }
