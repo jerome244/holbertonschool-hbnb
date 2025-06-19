@@ -1,5 +1,4 @@
 from flask_restx import Namespace, Resource, fields
-from datetime import datetime
 from app import facade
 
 ns = Namespace('reviews', description='Review operations')
@@ -20,9 +19,12 @@ review_patch = ns.model('ReviewPatch', {
     'rating': rating_field,
 })
 
-# 2) Response model
-review_model = ns.inherit('Review', review_input, {
-    'id': fields.String(readOnly=True, description='Review UUID'),
+# 2) Response model (explicitly expose booking_id via attribute)
+review_model = ns.model('Review', {
+    'id':         fields.String(readOnly=True, description='Review UUID'),
+    'booking_id': fields.String(attribute='booking.id', description='UUID of the associated booking'),
+    'text':       fields.String(description='Review text'),
+    'rating':     rating_field,
 })
 
 @ns.route('/')
@@ -102,11 +104,3 @@ class ReviewDetail(Resource):
             review.rating = rating
 
         return review
-
-    @ns.response(204, 'Review deleted')
-    def delete(self, review_id):
-        """Delete a review"""
-        if not facade.get_review(review_id):
-            ns.abort(404, f"Review {review_id} not found")
-        facade.delete_review(review_id)
-        return '', 204

@@ -22,8 +22,12 @@ class HBnBFacade:
         self.user_repo.add(user)
         return user
 
-    def get_user(self, uid):    return self.user_repo.get(uid)
-    def list_users(self):       return self.user_repo.get_all()
+    def get_user(self, uid):
+        return self.user_repo.get(uid)
+
+    def list_users(self):
+        return self.user_repo.get_all()
+
     def update_user(self, uid, data):
         user = self.get_user(uid)
         if not user:
@@ -31,6 +35,7 @@ class HBnBFacade:
         for k, v in data.items():
             setattr(user, k, v)
         return user
+
     def delete_user(self, uid):
         self.user_repo.delete(uid)
 
@@ -40,8 +45,12 @@ class HBnBFacade:
         self.host_repo.add(host)
         return host
 
-    def get_host(self, hid):    return self.host_repo.get(hid)
-    def list_hosts(self):       return self.host_repo.get_all()
+    def get_host(self, hid):
+        return self.host_repo.get(hid)
+
+    def list_hosts(self):
+        return self.host_repo.get_all()
+
     def update_host(self, hid, data):
         host = self.get_host(hid)
         if not host:
@@ -49,6 +58,7 @@ class HBnBFacade:
         for k, v in data.items():
             setattr(host, k, v)
         return host
+
     def delete_host(self, hid):
         self.host_repo.delete(hid)
 
@@ -59,8 +69,12 @@ class HBnBFacade:
         self.place_repo.add(place)
         return place
 
-    def get_place(self, pid):   return self.place_repo.get(pid)
-    def list_places(self):      return self.place_repo.get_all()
+    def get_place(self, pid):
+        return self.place_repo.get(pid)
+
+    def list_places(self):
+        return self.place_repo.get_all()
+
     def update_place(self, pid, data):
         place = self.get_place(pid)
         if not place:
@@ -68,6 +82,7 @@ class HBnBFacade:
         for k, v in data.items():
             setattr(place, k, v)
         return place
+
     def delete_place(self, pid):
         self.place_repo.delete(pid)
 
@@ -77,13 +92,17 @@ class HBnBFacade:
         self.amenity_repo.add(amenity)
         return amenity
 
-    def get_amenity(self, aid):    return self.amenity_repo.get(aid)
-    def list_amenities(self):       return self.amenity_repo.get_all()
-    def delete_amenity(self, aid):  self.amenity_repo.delete(aid)
+    def get_amenity(self, aid):
+        return self.amenity_repo.get(aid)
+
+    def list_amenities(self):
+        return self.amenity_repo.get_all()
+
+    def delete_amenity(self, aid):
+        self.amenity_repo.delete(aid)
 
     # ---- Bookings ----
     def create_booking(self, data):
-        # Extract required fields
         guest_count   = data.pop('guest_count')
         checkin_input = data.pop('checkin_date')
         night_count   = data.pop('night_count')
@@ -102,11 +121,9 @@ class HBnBFacade:
         else:
             raise TypeError("Checkin_date must be datetime format")
 
-        # Lookup relationships
         user  = self.get_user(data.pop('user_id'))
         place = self.get_place(data.pop('place_id'))
 
-        # Construct and persist
         booking_obj = Booking(
             guest_count,
             checkin_date,
@@ -118,8 +135,12 @@ class HBnBFacade:
         self.booking_repo.add(booking_obj)
         return booking_obj
 
-    def get_booking(self, bid):    return self.booking_repo.get(bid)
-    def list_bookings(self):       return self.booking_repo.get_all()
+    def get_booking(self, bid):
+        return self.booking_repo.get(bid)
+
+    def list_bookings(self):
+        return self.booking_repo.get_all()
+
     def update_booking(self, bid, data):
         booking_obj = self.get_booking(bid)
         if not booking_obj:
@@ -127,7 +148,9 @@ class HBnBFacade:
         for k, v in data.items():
             setattr(booking_obj, k, v)
         return booking_obj
-    def delete_booking(self, bid): self.booking_repo.delete(bid)
+
+    def delete_booking(self, bid):
+        self.booking_repo.delete(bid)
 
     # ---- Reviews ----
     def create_review(self, data):
@@ -139,16 +162,19 @@ class HBnBFacade:
         if not booking_obj:
             raise ValueError("Booking not found")
 
-        # Delegate to model
-        booking_obj.user.leave_review(booking_obj, rating, text)
-        review_obj = booking_obj.review
+        # Pass text first, then rating
+        booking_obj.user.leave_review(booking_obj, text, rating)
 
-        # Persist review
+        review_obj = booking_obj.review
         self.review_repo.add(review_obj)
         return review_obj
 
-    def get_review(self, rid):     return self.review_repo.get(rid)
-    def list_reviews(self):        return self.review_repo.get_all()
+    def get_review(self, rid):
+        return self.review_repo.get(rid)
+
+    def list_reviews(self):
+        return self.review_repo.get_all()
+
     def update_review(self, rid, data):
         review_obj = self.get_review(rid)
         if not review_obj:
@@ -156,4 +182,6 @@ class HBnBFacade:
         for k, v in data.items():
             setattr(review_obj, k, v)
         return review_obj
-    def delete_review(self, rid):  self.review_repo.delete(rid)
+
+    def delete_review(self, rid):
+        self.review_repo.delete(rid)
