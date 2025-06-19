@@ -31,6 +31,7 @@ class Host(User):
         from place import Place
         if not isinstance(place, Place):
             raise TypeError("Must add a Place instance")
+        # Check if added place already exist by checking existing places id in Host.owned_places[]
         if not any(existing_place.id == place.id for existing_place in self.owned_places):
             self.__owned_places.append(place)
             self.update_date = datetime.now()

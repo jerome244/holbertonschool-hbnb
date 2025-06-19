@@ -10,10 +10,38 @@ if TYPE_CHECKING:
 class User(BaseModel):
     def __init__(self, first_name, last_name, email, is_admin=False, **kwargs):
         super().__init__(**kwargs)
-        self.__first_name = first_name
-        self.__last_name = last_name
-        self.__is_admin = is_admin
-        self.email = email
+
+        # --------- Init first_name --------- #
+        if not isinstance(first_name, str):
+            raise TypeError("First name must be of type str")
+        if len(first_name) > 50:
+            raise ValueError("First name length must not exceed 50 characters")
+        else:
+            self.__first_name = first_name
+
+        # --------- Init last_name --------- #
+        if not isinstance(last_name, str):
+            raise TypeError("Last name must be of type str")
+        if len(last_name) > 50:
+            raise ValueError("Last name length must not exceed 50 characters")
+        else:
+            self.__last_name = last_name
+
+        # --------- Init email --------- #
+        email_regex = re.compile(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$')
+        if not isinstance(email, str):
+            raise TypeError("Email must be of type str")
+        if not email_regex.match(email):
+            raise ValueError("Email must have valid mail address format")
+        else:
+            self.email = email
+
+        # --------- Init is_admin --------- #
+        if not isinstance(is_admin, bool):
+            raise TypeError("Is Admin must be of type bool")
+        else:
+            self.__is_admin = is_admin
+
         self.__bookings = []
 
     # ----------------------- First name ------------------------ #
@@ -66,10 +94,10 @@ class User(BaseModel):
         return self.__is_admin
 
     @is_admin.setter
-    def is_admin(self, value):
-        if not isinstance(value, bool):
+    def is_admin(self, admin):
+        if not isinstance(admin, bool):
             raise TypeError("Is Admin must be of type bool")
-        self.is_admin = value
+        self.is_admin = admin
         self.update_date = datetime.now()
 
     # ------------------------ Bookings ------------------------ #
