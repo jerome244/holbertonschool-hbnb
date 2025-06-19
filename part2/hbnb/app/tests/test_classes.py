@@ -2,17 +2,32 @@
 from datetime import datetime, timedelta
 import pytest
 
+<<<<<<< HEAD
 Amenity = __import__('amenity').Amenity
 User = __import__('user').User
 Booking = __import__('booking').Booking
 Host = __import__('host').Host
 Place = __import__('place').Place
 Review = __import__('review').Review
+=======
+Amenity = __import__("amenity").Amenity
+User = __import__("user").User
+Booking = __import__("booking").Booking
+Host = __import__("host").Host
+Place = __import__("place").Place
+Review = __import__("review").Review
+>>>>>>> devJerome
 
 
 # --- Test: User --- #
 def test_user():
+<<<<<<< HEAD
     user = User(first_name="Marcel", last_name="Vincent", email="marcel.vincent@gmail.com")
+=======
+    user = User(
+        first_name="Marcel", last_name="Vincent", email="marcel.vincent@gmail.com"
+    )
+>>>>>>> devJerome
     assert user.first_name == "Marcel"
     assert user.last_name == "Vincent"
     assert user.email == "marcel.vincent@gmail.com"
@@ -25,7 +40,13 @@ def test_user():
 
 # --- Test: Host --- #
 def test_host():
+<<<<<<< HEAD
     host = Host(first_name="Fabien", last_name="Roussel", email="saucissonetpinard@gmail.com")
+=======
+    host = Host(
+        first_name="Fabien", last_name="Roussel", email="saucissonetpinard@gmail.com"
+    )
+>>>>>>> devJerome
     place = Place(
         title="Siège du PCF",
         capacity=4,
@@ -33,7 +54,11 @@ def test_host():
         latitude=45.0,
         longitude=-120.0,
         host=host,
+<<<<<<< HEAD
         description="An avant-garde building"
+=======
+        description="An avant-garde building",
+>>>>>>> devJerome
     )
     assert host.first_name == "Fabien"
     assert host.last_name == "Roussel"
@@ -56,7 +81,11 @@ def test_place():
         latitude=45.0,
         longitude=-120.0,
         host=host,
+<<<<<<< HEAD
         description="A mushroom house"
+=======
+        description="A mushroom house",
+>>>>>>> devJerome
     )
     checkin_date = datetime.today() + timedelta(days=3)
     booking = Booking(
@@ -64,7 +93,11 @@ def test_place():
         checkin_date=checkin_date,
         night_count=3,
         place=place,
+<<<<<<< HEAD
         user=userPlace
+=======
+        user=userPlace,
+>>>>>>> devJerome
     )
     text = "Not bad, not bad at all."
     amenity1 = Amenity("Bidet")
@@ -86,6 +119,10 @@ def test_place():
     assert abs(place.updated_at - datetime.now()) < timedelta(seconds=1)
     print("Place creation test passed!")
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> devJerome
 # --- Test: Booking --- #
 def test_booking():
     host = Host(first_name="René", last_name="Causse", email="tonpere@wanadoo.com")
@@ -97,6 +134,7 @@ def test_booking():
         latitude=45.0,
         longitude=-120.0,
         host=host,
+<<<<<<< HEAD
         description="A mushroom house"
     )
     checkin_date = datetime.today() + timedelta(days=3)
@@ -106,6 +144,13 @@ def test_booking():
         night_count=3,
         place=place,
         user=user1
+=======
+        description="A mushroom house",
+    )
+    checkin_date = datetime.today() + timedelta(days=3)
+    booking = Booking(
+        guest_count=2, checkin_date=checkin_date, night_count=3, place=place, user=user1
+>>>>>>> devJerome
     )
     assert booking.guest_count == 2
     assert booking.checkin_date == checkin_date
@@ -128,26 +173,57 @@ def test_review():
         latitude=45.0,
         longitude=-120.0,
         host=hostReview,
+<<<<<<< HEAD
         description="A mushroom house"
     )
     checkin_date = datetime.today() + timedelta(days=3)
     night_count = 3
     userReview = User(first_name="Jean", last_name="Jean", email="juanitodu34@gmail.com")
     booking = Booking(guest_count=2, checkin_date=checkin_date, night_count=night_count, place=placeReview, user=userReview)
+=======
+        description="A mushroom house",
+    )
+    checkin_date = datetime.today() + timedelta(days=3)
+    night_count = 3
+    userReview = User(
+        first_name="Jean", last_name="Jean", email="juanitodu34@gmail.com"
+    )
+    booking = Booking(
+        guest_count=2,
+        checkin_date=checkin_date,
+        night_count=night_count,
+        place=placeReview,
+        user=userReview,
+    )
+>>>>>>> devJerome
 
     text = "Very nice except for the dude chasing us and trying to make us eat saucisson and drink pinard. Pretty cringe if you ask me"
 
     review = Review(booking=booking, text=text, rating=5)
 
     assert review.booking == booking
+<<<<<<< HEAD
     assert review.text == "Very nice except for the dude chasing us and trying to make us eat saucisson and drink pinard. Pretty cringe if you ask me"
+=======
+    assert (
+        review.text
+        == "Very nice except for the dude chasing us and trying to make us eat saucisson and drink pinard. Pretty cringe if you ask me"
+    )
+>>>>>>> devJerome
     assert review.rating == 5
     assert abs(review.created_at - datetime.now()) < timedelta(seconds=1)
     assert abs(review.updated_at - datetime.now()) < timedelta(seconds=1)
     print("Review creation test passed!")
 
+<<<<<<< HEAD
 # --- Test: Amenity --- #
 
+=======
+
+# --- Test: Amenity --- #
+
+
+>>>>>>> devJerome
 def test_amenity():
     amenity = Amenity(name="Wi-Fi")
     assert amenity.name == "Wi-Fi"
@@ -155,6 +231,10 @@ def test_amenity():
     assert abs(amenity.updated_at - datetime.now()) < timedelta(seconds=1)
     print("Amenity creation test passed!")
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> devJerome
 def test_invalid_email_format():
     try:
         User(first_name="Frank", last_name="Zappa", email="+33 9 89 52 47 12")
@@ -165,6 +245,7 @@ def test_invalid_email_format():
         pytest.fail("Expected ValueError for invalid email format")
         print("Email went through validation successfully")
 
+<<<<<<< HEAD
 def test_invalid_guest_count():
     #guest_count = 5 and Place.capacity = 4 should raise ValueError
     try:
@@ -173,6 +254,33 @@ def test_invalid_guest_count():
         place = Place(title="Maison Champignon", capacity=4, price=150.0, latitude=45.0, longitude=-120.0, host=host, description="A mushroom house")
         user = User(first_name="Jean", last_name="Jean", email="juanitodu34@gmail.com")
         Booking(guest_count=5, checkin_date=checkin_date,night_count=3, place=place, user=user)
+=======
+
+def test_invalid_guest_count():
+    # guest_count = 5 and Place.capacity = 4 should raise ValueError
+    try:
+        checkin_date = datetime.now() + timedelta(
+            days=5
+        )  # Make sure date is 5 days from whenever this is tested
+        host = Host(first_name="Oui", last_name="Oui", email="ouioui@outlook.fr")
+        place = Place(
+            title="Maison Champignon",
+            capacity=4,
+            price=150.0,
+            latitude=45.0,
+            longitude=-120.0,
+            host=host,
+            description="A mushroom house",
+        )
+        user = User(first_name="Jean", last_name="Jean", email="juanitodu34@gmail.com")
+        Booking(
+            guest_count=5,
+            checkin_date=checkin_date,
+            night_count=3,
+            place=place,
+            user=user,
+        )
+>>>>>>> devJerome
     except ValueError as e:
         assert str(e) == f"Number of guests exceeds {place.title}'s capacity"
         print("Guest Count exceeded Place capacity and raised Value Error")
@@ -180,13 +288,37 @@ def test_invalid_guest_count():
         pytest.fail("Expected ValueError from guests' overflow")
         print("Guest count did not exceed place capacity")
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> devJerome
 def test_invalid_checkin_date():
     try:
         checkin_date = datetime.now() - timedelta(days=5)  # Corrected
         host = Host(first_name="Oui", last_name="Oui", email="ouioui@outlook.fr")
+<<<<<<< HEAD
         place = Place(title="Maison Champignon", capacity=4, price=150.0, latitude=45.0, longitude=-120.0, host=host, description="A mushroom house")
         user = User(first_name="Jean", last_name="Jean", email="juanitodu34@gmail.com")
         Booking(guest_count=3, checkin_date=checkin_date, night_count=3, place=place, user=user)
+=======
+        place = Place(
+            title="Maison Champignon",
+            capacity=4,
+            price=150.0,
+            latitude=45.0,
+            longitude=-120.0,
+            host=host,
+            description="A mushroom house",
+        )
+        user = User(first_name="Jean", last_name="Jean", email="juanitodu34@gmail.com")
+        Booking(
+            guest_count=3,
+            checkin_date=checkin_date,
+            night_count=3,
+            place=place,
+            user=user,
+        )
+>>>>>>> devJerome
     except ValueError as e:
         assert str(e) == "Checkin_date must be later than today"
         print("Checkin date is in the past and raised Value Error")

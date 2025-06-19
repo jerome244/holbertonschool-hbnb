@@ -1,9 +1,17 @@
+<<<<<<< HEAD
 from user import User
+=======
+from .user import User
+>>>>>>> devJerome
 from datetime import datetime
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+<<<<<<< HEAD
     from place import Place
+=======
+    from .place import Place
+>>>>>>> devJerome
 
 
 class Host(User):
@@ -26,6 +34,7 @@ class Host(User):
         self.__rating = total / len(self.__owned_places)
         return self.__rating
 
+<<<<<<< HEAD
 
     def add_place(self, place):
         from place import Place
@@ -33,5 +42,15 @@ class Host(User):
             raise TypeError("Must add a Place instance")
         # Check if added place already exist by checking existing places id in Host.owned_places[]
         if not any(existing_place.id == place.id for existing_place in self.owned_places):
+=======
+    def add_place(self, place):
+        from place import Place
+
+        if not isinstance(place, Place):
+            raise TypeError("Must add a Place instance")
+        if not any(
+            existing_place.id == place.id for existing_place in self.owned_places
+        ):
+>>>>>>> devJerome
             self.__owned_places.append(place)
             self.update_date = datetime.now()

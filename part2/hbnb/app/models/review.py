@@ -1,13 +1,28 @@
+<<<<<<< HEAD
 from base import BaseModel
+=======
+from .base import BaseModel
+>>>>>>> devJerome
 from datetime import datetime
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+<<<<<<< HEAD
     from booking import Booking
+=======
+    from .booking import Booking
+>>>>>>> devJerome
 
 
 class Review(BaseModel):
     def __init__(self, booking, text, rating=None, **kwargs):
+<<<<<<< HEAD
+=======
+        from booking import Booking
+
+        if not isinstance(booking, Booking):
+            raise TypeError("booking must be a Booking instance")
+>>>>>>> devJerome
 
         # condition commented because testes can't be made otherwise
         # checkin_date must not be in te past and review must be made
@@ -18,6 +33,7 @@ class Review(BaseModel):
         """
 
         super().__init__(**kwargs)
+<<<<<<< HEAD
 
         # ---------- Init booking ---------- #
         from booking import Booking
@@ -41,6 +57,17 @@ class Review(BaseModel):
             self.__rating = rating
 
         booking.review = self
+=======
+        self.__booking = booking
+        self.__text = text
+        self.__rating = rating
+
+        """
+        implémenter le corps des setters
+        """
+        booking.review = self
+
+>>>>>>> devJerome
         booking.place.add_review(self)
 
     # ----------------------- rating ----------------------- #
@@ -53,7 +80,11 @@ class Review(BaseModel):
     def rating(self, rating):
         if not isinstance(rating, int):
             raise TypeError("Rating must be of type int")
+<<<<<<< HEAD
         if rating < 1 or rating > 5:
+=======
+        if rating < 1 and rating > 5:
+>>>>>>> devJerome
             raise ValueError("Rating must be a value between 1 and 5")
         self.__rating = rating
         self.update_date = datetime.now()

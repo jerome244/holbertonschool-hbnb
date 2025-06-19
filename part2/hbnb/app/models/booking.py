@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from base import BaseModel
 from datetime import datetime, timedelta
 from user import User
@@ -6,12 +7,21 @@ from place import Place
 from typing import TYPE_CHECKING
 
 
+=======
+from .base import BaseModel
+from datetime import datetime, timedelta
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .place import Place
+>>>>>>> devJerome
 
 
 class Booking(BaseModel):
     def __init__(self, guest_count, checkin_date, night_count, place, user, **kwargs):
         super().__init__(**kwargs)
 
+<<<<<<< HEAD
         # ---------- Init place ---------- #
         if not isinstance(place, Place):
             TypeError("Place must be of type Place")
@@ -47,6 +57,13 @@ class Booking(BaseModel):
             self.__user = user
 
 
+=======
+        self.__place = place
+        self.guest_count = guest_count
+        self.checkin_date = checkin_date
+        self.__night_count = night_count
+        self.__user = user
+>>>>>>> devJerome
         self.__total_price = self.night_count * self.__place.price
         self.__checkout_date = self.checkin_date + timedelta(days=self.night_count)
         self.__rating = None
@@ -54,7 +71,11 @@ class Booking(BaseModel):
 
         user.add_booking(self)
 
+<<<<<<< HEAD
     #----------------------- Place -----------------------#
+=======
+    # ----------------------- Place -----------------------#
+>>>>>>> devJerome
 
     @property
     def place(self):
@@ -62,10 +83,14 @@ class Booking(BaseModel):
 
     @place.setter
     def place(self, place):
+<<<<<<< HEAD
         if not isinstance(place, Place):
             TypeError("Place must be of type Place")
         self.__place = place
         self.update_date = datetime.now()
+=======
+        self.__place = place
+>>>>>>> devJerome
 
     # ----------------------- guest count ----------------------- #
 
@@ -76,7 +101,13 @@ class Booking(BaseModel):
     @guest_count.setter
     def guest_count(self, guest_count):
         if guest_count > self.__place.capacity:
+<<<<<<< HEAD
             raise ValueError(f"Number of guests exceeds {self.__place.title}'s capacity")
+=======
+            raise ValueError(
+                f"Number of guests exceeds {self.__place.title}'s capacity"
+            )
+>>>>>>> devJerome
         self.__guest_count = guest_count
         self.update_date = datetime.now()
 
@@ -90,7 +121,11 @@ class Booking(BaseModel):
     def checkin_date(self, checkin_date):
         if not isinstance(checkin_date, datetime):
             raise TypeError("Checkin_date must be datetime format")
+<<<<<<< HEAD
         elif checkin_date.date() < datetime.today().date():
+=======
+        if checkin_date.date() < datetime.today().date():
+>>>>>>> devJerome
             raise ValueError("Checkin_date must be later than today")
         self.__checkin_date = checkin_date
         self.update_date = datetime.now()
@@ -114,12 +149,19 @@ class Booking(BaseModel):
 
     @property
     def user(self):
+<<<<<<< HEAD
          return self.__user
 
     @user.setter
     def user(self, user):
         if not isinstance(user, User):
             TypeError("user lust be of type User")
+=======
+        return self.__user
+
+    @user.setter
+    def user(self, user):
+>>>>>>> devJerome
         self.__user = user
 
     # ----------------------- total price ----------------------- #
@@ -150,4 +192,7 @@ class Booking(BaseModel):
         if self.review:
             raise ValueError("This Booking already has a review")
         self.__review = review
+<<<<<<< HEAD
         self.update_date = datetime.now()
+=======
+>>>>>>> devJerome

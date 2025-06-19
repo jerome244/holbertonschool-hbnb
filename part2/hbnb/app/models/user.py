@@ -1,15 +1,24 @@
+<<<<<<< HEAD
 from base import BaseModel
+=======
+from .base import BaseModel
+>>>>>>> devJerome
 import re
 from datetime import datetime
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+<<<<<<< HEAD
     from booking import Booking
+=======
+    from .booking import Booking
+>>>>>>> devJerome
 
 
 class User(BaseModel):
     def __init__(self, first_name, last_name, email, is_admin=False, **kwargs):
         super().__init__(**kwargs)
+<<<<<<< HEAD
 
         # --------- Init first_name --------- #
         if not isinstance(first_name, str):
@@ -42,6 +51,12 @@ class User(BaseModel):
         else:
             self.__is_admin = is_admin
 
+=======
+        self.__first_name = first_name
+        self.__last_name = last_name
+        self.__is_admin = is_admin
+        self.email = email
+>>>>>>> devJerome
         self.__bookings = []
 
     # ----------------------- First name ------------------------ #
@@ -79,7 +94,11 @@ class User(BaseModel):
 
     @email.setter
     def email(self, email):
+<<<<<<< HEAD
         email_regex = re.compile(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$')
+=======
+        email_regex = re.compile(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
+>>>>>>> devJerome
         if not isinstance(email, str):
             raise TypeError("Email must be of type str")
         if not email_regex.match(email):
@@ -94,10 +113,17 @@ class User(BaseModel):
         return self.__is_admin
 
     @is_admin.setter
+<<<<<<< HEAD
     def is_admin(self, admin):
         if not isinstance(admin, bool):
             raise TypeError("Is Admin must be of type bool")
         self.is_admin = admin
+=======
+    def is_admin(self, value):
+        if not isinstance(value, bool):
+            raise TypeError("Is Admin must be of type bool")
+        self.is_admin = value
+>>>>>>> devJerome
         self.update_date = datetime.now()
 
     # ------------------------ Bookings ------------------------ #
@@ -110,12 +136,20 @@ class User(BaseModel):
 
     def add_booking(self, booking):
         from booking import Booking
+<<<<<<< HEAD
+=======
+
+>>>>>>> devJerome
         if not isinstance(booking, Booking):
             raise TypeError("booking must be a Booking instance")
         self.__bookings.append(booking)
 
     def leave_review(self, booking, rating, comment):
         from review import Review
+<<<<<<< HEAD
+=======
+
+>>>>>>> devJerome
         if booking not in self.__bookings:
             raise Exception("User cannot review a booking they did not make.")
         if booking.review:

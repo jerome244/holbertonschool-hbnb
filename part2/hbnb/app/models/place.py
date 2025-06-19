@@ -1,6 +1,11 @@
 from datetime import datetime
+<<<<<<< HEAD
 from host import Host
 from base import BaseModel
+=======
+from .host import Host
+from .base import BaseModel
+>>>>>>> devJerome
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -13,6 +18,7 @@ if TYPE_CHECKING:
 
 
 class Place(BaseModel):
+<<<<<<< HEAD
     def __init__(self, title, capacity, price, latitude, longitude, host, description="", **kwargs):
         super().__init__(**kwargs)
 
@@ -74,6 +80,36 @@ class Place(BaseModel):
         self.__reviews = []
 
     # ----------------------- title ----------------------- #
+=======
+    def __init__(
+        self,
+        title,
+        capacity,
+        price,
+        latitude,
+        longitude,
+        host,
+        description="",
+        **kwargs
+    ):
+        super().__init__(**kwargs)
+        self.__title = title
+        self.__capacity = capacity
+        self.__price = price
+        self.__latitude = latitude
+        self.__longitude = longitude
+        if not isinstance(host, Host):
+            raise TypeError("host must be an instance of the Host class")
+        self.__host = host
+        if hasattr(host, "add_place"):
+            host.add_place(self)
+        self.__description = description
+
+        self.__amenities = []
+        self.__reviews = []
+
+    # ----------------------- name ----------------------- #
+>>>>>>> devJerome
     @property
     def title(self):
         return self.__title
@@ -85,7 +121,10 @@ class Place(BaseModel):
         if len(title) > 100:
             raise ValueError("Title length must not exceed 100 characters")
         self.__title = title
+<<<<<<< HEAD
         self.update_date = datetime.now()
+=======
+>>>>>>> devJerome
 
     # ----------------------- description ----------------------- #
     @property
@@ -96,7 +135,11 @@ class Place(BaseModel):
     def description(self, description):
         if not isinstance(description, str):
             raise TypeError("Description must be of type string")
+<<<<<<< HEAD
         if len(description) < 2 or len(description) > 1024:
+=======
+        if not (2 <= len(description) <= 1024):
+>>>>>>> devJerome
             raise ValueError("Description length must be between 2 and 1024 characters")
         self.__description = description
         self.update_date = datetime.now()
@@ -110,7 +153,11 @@ class Place(BaseModel):
     def capacity(self, capacity):
         if not isinstance(capacity, int):
             raise TypeError("Capacity must be of type int")
+<<<<<<< HEAD
         if capacity < 1 or capacity > 64:
+=======
+        if not (1 <= capacity <= 64):
+>>>>>>> devJerome
             raise ValueError("Capacity must be between 1 and 64")
         self.__capacity = capacity
         self.update_date = datetime.now()
@@ -138,7 +185,11 @@ class Place(BaseModel):
     def latitude(self, latitude):
         if not isinstance(latitude, float):
             raise TypeError("Latitude must be of type float")
+<<<<<<< HEAD
         if latitude < -90.0 or latitude > 90.0:
+=======
+        if latitude < -90.0 and latitude > 90.0:
+>>>>>>> devJerome
             raise ValueError("Latitude length must be between -90 and 90 degres")
         self.__latitude = latitude
         self.update_date = datetime.now()
@@ -153,12 +204,19 @@ class Place(BaseModel):
     def longitude(self, longitude):
         if not isinstance(longitude, float):
             raise TypeError("Longitude must be of type float")
+<<<<<<< HEAD
         if longitude < -180.0 or longitude > 180.0:
+=======
+        if longitude < -180.0 and longitude > 180.0:
+>>>>>>> devJerome
             raise ValueError("Longitude length must be between -180 and 180 degres")
         self.__longitude = longitude
         self.update_date = datetime.now()
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> devJerome
     # ----------------------- host ----------------------- #
 
     @property
@@ -171,7 +229,11 @@ class Place(BaseModel):
     def amenities(self):
         return self.__amenities
 
+<<<<<<< HEAD
  # ----------------------- Reviews ----------------------- #
+=======
+    # ----------------------- Reviews ----------------------- #
+>>>>>>> devJerome
 
     @property
     def reviews(self):
@@ -181,6 +243,10 @@ class Place(BaseModel):
 
     def add_amenity(self, amenity):
         from amenity import Amenity
+<<<<<<< HEAD
+=======
+
+>>>>>>> devJerome
         if not isinstance(amenity, Amenity):
             raise TypeError("Must add an Amenity instance")
         self.__amenities.append(amenity)
@@ -188,6 +254,10 @@ class Place(BaseModel):
 
     def add_review(self, review):
         from review import Review
+<<<<<<< HEAD
+=======
+
+>>>>>>> devJerome
         if not isinstance(review, Review):
             raise TypeError("Must add a Review instance")
         self.__reviews.append(review)
