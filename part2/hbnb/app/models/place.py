@@ -1,169 +1,154 @@
-from datetime import datetime
-from .host import Host
 from .base import BaseModel
+from datetime import datetime, timedelta
+from .user import User
+# Check place for circular import
+from .place import Place
 from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    """
-    Check for circular import /!\
-    """
-    # Used to validate host type
-    from amenity import Amenity
-    from review import Review
 
 
-class Place(BaseModel):
-    def __init__(
-        self,
-        title,
-        capacity,
-        price,
-        latitude,
-        longitude,
-        host,
-        description="",
-        **kwargs
-    ):
+
+class Booking(BaseModel):
+    def __init__(self, guest_count, checkin_date, night_count, place, user, **kwargs):
         super().__init__(**kwargs)
-        self.__title = title
-        self.__capacity = capacity
-        self.__price = price
-        self.__latitude = latitude
-        self.__longitude = longitude
-        if not isinstance(host, Host):
-            raise TypeError("host must be an instance of the Host class")
-        self.__host = host
-        if hasattr(host, "add_place"):
-            host.add_place(self)
-        self.__description = description
 
-        self.__amenities = []
-        self.__reviews = []
+        # ---------- Init place ---------- #
+        if not isinstance(place, Place):
+            TypeError("Place must be of type Place")
+        else:
+            self.__place = place
+            place.add_booking(self)
 
-    # ----------------------- name ----------------------- #
+        # ---------- Init capacity ---------- #
+        if guest_count > self.__place.capacity:
+            raise ValueError(f"Number of guests exceeds {self.__place.title}'s capacity")
+        else:
+            self.__guest_count = guest_count
+
+        # ---------- Init checkin_date ---------- #
+        if not isinstance(checkin_date, datetime):
+            raise TypeError("Checkin_date must be datetime format")
+        elif checkin_date.date() < datetime.today().date():
+            raise ValueError("Checkin_date must be later than today")
+        else:
+            self.checkin_date = checkin_date
+
+        # ---------- Init night_count ---------- #
+        if not isinstance(night_count, int):
+            raise TypeError("Number of nights stayed must be integer")
+        if night_count <= 0:
+            raise ValueError("Number of nights stayed must be greater than 0")
+        else:
+            self.__night_count = night_count
+
+        # ---------- Init user ---------- #
+        if not isinstance(user, User):
+            TypeError("user lust be of type User")
+        else:
+            self.__user = user
+
+
+        self.__total_price = self.night_count * self.__place.price
+        self.__checkout_date = self.checkin_date + timedelta(days=self.night_count)
+        self.__rating = None
+        self.__review = None
+
+        user.add_booking(self)
+
+    #----------------------- Place -----------------------#
+
     @property
-    def title(self):
-        return self.__title
+    def place(self):
+        return self.__place
 
-    @title.setter
-    def title(self, title):
-        if not isinstance(title, str):
-            raise TypeError("Name must be of type string")
-        if len(title) > 100:
-            raise ValueError("Title length must not exceed 100 characters")
-        self.__title = title
-
-    # ----------------------- description ----------------------- #
-    @property
-    def description(self):
-        return self.__description
-
-    @description.setter
-    def description(self, description):
-        if not isinstance(description, str):
-            raise TypeError("Description must be of type string")
-        if not (2 <= len(description) <= 1024):
-            raise ValueError("Description length must be between 2 and 1024 characters")
-        self.__description = description
+    @place.setter
+    def place(self, place):
+        if not isinstance(place, Place):
+            TypeError("Place must be of type Place")
+        self.__place = place
         self.update_date = datetime.now()
 
-    # ----------------------- capacity ----------------------- #
-    @property
-    def capacity(self):
-        return self.__capacity
+    # ----------------------- guest count ----------------------- #
 
-    @capacity.setter
-    def capacity(self, capacity):
-        if not isinstance(capacity, int):
-            raise TypeError("Capacity must be of type int")
-        if not (1 <= capacity <= 64):
-            raise ValueError("Capacity must be between 1 and 64")
-        self.__capacity = capacity
+    @property
+    def guest_count(self):
+        return self.__guest_count
+
+    @guest_count.setter
+    def guest_count(self, guest_count):
+        if guest_count > self.__place.capacity:
+            raise ValueError(f"Number of guests exceeds {self.__place.title}'s capacity")
+        self.__guest_count = guest_count
         self.update_date = datetime.now()
 
-    # ----------------------- price per night ----------------------- #
-    @property
-    def price(self):
-        return self.__price
+    # ----------------------- checkin ----------------------- #
 
-    @price.setter
-    def price(self, price):
-        if not isinstance(price, (int, float)):
-            raise TypeError("Price must be of type int or float")
-        if price < 0:
-            raise ValueError("Price must be a positive number")
-        self.__price = price
+    @property
+    def checkin_date(self):
+        return self.__checkin_date
+
+    @checkin_date.setter
+    def checkin_date(self, checkin_date):
+        if not isinstance(checkin_date, datetime):
+            raise TypeError("Checkin_date must be datetime format")
+        elif checkin_date.date() < datetime.today().date():
+            raise ValueError("Checkin_date must be later than today")
+        self.__checkin_date = checkin_date
         self.update_date = datetime.now()
 
-    # ----------------------- latitude ----------------------- #
-    @property
-    def latitude(self):
-        return self.__latitude
+    # ----------------------- night count ----------------------- #
 
-    @latitude.setter
-    def latitude(self, latitude):
-        if not isinstance(latitude, float):
-            raise TypeError("Latitude must be of type float")
-        if latitude < -90.0 and latitude > 90.0:
-            raise ValueError("Latitude length must be between -90 and 90 degres")
-        self.__latitude = latitude
+    @property
+    def night_count(self):
+        return self.__night_count
+
+    @night_count.setter
+    def night_count(self, night_count):
+        if not isinstance(night_count, int):
+            raise TypeError("Number of nights stayed must be integer")
+        if night_count <= 0:
+            raise ValueError("Number of nights stayed must be greater than 0")
+        self.__night_count = night_count
         self.update_date = datetime.now()
 
-    # ----------------------- longitude ----------------------- #
+    # ------------------------- user ------------------------- #
 
     @property
-    def longitude(self):
-        return self.__longitude
+    def user(self):
+         return self.__user
 
-    @longitude.setter
-    def longitude(self, longitude):
-        if not isinstance(longitude, float):
-            raise TypeError("Longitude must be of type float")
-        if longitude < -180.0 and longitude > 180.0:
-            raise ValueError("Longitude length must be between -180 and 180 degres")
-        self.__longitude = longitude
+    @user.setter
+    def user(self, user):
+        if not isinstance(user, User):
+            TypeError("user lust be of type User")
+        self.__user = user
+
+    # ----------------------- total price ----------------------- #
+
+    @property
+    def total_price(self):
+        return self.__total_price
+
+    # ----------------------- checkout ----------------------- #
+
+    @property
+    def checkout_date(self):
+        return self.__checkout_date
+
+    # ----------------------- rating ----------------------- #
+    @property
+    def rating(self):
+        return self.__rating
+
+    # ----------------------- review ----------------------- #
+
+    @property
+    def review(self):
+        return self.__review
+
+    @review.setter
+    def review(self, review):
+        if self.review:
+            raise ValueError("This Booking already has a review")
+        self.__review = review
         self.update_date = datetime.now()
-
-    # ----------------------- host ----------------------- #
-
-    @property
-    def host(self):
-        return self.__host
-
-    # ----------------------- Amenities ----------------------- #
-
-    @property
-    def amenities(self):
-        return self.__amenities
-
-    # ----------------------- Reviews ----------------------- #
-
-    @property
-    def reviews(self):
-        return self.__reviews
-
-    # ----------------------- Methods ----------------------- #
-
-    def add_amenity(self, amenity):
-        from amenity import Amenity
-
-        if not isinstance(amenity, Amenity):
-            raise TypeError("Must add an Amenity instance")
-        self.__amenities.append(amenity)
-        self.update_date = datetime.now()
-
-    def add_review(self, review):
-        from review import Review
-
-        if not isinstance(review, Review):
-            raise TypeError("Must add a Review instance")
-        self.__reviews.append(review)
-        self.update_date = datetime.now()
-
-    def get_average_rating(self):
-        if not self.__reviews:
-            return 0
-        total = 0
-        for review in self.__reviews:
-            total += review.rating
-        return total / len(self.__reviews)
