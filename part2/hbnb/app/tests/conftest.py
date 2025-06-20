@@ -1,32 +1,51 @@
 import pytest
 
+def pytest_configure(config):
+    # register any custom markers here if you like
+    config.addinivalue_line("markers", "api: mark API tests")
+    config.addinivalue_line("markers", "facade: mark Facade tests")
+    config.addinivalue_line("markers", "persistence: mark Persistence tests")
+    config.addinivalue_line("markers", "classes: mark model/class tests")
+
+@pytest.fixture(scope="module")
+def facade():
+    from app.services.facade import HBnBFacade
+    return HBnBFacade()
+
+# your other fixtures (app, client, user_id, etc.) go here...
+
+
 def pytest_terminal_summary(terminalreporter, exitstatus, config):
-    passed_reports = terminalreporter.stats.get('passed', [])
+    passed = terminalreporter.stats.get('passed', [])
     failed = len(terminalreporter.stats.get('failed', []))
     skipped = len(terminalreporter.stats.get('skipped', []))
     xfailed = len(terminalreporter.stats.get('xfailed', []))
     warnings = len(terminalreporter.stats.get('warnings', []))
+
     terminalreporter.write_sep("=", "Test Suite Summary")
-    terminalreporter.write_line(f"✅ Passed:   {len(passed_reports)}")
+    terminalreporter.write_line(f"✅ Passed:   {len(passed)}")
     terminalreporter.write_line(f"❌ Failed:   {failed}")
     terminalreporter.write_line(f"⚠️  Skipped:  {skipped}")
     terminalreporter.write_line(f"✳️  XFailed:  {xfailed}")
     terminalreporter.write_line(f"⚠️  Warnings: {warnings}")
     terminalreporter.write_sep("-", "Sections tested")
-    # … your static section list …
     terminalreporter.write_sep("-", "End of Sections")
 
-    # Now: grouped “Executed Tests” lists
+    # Group passed tests by filename
+    groups = {"API": [], "Facade": [], "Persistence": [], "Classes": []}
+    for rep in passed:
+        node = rep.nodeid
+        name = node.split("::")[-1]
+        if "test_api.py" in node:
+            groups["API"].append(name)
+        elif "test_facade_and_repo.py" in node:
+            groups["Facade"].append(name)
+        elif "test_repository" in node or "test_repo" in node:
+            groups["Persistence"].append(name)
+        elif "test_classes.py" in node:
+            groups["Classes"].append(name)
+
     terminalreporter.write_line("\nExecuted Tests:")
-    groups = {"API": [], "Facade": [], "Persistence": []}
-    for rep in passed_reports:
-        nid = rep.nodeid
-        if "test_api.py" in nid:
-            groups["API"].append(nid.split("::")[-1])
-        elif "test_facade_and_repo.py" in nid:
-            groups["Facade"].append(nid.split("::")[-1])
-        elif "test_repository" in nid or "test_repo" in nid:
-            groups["Persistence"].append(nid.split("::")[-1])
     for section, names in groups.items():
         terminalreporter.write_line(f"  {section} ({len(names)}):")
         for n in names:
