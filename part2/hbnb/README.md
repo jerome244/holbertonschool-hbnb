@@ -392,6 +392,9 @@ We use **pytest** to verify all endpoints, including:
 - **Edge Cases** such as invalid dates, guest counts, capacity/price bounds.
 - **Aggregation Endpoints** (`/rating`, `/cost`) marked as **xfail** until implemented.
 
+To access the **Swagger UI** for testing the API endpoints, navigate to the following URL in your browser:
+- **Swagger UI**: `http://127.0.0.1:5000/api/v1/`
+
 Snippets:
 
 ```bash
