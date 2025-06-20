@@ -1,5 +1,6 @@
 import pytest
 
+
 def pytest_configure(config):
     # register any custom markers here if you like
     config.addinivalue_line("markers", "api: mark API tests")
@@ -7,20 +8,23 @@ def pytest_configure(config):
     config.addinivalue_line("markers", "persistence: mark Persistence tests")
     config.addinivalue_line("markers", "classes: mark model/class tests")
 
+
 @pytest.fixture(scope="module")
 def facade():
     from app.services.facade import HBnBFacade
+
     return HBnBFacade()
+
 
 # your other fixtures (app, client, user_id, etc.) go here...
 
 
 def pytest_terminal_summary(terminalreporter, exitstatus, config):
-    passed = terminalreporter.stats.get('passed', [])
-    failed = len(terminalreporter.stats.get('failed', []))
-    skipped = len(terminalreporter.stats.get('skipped', []))
-    xfailed = len(terminalreporter.stats.get('xfailed', []))
-    warnings = len(terminalreporter.stats.get('warnings', []))
+    passed = terminalreporter.stats.get("passed", [])
+    failed = len(terminalreporter.stats.get("failed", []))
+    skipped = len(terminalreporter.stats.get("skipped", []))
+    xfailed = len(terminalreporter.stats.get("xfailed", []))
+    warnings = len(terminalreporter.stats.get("warnings", []))
 
     terminalreporter.write_sep("=", "Test Suite Summary")
     terminalreporter.write_line(f"✅ Passed:   {len(passed)}")
