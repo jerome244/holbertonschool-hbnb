@@ -386,70 +386,61 @@ No error message, meaning every test went through as asserted values are as expe
 
 ### 📡 Testing API Endpoints and HTTP Methods
 
-We use **pytest** to verify all endpoints, including:
+You have two options to test the API endpoints:
 
-- **Happy Paths** for CRUD operations on each resource.
-- **Validation Errors** for missing/invalid fields.
-- **Edge Cases** such as invalid dates, guest counts, capacity/price bounds.
-- **Aggregation Endpoints** (`/rating`, `/cost`) marked as **xfail** until implemented.
+1. **Set Up Your Environment (for Both Options)**
 
-To get started with testing, please follow these steps to set up the environment:
+   Before testing, you need to set up the environment:
+   1. **Create a Virtual Environment:**
+      ```bash
+      python -m venv venv
+      ```
+   2. **Activate the Virtual Environment:**
+      - On **Windows**:
+        ```bash
+        .\venv\Scripts\activate
+        ```
+      - On **macOS/Linux**:
+        ```bash
+        source venv/bin/activate
+        ```
+   3. **Install the Required Dependencies:**
+      ```bash
+      pip install -r requirements.txt
+      ```
 
-1. **Create a Virtual Environment:** It's a good practice to create a virtual environment for the project to avoid conflicts with global Python packages.
+2. **Test via Swagger UI (Flask Server)**  
+   You can test the API by running the Flask server and accessing the **Swagger UI** for an interactive experience. Here's how to set it up:
 
-   ```bash
-   python -m venv myvenv
-   ```
-
-2. **Activate the Virtual Environment:**
-   - On **Windows**:
+   - **Run the Flask application:**
      ```bash
-     .myvenv\Scripts\activate
+     python run.py
      ```
-   - On **macOS/Linux**:
+
+   - **Access the Swagger UI:**  
+     Once the server is running, open your browser and go to:
+     - **Swagger UI**: `http://127.0.0.1:5000/api/v1/`
+
+     The Swagger UI will allow you to interact with the API, test endpoints, and see responses directly in your browser.
+
+3. **Test via `pytest` (Automated Tests)**  
+   Alternatively, you can use **pytest** to run automated tests on the API endpoints. This is useful for testing the API without the need to manually interact with the Swagger UI. Here’s how to get started:
+
+   - **Run the Tests:**
+     To run all tests, simply execute:
      ```bash
-     source myvenv/bin/activate
+     pytest -q
      ```
 
-3. **Install the Required Dependencies:** Install all necessary dependencies using `pip` by running the following command:
+     To run only the API tests:
+     ```bash
+     pytest app/tests/test_api.py -q
+     ```
 
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. **Run the Application:** Start the Flask application by running:
-
-   ```bash
-   python run.py
-   ```
-
-   This will start the server, and you can access the Swagger UI and the API documentation at:
-   - **Swagger UI**: `http://127.0.0.1:5000/api/v1/`
-
-5. **Testing the API Endpoints:** We use **pytest** to verify all endpoints, including:
-
-   - **Happy Paths** for CRUD operations on each resource.
-   - **Validation Errors** for missing/invalid fields.
-   - **Edge Cases** such as invalid dates, guest counts, capacity/price bounds.
-   - **Aggregation Endpoints** (`/rating`, `/cost`) marked as **xfail** until implemented.
-
-   To run all tests:
-
-   ```bash
-   pytest -q
-   ```
-
-   To run only API tests:
-
-   ```bash
-   pytest app/tests/test_api.py -q
-   ```
-
-   To show verbose output with skipped/xfails:
-
-   ```bash
-   pytest -v
-   ```
+     To show verbose output with skipped or expected failures (`xfail`):
+     ```bash
+     pytest -v
+     ```
 
 ---
 Authors - [DESSAIGNE Théo](https://github.com/Theo-D) & [TRAN Jérôme](https://github.com/jerome244)
