@@ -1,14 +1,3 @@
-"""
-users.py: Flask-RESTX API endpoints for User resources.
-
-This module defines a namespace and models for users, including:
-- Listing users
-- Creating users (with optional is_admin flag)
-- Retrieving, replacing, and deleting a single user by ID
-- Listing a user's bookings and computing average booking ratings
-
-Swagger UI will show parameter descriptions and response models based on these definitions.
-"""
 from flask_restx import Namespace, Resource, fields
 import re
 from app import facade
@@ -164,9 +153,6 @@ class UserDetail(Resource):
     def put(self, user_id):
         """
         Replace an existing user completely.
-
-        All fields (`first_name`, `last_name`, `email`, `is_admin`) must be provided.
-        Validates email format and uniqueness.
         """
         data = ns.payload or {}
         user = facade.get_user(user_id)
@@ -196,51 +182,3 @@ class UserDetail(Resource):
             ns.abort(404, f"User {user_id} not found")
         facade.delete_user(user_id)
         return "", 204
-
-@ns.route("/<string:user_id>/bookings")
-@ns.response(404, "User not found")
-class UserBookings(Resource):
-    @ns.doc("list_user_bookings")
-    @ns.marshal_list_with(booking_model)
-    def get(self, user_id):
-        """
-        List all bookings for a specific user.
-
-        Returns booking summaries including total price and checkout date.
-        """
-        if not facade.get_user(user_id):
-            ns.abort(404, f"User {user_id} not found")
-        bookings = facade.get_user_bookings(user_id) or []
-        return [
-            {
-                "id": b.id,
-                "user_id": b.user.id,
-                "place_id": b.place.id,
-                "guest_count": b.guest_count,
-                "checkin_date": b.checkin_date.date(),
-                "night_count": b.night_count,
-                "total_price": b.place.price * b.night_count * b.guest_count,
-                "checkout_date": b.checkout_date.date(),
-            }
-            for b in bookings
-        ]
-
-@ns.route("/<string:user_id>/bookings/rating")
-@ns.response(404, "User not found or no ratings available")
-class UserBookingsAverageRating(Resource):
-    @ns.doc("get_user_average_booking_rating")
-    @ns.marshal_with(avg_rating_output)
-    def get(self, user_id):
-        """
-        Get the average rating across all bookings of a user.
-
-        Calculates the mean of all existing booking ratings.
-        """
-        user = facade.get_user(user_id)
-        if not user:
-            ns.abort(404, f"User {user_id} not found")
-        bookings = facade.get_user_bookings(user_id) or []
-        ratings = [float(r.review.rating) for r in bookings if getattr(r, "review", None)]
-        if not ratings:
-            ns.abort(404, f"No ratings found for user {user_id}")
-        return {"user_id": user_id, "average_rating": sum(ratings) / len(ratings)}
