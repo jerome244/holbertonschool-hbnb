@@ -2,7 +2,9 @@ import pytest
 
 
 def pytest_configure(config):
-    # register any custom markers here if you like
+    """
+    Register custom markers for grouping tests.
+    """
     config.addinivalue_line("markers", "api: mark API tests")
     config.addinivalue_line("markers", "facade: mark Facade tests")
     config.addinivalue_line("markers", "persistence: mark Persistence tests")
@@ -11,15 +13,18 @@ def pytest_configure(config):
 
 @pytest.fixture(scope="module")
 def facade():
+    """
+    Provide a shared HBnBFacade instance for Facade‐layer tests.
+    """
     from app.services.facade import HBnBFacade
 
     return HBnBFacade()
 
 
-# your other fixtures (app, client, user_id, etc.) go here...
-
-
 def pytest_terminal_summary(terminalreporter, exitstatus, config):
+    """
+    After the run, print overall counts and list passed tests grouped by layer.
+    """
     passed = terminalreporter.stats.get("passed", [])
     failed = len(terminalreporter.stats.get("failed", []))
     skipped = len(terminalreporter.stats.get("skipped", []))
@@ -35,7 +40,6 @@ def pytest_terminal_summary(terminalreporter, exitstatus, config):
     terminalreporter.write_sep("-", "Sections tested")
     terminalreporter.write_sep("-", "End of Sections")
 
-    # Group passed tests by filename
     groups = {"API": [], "Facade": [], "Persistence": [], "Classes": []}
     for rep in passed:
         node = rep.nodeid
@@ -58,6 +62,8 @@ def pytest_terminal_summary(terminalreporter, exitstatus, config):
     if failed == 0:
         terminalreporter.write_line("\nAll tests passed! 🎉")
     else:
-        terminalreporter.write_line("\nSome tests failed or were skipped; see above.")
+        terminalreporter.write_line(
+            "\nSome tests failed or were skipped; please see above."
+        )
 
     terminalreporter.write_sep("=", "End of Test Suite Summary")

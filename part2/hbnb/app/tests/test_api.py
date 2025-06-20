@@ -2,10 +2,14 @@ import pytest
 from app import create_app
 from datetime import date
 
-
 # --- Fixtures ---
+
+
 @pytest.fixture(scope="module")
 def app():
+    """
+    Build and configure a Flask application for testing.
+    """
     application = create_app()
     application.config["TESTING"] = True
     return application
@@ -13,12 +17,20 @@ def app():
 
 @pytest.fixture(scope="module")
 def client(app):
+    """
+    Provide a Flask test client for sending HTTP requests.
+    """
     return app.test_client()
 
 
 # --- Helper Fixtures ---
+
+
 @pytest.fixture(scope="module")
 def user_id(client):
+    """
+    Create a user via the API and return its ID, or skip if unavailable.
+    """
     rv = client.post(
         "/api/v1/users/",
         json={
@@ -34,6 +46,9 @@ def user_id(client):
 
 @pytest.fixture(scope="module")
 def host_id(client):
+    """
+    Create a host via the API and return its ID, or skip if unavailable.
+    """
     rv = client.post(
         "/api/v1/hosts/",
         json={"first_name": "Host", "last_name": "User", "email": "host@example.com"},
@@ -45,6 +60,9 @@ def host_id(client):
 
 @pytest.fixture(scope="module")
 def amenity_id(client):
+    """
+    Create an amenity via the API and return its ID, or skip if unavailable.
+    """
     rv = client.post("/api/v1/amenities/", json={"name": "EdgeAmenity"})
     if rv.status_code != 201:
         pytest.skip(f"Amenity creation skipped; status {rv.status_code}")
@@ -53,6 +71,9 @@ def amenity_id(client):
 
 @pytest.fixture(scope="module")
 def place_id(client, user_id, amenity_id):
+    """
+    Create a place via the API and return its ID, or skip if unavailable.
+    """
     rv = client.post(
         "/api/v1/places/",
         json={
@@ -69,6 +90,9 @@ def place_id(client, user_id, amenity_id):
 
 @pytest.fixture(scope="module")
 def booking_id(client, user_id, place_id):
+    """
+    Create a booking via the API and return its ID, or skip if unavailable.
+    """
     rv = client.post(
         "/api/v1/bookings/",
         json={
@@ -85,6 +109,8 @@ def booking_id(client, user_id, place_id):
 
 
 # --- CRUD Tests ---
+
+
 @pytest.mark.parametrize(
     "endpoint,payload,expected",
     [
@@ -99,6 +125,9 @@ def booking_id(client, user_id, place_id):
     ],
 )
 def test_post_endpoints(client, endpoint, payload, expected):
+    """
+    Verify POST /api/v1/<endpoint>/ returns the expected status codes.
+    """
     if endpoint == "hosts":
         pytest.xfail("Hosts POST not implemented")
     rv = client.post(f"/api/v1/{endpoint}/", json=payload)
@@ -117,11 +146,16 @@ def test_post_endpoints(client, endpoint, payload, expected):
     ],
 )
 def test_get_not_found(client, endpoint, id_):
+    """
+    GET /api/v1/<endpoint>/<nonexistent_id> should return 404.
+    """
     rv = client.get(f"/api/v1/{endpoint}/{id_}")
     assert rv.status_code == 404
 
 
 # --- PATCH Tests ---
+
+
 @pytest.mark.parametrize(
     "endpoint,field,value,ok",
     [
@@ -132,6 +166,9 @@ def test_get_not_found(client, endpoint, id_):
     ],
 )
 def test_patch_endpoints(client, user_id, endpoint, field, value, ok):
+    """
+    Verify PATCH /api/v1/<endpoint>/<id> with various payloads.
+    """
     if endpoint == "hosts":
         pytest.xfail("Hosts PATCH not implemented")
     eid = user_id if endpoint in ["users", "hosts"] else 1
@@ -140,17 +177,27 @@ def test_patch_endpoints(client, user_id, endpoint, field, value, ok):
 
 
 # --- DELETE Tests ---
+
+
 @pytest.mark.parametrize(
     "endpoint", ["users", "hosts", "amenities", "places", "bookings", "reviews"]
 )
 def test_delete_not_found(client, endpoint):
+    """
+    DELETE /api/v1/<endpoint>/<nonexistent_id> returns 404 or 405.
+    """
     rv = client.delete(f"/api/v1/{endpoint}/99999")
     assert rv.status_code in (404, 405)
 
 
 # --- Booking Edge Cases ---
+
+
 @pytest.mark.parametrize("guests", [0, -1])
 def test_booking_guest_bounds(client, user_id, place_id, guests):
+    """
+    Reject guest_count outside valid bounds (>=1).
+    """
     rv = client.post(
         "/api/v1/bookings/",
         json={
@@ -165,8 +212,13 @@ def test_booking_guest_bounds(client, user_id, place_id, guests):
 
 
 # --- Review Edge Cases ---
+
+
 @pytest.mark.parametrize("rating", [-1, 0, 6])
 def test_review_rating_bounds(client, booking_id, rating):
+    """
+    Reject review ratings outside 1–5.
+    """
     rv = client.post(
         "/api/v1/reviews/",
         json={"booking_id": booking_id, "text": "X", "rating": rating},
@@ -175,7 +227,12 @@ def test_review_rating_bounds(client, booking_id, rating):
 
 
 # --- DELETE & PATCH Review ---
+
+
 def test_delete_and_patch_review(client, booking_id):
+    """
+    After DELETE, PATCH on the same review should return 404.
+    """
     rv = client.post(
         "/api/v1/reviews/", json={"booking_id": booking_id, "text": "T", "rating": 3}
     )
@@ -189,10 +246,11 @@ def test_delete_and_patch_review(client, booking_id):
 
 
 # --- Place capacity & price validation ---
+
+
 @pytest.mark.parametrize(
     "capacity,price,expected",
     [
-        # current API rejects capacity so expecting 400
         (3, 100.0, 400),
         (-1, 100.0, 400),
         ("big", 100.0, 400),
@@ -201,6 +259,9 @@ def test_delete_and_patch_review(client, booking_id):
     ],
 )
 def test_place_capacity_price(client, user_id, amenity_id, capacity, price, expected):
+    """
+    Validate that capacity and price fields enforce correct types/values.
+    """
     payload = {
         "name": "X",
         "description": "D",
@@ -214,6 +275,8 @@ def test_place_capacity_price(client, user_id, amenity_id, capacity, price, expe
 
 
 # --- Booking date & price_per_night validation ---
+
+
 @pytest.mark.parametrize(
     "body,expected",
     [
@@ -264,16 +327,23 @@ def test_place_capacity_price(client, user_id, amenity_id, capacity, price, expe
     ],
 )
 def test_booking_date_and_price(client, user_id, place_id, body, expected):
+    """
+    Verify checkin_date format, night_count > 0, and non-negative price_per_night.
+    """
     rv = client.post("/api/v1/bookings/", json=body)
     assert rv.status_code == expected
 
 
 # --- Aggregation Tests (xfail) ---
+
 import pytest as _pytest
 
 
 @_pytest.mark.xfail(raises=AttributeError, reason="avg rating not implemented")
 def test_place_average_rating(client, place_id, user_id, amenity_id):
+    """
+    XFail: GET /places/<id>/rating until average-rating endpoint exists.
+    """
     vals = []
     for r in (4, 2):
         rvb = client.post(
@@ -302,12 +372,18 @@ def test_place_average_rating(client, place_id, user_id, amenity_id):
 
 @_pytest.mark.xfail(raises=AttributeError)
 def test_host_average_rating(client, host_id):
+    """
+    XFail: GET /hosts/<id>/rating until implemented.
+    """
     rv = client.get(f"/api/v1/hosts/{host_id}/rating")
     assert rv.status_code == 200
 
 
 @_pytest.mark.xfail(raises=AttributeError)
 def test_booking_total_cost(client, booking_id):
+    """
+    XFail: GET /bookings/<id>/cost until implemented.
+    """
     rv = client.get(f"/api/v1/bookings/{booking_id}/cost")
     assert rv.status_code == 200
     cost = rv.get_json().get("total_cost")
