@@ -75,11 +75,12 @@ EMAIL_RE = re.compile(r"^[^@]+@[^@]+\.[^@]+$")
 
 # ----------------------- resources ----------------------- #
 
+
 @ns.route("/")
 class UserList(Resource):
     """
     List all users or create a new user.
-    
+
     GET /users/ -> Lists all users with their basic profile information.
     POST /users/ -> Creates a new user, ensuring that the email is unique and properly formatted.
     """
@@ -89,7 +90,7 @@ class UserList(Resource):
     def get(self):
         """
         List all users.
-        
+
         Returns a list of users with basic profile information.
         """
         return facade.list_users()
@@ -100,7 +101,7 @@ class UserList(Resource):
     def post(self):
         """
         Create a new user.
-        
+
         Validates email format and uniqueness. If `is_admin` is omitted, defaults to False.
         """
         data = ns.payload or {}
@@ -119,7 +120,7 @@ class UserList(Resource):
 class UserDetail(Resource):
     """
     Retrieve, replace, or delete a user by ID.
-    
+
     GET /users/{id} -> Fetch a specific user by their ID.
     PUT /users/{id} -> Completely replace an existing user's information.
     DELETE /users/{id} -> Delete a user by ID.
@@ -130,7 +131,7 @@ class UserDetail(Resource):
     def get(self, user_id):
         """
         Retrieve a user by ID.
-        
+
         Returns the full user object if found.
         """
         user = facade.get_user(user_id)
@@ -144,7 +145,7 @@ class UserDetail(Resource):
     def put(self, user_id):
         """
         Replace an existing user completely.
-        
+
         Validates the required fields and ensures email uniqueness.
         """
         data = ns.payload or {}
@@ -173,7 +174,7 @@ class UserDetail(Resource):
     def delete(self, user_id):
         """
         Delete a user by ID.
-        
+
         Returns HTTP 204 on successful deletion.
         """
         if not facade.get_user(user_id):
