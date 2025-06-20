@@ -398,17 +398,17 @@ To get started with testing, please follow these steps to set up the environment
 1. **Create a Virtual Environment:** It's a good practice to create a virtual environment for the project to avoid conflicts with global Python packages.
 
    ```bash
-   python -m venv venv
+   python -m venv myvenv
    ```
 
 2. **Activate the Virtual Environment:**
    - On **Windows**:
      ```bash
-     .env\Scriptsctivate
+     .myvenv\Scripts\activate
      ```
    - On **macOS/Linux**:
      ```bash
-     source venv/bin/activate
+     source myvenv/bin/activate
      ```
 
 3. **Install the Required Dependencies:** Install all necessary dependencies using `pip` by running the following command:
