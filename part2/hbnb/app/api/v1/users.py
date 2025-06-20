@@ -1,187 +1,215 @@
 """
-users.py: API endpoints for User resources.
+users.py: Flask-RESTX API endpoints for User resources.
 
-This module defines the Flask-RESTX namespace, data models, and resource classes
-for user account operations, including listing, creation, retrieval, update,
-deletion, as well as fetching a user’s bookings and average booking ratings.
+This module defines a namespace and models for users, including:
+- Listing users
+- Creating users (with optional is_admin flag)
+- Retrieving, replacing, and deleting a single user by ID
+- Listing a user's bookings and computing average booking ratings
+
+Swagger UI will show parameter descriptions and response models based on these definitions.
 """
-
-import re
 from flask_restx import Namespace, Resource, fields
+import re
 from app import facade
 from app.api.v1.bookings import booking_output as booking_model
 
 # ----------------------- namespace ----------------------- #
-ns = Namespace("users", description="Operations on user accounts")
+ns = Namespace(
+    "users",
+    description="Operations on user accounts"
+)
 
 # ----------------------- data models ----------------------- #
+# Output model for a User resource
 user_model = ns.model(
     "User",
     {
-        "id": fields.String(readonly=True, description="Unique ID"),
-        "first_name": fields.String(required=True, description="First name"),
-        "last_name": fields.String(required=True, description="Last name"),
-        "email": fields.String(required=True, description="Email address"),
-        "is_admin": fields.Boolean(description="Admin flag"),
-    },
+        "id": fields.String(
+            readonly=True,
+            description="Unique user identifier (UUID)"
+        ),
+        "first_name": fields.String(
+            required=True,
+            description="User's first name"
+        ),
+        "last_name": fields.String(
+            required=True,
+            description="User's last name"
+        ),
+        "email": fields.String(
+            required=True,
+            description="User's email address"
+        ),
+        "is_admin": fields.Boolean(
+            required=True,
+            description="Flag indicating if the user has admin privileges"
+        ),
+    }
 )
 
-patch_user_model = ns.model(
-    "UserPatch",
+# Input model for creating a new user (is_admin optional)
+user_create = ns.model(
+    "UserCreate",
     {
-        "first_name": fields.String(description="First name"),
-        "last_name": fields.String(description="Last name"),
-        "email": fields.String(description="Email address"),
-        "is_admin": fields.Boolean(description="Admin flag"),
-    },
+        "first_name": fields.String(
+            required=True,
+            description="User's first name"
+        ),
+        "last_name": fields.String(
+            required=True,
+            description="User's last name"
+        ),
+        "email": fields.String(
+            required=True,
+            description="User's email address"
+        ),
+        "is_admin": fields.Boolean(
+            description="Optional admin flag; defaults to False if omitted"
+        ),
+    }
 )
 
+# Input model for full replacement of a user
+user_input = ns.model(
+    "UserInput",
+    {
+        "first_name": fields.String(
+            required=True,
+            description="User's first name"
+        ),
+        "last_name": fields.String(
+            required=True,
+            description="User's last name"
+        ),
+        "email": fields.String(
+            required=True,
+            description="User's email address"
+        ),
+        "is_admin": fields.Boolean(
+            required=True,
+            description="Admin flag; must be provided for full replace"
+        ),
+    }
+)
+
+# Output model for average booking rating per user
 avg_rating_output = ns.model(
     "UserBookingAverageRating",
     {
-        "user_id": fields.String(readonly=True, description="User UUID"),
-        "average_rating": fields.Float(
-            readonly=True, description="Average rating across all bookings"
+        "user_id": fields.String(
+            readonly=True,
+            description="UUID of the user"
         ),
-    },
+        "average_rating": fields.Float(
+            readonly=True,
+            description="Average rating across all of the user's bookings"
+        ),
+    }
 )
 
 EMAIL_RE = re.compile(r"^[^@]+@[^@]+\.[^@]+$")
 
-
 # ----------------------- resources ----------------------- #
 @ns.route("/")
 class UserList(Resource):
-    """
-    Resource for listing all users and creating a new user.
-    """
-
+    @ns.doc("list_users")
     @ns.marshal_list_with(user_model)
     def get(self):
         """
         List all users.
 
-        Returns:
-            list: A list of all User objects.
+        Returns a list of users with basic profile information.
         """
         return facade.list_users()
 
-    @ns.expect(user_model, validate=True)
+    @ns.doc("create_user")
+    @ns.expect(user_create, validate=True)
     @ns.marshal_with(user_model, code=201)
     def post(self):
         """
         Create a new user.
 
-        Validates email format and uniqueness before creation.
-
-        Returns:
-            tuple: Created User object and HTTP 201 status.
+        Validates email format and uniqueness. If `is_admin` is omitted, defaults to False.
         """
-        payload = ns.payload
-        email = payload.get("email", "").strip()
-
+        data = ns.payload or {}
+        email = data.get("email", "").strip()
         if not EMAIL_RE.match(email):
             ns.abort(400, "Invalid email address")
-
         if any(u.email.lower() == email.lower() for u in facade.list_users()):
             ns.abort(400, "Email already in use")
-
-        return facade.create_user(payload), 201
-
+        data["email"] = email
+        data.setdefault("is_admin", False)
+        return facade.create_user(data), 201
 
 @ns.route("/<string:user_id>")
 @ns.response(404, "User not found")
 class UserDetail(Resource):
-    """
-    Resource for retrieving, updating, and deleting a specific user.
-    """
-
+    @ns.doc("get_user")
     @ns.marshal_with(user_model)
     def get(self, user_id):
         """
-        Fetch a user by ID.
+        Retrieve a user by ID.
 
-        Args:
-            user_id (str): Unique identifier of the user.
-
-        Returns:
-            User: The requested User object.
+        Returns the full user object if found.
         """
         user = facade.get_user(user_id)
         if not user:
-            ns.abort(404, f"User {user_id} doesn't exist")
+            ns.abort(404, f"User {user_id} not found")
         return user
 
-    @ns.expect(patch_user_model, validate=True)
+    @ns.doc("replace_user")
+    @ns.expect(user_input, validate=True)
     @ns.marshal_with(user_model)
-    def patch(self, user_id):
+    def put(self, user_id):
         """
-        Partially update an existing user.
+        Replace an existing user completely.
 
-        Validates email format and uniqueness if changed.
-
-        Args:
-            user_id (str): Unique identifier of the user.
-
-        Returns:
-            User: The updated User object.
+        All fields (`first_name`, `last_name`, `email`, `is_admin`) must be provided.
+        Validates email format and uniqueness.
         """
-        payload = ns.payload
+        data = ns.payload or {}
         user = facade.get_user(user_id)
         if not user:
-            ns.abort(404, f"User {user_id} doesn't exist")
+            ns.abort(404, f"User {user_id} not found")
+        email = data.get("email", "").strip()
+        if not EMAIL_RE.match(email):
+            ns.abort(400, "Invalid email address")
+        if any(u.email.lower() == email.lower() and u.id != user_id for u in facade.list_users()):
+            ns.abort(400, "Email already in use")
+        data["email"] = email
+        required = {"first_name", "last_name", "email", "is_admin"}
+        missing = required - set(data.keys())
+        if missing:
+            ns.abort(400, f"Missing fields for full update: {', '.join(sorted(missing))}")
+        return facade.update_user(user_id, data), 200
 
-        if "email" in payload:
-            email = payload["email"].strip()
-            if not EMAIL_RE.match(email):
-                ns.abort(400, "Invalid email address")
-            if any(
-                u.email.lower() == email.lower() and u.id != user_id
-                for u in facade.list_users()
-            ):
-                ns.abort(400, "Email already in use")
-
-        return facade.update_user(user_id, payload)
-
+    @ns.doc("delete_user")
     @ns.response(204, "User deleted")
     def delete(self, user_id):
         """
         Delete a user by ID.
 
-        Args:
-            user_id (str): Unique identifier of the user.
-
-        Returns:
-            tuple: Empty response and HTTP 204 status.
+        Returns HTTP 204 on successful deletion.
         """
         if not facade.get_user(user_id):
-            ns.abort(404, f"User {user_id} doesn't exist")
+            ns.abort(404, f"User {user_id} not found")
         facade.delete_user(user_id)
         return "", 204
 
-
-# ----------------------- user bookings ----------------------- #
 @ns.route("/<string:user_id>/bookings")
 @ns.response(404, "User not found")
 class UserBookings(Resource):
-    """
-    Resource for listing all bookings for a given user.
-    """
-
+    @ns.doc("list_user_bookings")
     @ns.marshal_list_with(booking_model)
     def get(self, user_id):
         """
-        List all bookings for a user.
+        List all bookings for a specific user.
 
-        Args:
-            user_id (str): Unique identifier of the user.
-
-        Returns:
-            list: A list of Booking objects.
+        Returns booking summaries including total price and checkout date.
         """
         if not facade.get_user(user_id):
-            ns.abort(404, f"User {user_id} doesn't exist")
-
+            ns.abort(404, f"User {user_id} not found")
         bookings = facade.get_user_bookings(user_id) or []
         return [
             {
@@ -197,42 +225,22 @@ class UserBookings(Resource):
             for b in bookings
         ]
 
-
-# ----------------------- user booking average rating ----------------------- #
 @ns.route("/<string:user_id>/bookings/rating")
 @ns.response(404, "User not found or no ratings available")
 class UserBookingsAverageRating(Resource):
-    """
-    Resource for fetching the average rating across all bookings of a user.
-    """
-
+    @ns.doc("get_user_average_booking_rating")
     @ns.marshal_with(avg_rating_output)
     def get(self, user_id):
         """
-        Get the average rating for a user's bookings.
+        Get the average rating across all bookings of a user.
 
-        Args:
-            user_id (str): Unique identifier of the user.
-
-        Returns:
-            dict: Mapping with 'user_id' and 'average_rating'.
+        Calculates the mean of all existing booking ratings.
         """
         user = facade.get_user(user_id)
         if not user:
             ns.abort(404, f"User {user_id} not found")
-
         bookings = facade.get_user_bookings(user_id) or []
-        ratings = []
-        for b in bookings:
-            review = getattr(b, "review", None)
-            if review and hasattr(review, "rating"):
-                try:
-                    ratings.append(float(review.rating))
-                except (ValueError, TypeError):
-                    continue
-
+        ratings = [float(r.review.rating) for r in bookings if getattr(r, "review", None)]
         if not ratings:
             ns.abort(404, f"No ratings found for user {user_id}")
-
-        average = sum(ratings) / len(ratings)
-        return {"user_id": user_id, "average_rating": average}
+        return {"user_id": user_id, "average_rating": sum(ratings) / len(ratings)}
