@@ -1,24 +1,26 @@
 """
-reviews.py: API endpoints for Review resources.
+reviews.py: Flask-RESTX API endpoints for Review resources.
 
-This module defines the Flask-RESTX namespace, data models, and resource classes
-for listing, creating, retrieving, and updating reviews.
+This module defines a namespace and models for reviews, including:
+- Listing all reviews and creating a new review
+- Retrieving, replacing, and deleting a review by ID
+
+Swagger UI will display these descriptions alongside each endpoint.
 """
 
 from flask import request
 from flask_restx import Namespace, Resource, fields
 from app import facade
 
-# ----------------------- namespace ----------------------- #
-ns = Namespace("reviews", description="Review operations")
+ns = Namespace("reviews", description="Review management")
 
 # ----------------------- data models ----------------------- #
 review_output = ns.model(
     "Review",
     {
-        "id": fields.String(readOnly=True, description="Review UUID"),
+        "id": fields.String(readonly=True, description="Review UUID"),
         "booking_id": fields.String(
-            readOnly=True, description="UUID of the associated booking"
+            readonly=True, description="UUID of the associated booking"
         ),
         "text": fields.String(description="Review text"),
         "rating": fields.Integer(description="Rating between 1 and 5"),
@@ -34,61 +36,53 @@ review_input = ns.model(
     },
 )
 
-review_patch = ns.model(
-    "ReviewPatch",
-    {
-        "text": fields.String(description="Review text"),
-        "rating": fields.Integer(description="Rating between 1 and 5"),
-    },
-)
-
 
 # ----------------------- resources ----------------------- #
 @ns.route("/")
 class ReviewList(Resource):
     """
-    Resource for listing all reviews and creating a new review.
+    GET  /reviews/  -> List all reviews.
+    POST /reviews/  -> Create a new review.
+                       Payload example:
+                       {
+                         "booking_id": "<UUID>",
+                         "text": "Great stay!",
+                         "rating": 5
+                       }
     """
 
+    @ns.doc("list_reviews", description="Retrieve all reviews with ratings")
     @ns.marshal_list_with(review_output)
     def get(self):
-        """
-        List all reviews.
-
-        Retrieves all reviews via the facade and returns them
-        with coerced integer ratings where possible.
-
-        Returns:
-            list: A list of review dictionaries matching review_output schema.
-        """
+        """List all reviews."""
         reviews = facade.list_reviews()
         result = []
         for r in reviews:
             try:
-                rating = int(r.rating)
+                rating_val = int(r.rating)
             except Exception:
-                rating = None
+                rating_val = None
             result.append(
                 {
                     "id": r.id,
                     "booking_id": r.booking.id,
                     "text": r.text,
-                    "rating": rating,
+                    "rating": rating_val,
                 }
             )
         return result
 
+    @ns.doc(
+        "create_review",
+        description="Create a new review; Payload: booking_id, text, rating",
+    )
     @ns.expect(review_input, validate=True)
     @ns.marshal_with(review_output, code=201)
     def post(self):
         """
         Create a new review.
 
-        Validates payload, ensures booking exists, non-empty text,
-        and rating between 1 and 5. Delegates creation to the facade.
-
-        Returns:
-            tuple: Created review dictionary and HTTP 201 status.
+        Validates booking existence, non-empty text, and rating bounds.
         """
         payload = request.json.copy()
 
@@ -111,7 +105,6 @@ class ReviewList(Resource):
             ns.abort(400, "Rating must be between 1 and 5")
         payload["rating"] = rating
 
-        # Create review and handle duplicates
         try:
             review = facade.create_review(payload)
         except Exception as e:
@@ -120,92 +113,89 @@ class ReviewList(Resource):
                 ns.abort(400, msg)
             ns.abort(500, "Could not create review")
 
-        # Coerce rating for output
-        try:
-            out_rating = int(review.rating)
-        except Exception:
-            out_rating = None
-
         return {
             "id": review.id,
             "booking_id": review.booking.id,
             "text": review.text,
-            "rating": out_rating,
+            "rating": int(review.rating) if review.rating is not None else None,
         }, 201
 
 
 @ns.route("/<string:review_id>")
+@ns.response(404, "Review not found")
 class ReviewDetail(Resource):
     """
-    Resource for fetching, updating, and deleting a specific review.
+    GET    /reviews/{id}  -> Retrieve a review by ID.
+    PUT    /reviews/{id}  -> Replace an existing review.
+                         Payload example:
+                         {
+                           "booking_id": "<UUID>",
+                           "text": "Updated review text",
+                           "rating": 4
+                         }
+    DELETE /reviews/{id}  -> Delete a review by ID.
     """
 
+    @ns.doc("get_review", description="Retrieve a review by its ID")
     @ns.marshal_with(review_output)
     def get(self, review_id):
-        """
-        Fetch a review by its ID.
-
-        Args:
-            review_id (str): Unique identifier of the review.
-
-        Returns:
-            dict: Review dictionary matching review_output schema.
-        """
+        """Fetch a review by its ID."""
         r = facade.get_review(review_id)
         if not r:
             ns.abort(404, f"Review {review_id} not found")
         try:
-            rating = int(r.rating)
+            rating_val = int(r.rating)
         except Exception:
-            rating = None
+            rating_val = None
         return {
             "id": r.id,
             "booking_id": r.booking.id,
             "text": r.text,
-            "rating": rating,
+            "rating": rating_val,
         }
 
-    @ns.expect(review_patch, validate=True)
+    @ns.doc(
+        "replace_review",
+        description="Replace an existing review; Payload: booking_id, text, rating",
+    )
+    @ns.expect(review_input, validate=True)
     @ns.marshal_with(review_output)
-    def patch(self, review_id):
+    def put(self, review_id):
         """
-        Update fields of an existing review.
+        Replace an existing review.
 
-        Args:
-            review_id (str): Unique identifier of the review.
-
-        Returns:
-            dict: Updated review dictionary matching review_output schema.
+        Requires booking_id, text, and rating; enforces non-empty text and rating bounds.
         """
-        r = facade.get_review(review_id)
-        if not r:
-            ns.abort(404, f"Review {review_id} not found")
-
         payload = request.json.copy()
 
-        if "text" in payload:
-            text = payload.get("text", "").strip()
-            if not text:
-                ns.abort(400, "Review text cannot be empty")
-            r.text = text
+        # Validate booking exists
+        if not facade.get_booking(payload.get("booking_id")):
+            ns.abort(400, "Booking not found")
 
-        if "rating" in payload:
-            try:
-                rating = int(payload.get("rating"))
-            except Exception:
-                ns.abort(400, "Rating must be an integer between 1 and 5")
-            if not (1 <= rating <= 5):
-                ns.abort(400, "Rating must be between 1 and 5")
-            r.rating = rating
+        # Validate text
+        text = payload.get("text", "").strip()
+        if not text:
+            ns.abort(400, "Review text cannot be empty")
 
+        # Validate rating
         try:
-            out_rating = int(r.rating)
+            rating = int(payload.get("rating"))
         except Exception:
-            out_rating = None
+            ns.abort(400, "Rating must be an integer between 1 and 5")
+        if not (1 <= rating <= 5):
+            ns.abort(400, "Rating must be between 1 and 5")
 
-        return {
-            "id": r.id,
-            "booking_id": r.booking.id,
-            "text": r.text,
-            "rating": out_rating,
-        }
+        # Delegate update through facade
+        updated = facade.update_review(review_id, payload)
+        if not updated:
+            ns.abort(404, f"Review {review_id} not found")
+        return updated, 200
+
+    @ns.doc("delete_review", description="Delete a review by its ID")
+    @ns.response(204, "Review deleted")
+    def delete(self, review_id):
+        """Delete a review by its ID."""
+        if not facade.get_review(review_id):
+            ns.abort(404, f"Review {review_id} not found")
+        facade.delete_review(review_id)
+        return "", 204

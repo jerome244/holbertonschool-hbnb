@@ -278,68 +278,66 @@ Below is a summary of all available API routes, grouped by resource.
 
 ### 👤 Users
 
-| Method | Path                        | Description                              | Request Body                                    | Response Codes           |
-|--------|-----------------------------|------------------------------------------|-------------------------------------------------|--------------------------|
-| GET    | `/api/v1/users/`            | List all users                           | _none_                                          | 200 OK                   |
-| POST   | `/api/v1/users/`            | Create a new user                        | `{ first_name, last_name, email }`              | 201 Created, 400 Bad Request |
-| GET    | `/api/v1/users/{user_id}`   | Retrieve a user by ID                    | _none_                                          | 200 OK, 404 Not Found    |
-| PATCH  | `/api/v1/users/{user_id}`   | Update user fields                       | Partial `{ first_name?, last_name?, email? }`   | 200 OK, 400 Bad Request  |
-| DELETE | `/api/v1/users/{user_id}`   | Delete a user                            | _none_                                          | 204 No Content, 404 Not Found |
+| Method | Path                        | Description                              | Request Body                                  | Response Codes                       |
+|--------|-----------------------------|------------------------------------------|-----------------------------------------------|--------------------------------------|
+| GET    | `/api/v1/users/`            | List all users                           | _none_                                        | 200 OK                               |
+| POST   | `/api/v1/users/`            | Create a new user                        | `{ first_name, last_name, email }`            | 201 Created, 400 Bad Request         |
+| GET    | `/api/v1/users/{user_id}`   | Retrieve a user by ID                    | _none_                                        | 200 OK, 404 Not Found                |
+| PUT    | `/api/v1/users/{user_id}`   | Replace user                            | Full `{ first_name, last_name, email, is_admin }` | 200 OK, 400 Bad Request              |
+| DELETE | `/api/v1/users/{user_id}`   | Delete a user                            | _none_                                        | 204 No Content, 404 Not Found        |
 
 ### 🧑‍💼 Hosts
 
-| Method | Path                          | Description                              | Request Body                                    | Response Codes              |
-|--------|-------------------------------|------------------------------------------|-------------------------------------------------|-----------------------------|
-| GET    | `/api/v1/hosts/`              | List all hosts                           | _none_                                          | 200 OK                      |
-| POST   | `/api/v1/hosts/`              | Create a new host                        | `{ first_name, last_name, email }`              | 201 Created, 400 Bad Request |
-| GET    | `/api/v1/hosts/{host_id}`     | Retrieve a host by ID                    | _none_                                          | 200 OK, 404 Not Found       |
-| PATCH  | `/api/v1/hosts/{host_id}`     | Update host fields                       | Partial `{ first_name?, last_name?, email? }`   | 200 OK, 400 Bad Request     |
-| DELETE | `/api/v1/hosts/{host_id}`     | Delete a host                            | _none_                                          | 204 No Content, 404 Not Found |
-| GET    | `/api/v1/hosts/{host_id}/rating` | Get average rating for a host        | _none_                                          | 200 OK, 404 Not Found       |
+| Method | Path                              | Description                              | Request Body                                    | Response Codes                       |
+|--------|-----------------------------------|------------------------------------------|-------------------------------------------------|--------------------------------------|
+| GET    | `/api/v1/hosts/`                  | List all hosts                           | _none_                                          | 200 OK                               |
+| POST   | `/api/v1/hosts/`                  | Create a new host                        | `{ first_name, last_name, email }`              | 201 Created, 400 Bad Request         |
+| GET    | `/api/v1/hosts/{host_id}`         | Retrieve a host by ID                    | _none_                                          | 200 OK, 404 Not Found                |
+| PUT    | `/api/v1/hosts/{host_id}`         | Replace host                             | Full `{ first_name, last_name, email, is_admin }` | 200 OK, 400 Bad Request              |
+| DELETE | `/api/v1/hosts/{host_id}`         | Delete a host                            | _none_                                          | 204 No Content, 404 Not Found        |
+| GET    | `/api/v1/hosts/{host_id}/rating`  | Get average rating for a host            | _none_                                          | 200 OK, 404 Not Found                |
 
 ### 🏷️ Amenities
 
-| Method | Path                            | Description                              | Request Body                       | Response Codes              |
-|--------|---------------------------------|------------------------------------------|------------------------------------|-----------------------------|
-| GET    | `/api/v1/amenities/`            | List all amenities                       | _none_                             | 200 OK                      |
-| POST   | `/api/v1/amenities/`            | Create a new amenity                     | `{ name }`                         | 201 Created, 400 Bad Request |
-| GET    | `/api/v1/amenities/{amenity_id}`| Retrieve an amenity by ID                | _none_                             | 200 OK, 404 Not Found       |
-| PATCH  | `/api/v1/amenities/{amenity_id}`| Update amenity name                      | `{ name }`                         | 200 OK, 400 Bad Request     |
-| DELETE | `/api/v1/amenities/{amenity_id}`| Delete an amenity                        | _none_                             | 204 No Content, 404 Not Found |
+| Method | Path                              | Description                              | Request Body                       | Response Codes                       |
+|--------|-----------------------------------|------------------------------------------|------------------------------------|--------------------------------------|
+| GET    | `/api/v1/amenities/`              | List all amenities                       | _none_                             | 200 OK                               |
+| POST   | `/api/v1/amenities/`              | Create a new amenity                     | `{ name }`                         | 201 Created, 400 Bad Request         |
+| GET    | `/api/v1/amenities/{amenity_id}`  | Retrieve an amenity by ID                | _none_                             | 200 OK, 404 Not Found                |
+| PUT    | `/api/v1/amenities/{amenity_id}`  | Replace amenity                          | Full `{ name }`                    | 200 OK, 400 Bad Request              |
+| DELETE | `/api/v1/amenities/{amenity_id}`  | Delete an amenity                        | _none_                             | 204 No Content, 404 Not Found        |
 
 ### 🏠 Places
 
-| Method | Path                          | Description                              | Request Body                                               | Response Codes               |
-|--------|-------------------------------|------------------------------------------|------------------------------------------------------------|------------------------------|
-| GET    | `/api/v1/places/`             | List all places                          | _none_                                                     | 200 OK                       |
-| POST   | `/api/v1/places/`             | Create a new place                       | `{ name, description, user_id, amenity_ids, capacity, price }` | 201 Created, 400 Bad Request |
-| GET    | `/api/v1/places/{place_id}`   | Retrieve a place by ID                   | _none_                                                     | 200 OK, 404 Not Found        |
-| PATCH  | `/api/v1/places/{place_id}`   | Update place fields                      | Partial of the POST body                                   | 200 OK, 400 Bad Request      |
-| DELETE | `/api/v1/places/{place_id}`   | Delete a place                           | _none_                                                     | 204 No Content, 404 Not Found |
-| GET    | `/api/v1/places/{place_id}/rating` | Get average rating for a place      | _none_                                                     | 200 OK, 404 Not Found        |
+| Method | Path                              | Description                              | Request Body                                                         | Response Codes                       |
+|--------|-----------------------------------|------------------------------------------|----------------------------------------------------------------------|--------------------------------------|
+| GET    | `/api/v1/places/`                 | List all places                          | _none_                                                               | 200 OK                               |
+| POST   | `/api/v1/places/`                 | Create a new place                       | `{ title, capacity, price, host_id, description?, amenity_ids? }`    | 201 Created, 400 Bad Request         |
+| GET    | `/api/v1/places/{place_id}`       | Retrieve a place by ID                   | _none_                                                               | 200 OK, 404 Not Found                |
+| PUT    | `/api/v1/places/{place_id}`       | Replace place                            | Full `{ title, capacity, price, host_id, description?, amenity_ids? }` | 200 OK, 400 Bad Request              |
+| DELETE | `/api/v1/places/{place_id}`       | Delete a place                           | _none_                                                               | 204 No Content, 404 Not Found        |
+| GET    | `/api/v1/places/{place_id}/rating`| Get average rating for a place           | _none_                                                               | 200 OK, 404 Not Found                |
 
 ### 📅 Bookings
 
-| Method | Path                          | Description                              | Request Body                                                 | Response Codes               |
-|--------|-------------------------------|------------------------------------------|--------------------------------------------------------------|------------------------------|
-| GET    | `/api/v1/bookings/`           | List all bookings                        | _none_                                                       | 200 OK                       |
-| POST   | `/api/v1/bookings/`           | Create a booking                         | `{ user_id, place_id, guest_count, checkin_date, night_count, price_per_night? }` | 201 Created, 400 Bad Request |
-| GET    | `/api/v1/bookings/{booking_id}`| Retrieve a booking by ID                 | _none_                                                       | 200 OK, 404 Not Found        |
-| PATCH  | `/api/v1/bookings/{booking_id}`| Update booking fields                    | Partial of the POST body                                     | 200 OK, 400 Bad Request      |
-| DELETE | `/api/v1/bookings/{booking_id}`| Delete a booking                         | _none_                                                       | 204 No Content, 404 Not Found |
-| GET    | `/api/v1/bookings/{booking_id}/cost` | Compute total cost of a booking    | _none_                                                       | 200 OK, 404 Not Found        |
+| Method | Path                                | Description                              | Request Body                                                          | Response Codes                       |
+|--------|-------------------------------------|------------------------------------------|-----------------------------------------------------------------------|--------------------------------------|
+| GET    | `/api/v1/bookings/`                 | List all bookings                        | _none_                                                                | 200 OK                               |
+| POST   | `/api/v1/bookings/`                 | Create a booking                         | `{ user_id, place_id, guest_count, checkin_date, night_count }`       | 201 Created, 400 Bad Request         |
+| GET    | `/api/v1/bookings/{booking_id}`     | Retrieve a booking by ID                 | _none_                                                                | 200 OK, 404 Not Found                |
+| PUT    | `/api/v1/bookings/{booking_id}`     | Replace booking                          | Full `{ user_id, place_id, guest_count, checkin_date, night_count }`  | 200 OK, 400 Bad Request              |
+| DELETE | `/api/v1/bookings/{booking_id}`     | Delete a booking                         | _none_                                                                | 204 No Content, 404 Not Found        |
+| GET    | `/api/v1/bookings/{booking_id}/cost`| Compute total cost of a booking          | _none_                                                                | 200 OK, 404 Not Found                |
 
 ### ⭐ Reviews
 
-| Method | Path                            | Description                              | Request Body                                              | Response Codes               |
-|--------|---------------------------------|------------------------------------------|-----------------------------------------------------------|------------------------------|
-| GET    | `/api/v1/reviews/`              | List all reviews                         | _none_                                                    | 200 OK                       |
-| POST   | `/api/v1/reviews/`              | Create a review                          | `{ booking_id, text, rating }`                            | 201 Created, 400 Bad Request |
-| GET    | `/api/v1/reviews/{review_id}`   | Retrieve a review by ID                  | _none_                                                    | 200 OK, 404 Not Found        |
-| PATCH  | `/api/v1/reviews/{review_id}`   | Update review text or rating             | Partial `{ text?, rating? }`                              | 200 OK, 400 Bad Request      |
-| DELETE | `/api/v1/reviews/{review_id}`   | Delete a review                          | _none_                                                    | 204 No Content, 404 Not Found |
-
----
+| Method | Path                                  | Description                              | Request Body                           | Response Codes                       |
+|--------|---------------------------------------|------------------------------------------|----------------------------------------|--------------------------------------|
+| GET    | `/api/v1/reviews/`                    | List all reviews                         | _none_                                 | 200 OK                               |
+| POST   | `/api/v1/reviews/`                    | Create a review                          | `{ booking_id, text, rating }`         | 201 Created, 400 Bad Request         |
+| GET    | `/api/v1/reviews/{review_id}`         | Retrieve a review by ID                  | _none_                                 | 200 OK, 404 Not Found                |
+| PUT    | `/api/v1/reviews/{review_id}`         | Replace review                           | Full `{ booking_id, text, rating }`    | 200 OK, 400 Bad Request              |
+| DELETE | `/api/v1/reviews/{review_id}`         | Delete a review                          | _none_                                 | 204 No Content, 404 Not Found        |
 
 ## 🛠️ Testing and Validating
 

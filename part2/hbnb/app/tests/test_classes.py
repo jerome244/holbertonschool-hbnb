@@ -14,6 +14,7 @@ To be run from project root with:
     pytest -q
 """
 
+
 # --- Test: User --- #
 def test_user():
     """
