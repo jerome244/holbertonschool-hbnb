@@ -2,20 +2,24 @@
 from datetime import datetime, timedelta
 import pytest
 
-from ..models.amenity import Amenity
-from ..models.user import User
-from ..models.booking import Booking
-from ..models.host import Host
-from ..models.place import Place
-from ..models.review import Review
+from app.models.amenity import Amenity
+from app.models.user import User
+from app.models.booking import Booking
+from app.models.host import Host
+from app.models.place import Place
+from app.models.review import Review
 
 """
-To be run from /hbnb with python -m app.tests.test_classes
+To be run from project root with:
+    pytest -q
 """
-
 
 # --- Test: User --- #
 def test_user():
+    """
+    Verify that a User can be created with correct attributes,
+    has no bookings by default, and timestamps are set.
+    """
     user = User(
         first_name="Marcel", last_name="Vincent", email="marcel.vincent@gmail.com"
     )
@@ -31,6 +35,10 @@ def test_user():
 
 # --- Test: Host --- #
 def test_host():
+    """
+    Verify Host fields, that adding a Place registers with host,
+    and that host.rating is average of its Places’ reviews.
+    """
     host = Host(
         first_name="Fabien", last_name="Roussel", email="saucissonetpinard@gmail.com"
     )
@@ -62,6 +70,7 @@ def test_host():
     )
     review1 = Review(booking1, text="ok", rating=5)
     review2 = Review(booking2, text="bof", rating=2)
+
     assert host.first_name == "Fabien"
     assert host.last_name == "Roussel"
     assert host.email == "saucissonetpinard@gmail.com"
@@ -74,6 +83,10 @@ def test_host():
 
 # --- Test: Place --- #
 def test_place():
+    """
+    Verify Place fields, adding amenities, and that reviews
+    are automatically attached via Review constructor.
+    """
     host = Host(first_name="Oui", last_name="Oui", email="ouioui@outlook.fr")
     userPlace = User(first_name="Jean", last_name="Jean", email="juanitodu34@gmail.com")
     place = Place(
@@ -95,10 +108,9 @@ def test_place():
     )
     text = "Not bad, not bad at all."
     amenity1 = Amenity("Bidet")
-    # When review1 is created it is added to booking and appended
-    # to Place.reviews[]
     review1 = Review(booking, text, rating=4)
     place.add_amenity(amenity1)
+
     assert place.title == "Maison Champignon"
     assert place.capacity == 4
     assert place.price == 150.0
@@ -107,7 +119,6 @@ def test_place():
     assert place.host == host
     assert place.description == "A mushroom house"
     assert place.amenities == [amenity1]
-    # The review is added automatically to the Place.reviews at creation of review1
     assert place.reviews == [review1]
     assert abs(place.created_at - datetime.now()) < timedelta(seconds=1)
     assert abs(place.updated_at - datetime.now()) < timedelta(seconds=1)
@@ -116,6 +127,10 @@ def test_place():
 
 # --- Test: Booking --- #
 def test_booking():
+    """
+    Verify Booking fields, total_price calculation, checkout_date,
+    and that no review exists initially.
+    """
     host = Host(first_name="René", last_name="Causse", email="tonpere@wanadoo.com")
     user1 = User(first_name="Jean", last_name="Jean", email="juanitodu34@gmail.com")
     place = Place(
@@ -131,6 +146,7 @@ def test_booking():
     booking = Booking(
         guest_count=2, checkin_date=checkin_date, night_count=3, place=place, user=user1
     )
+
     assert booking.guest_count == 2
     assert booking.checkin_date == checkin_date
     assert booking.night_count == 3
@@ -142,9 +158,13 @@ def test_booking():
     print("Booking creation test passed!")
 
 
+# --- Test: Review --- #
 def test_review():
+    """
+    Verify Review fields, that timestamp updates appropriately,
+    and that the review is linked to its booking.
+    """
     hostReview = Host(first_name="Oui", last_name="Oui", email="ouioui@outlook.fr")
-
     placeReview = Place(
         title="Maison Champignon",
         capacity=4,
@@ -166,16 +186,14 @@ def test_review():
         place=placeReview,
         user=userReview,
     )
-
-    text = "Very nice except for the dude chasing us and trying to make us eat saucisson and drink pinard. Pretty cringe if you ask me"
-
+    text = (
+        "Very nice except for the dude chasing us and trying to make us eat "
+        "saucisson and drink pinard. Pretty cringe if you ask me"
+    )
     review = Review(booking=booking, text=text, rating=5)
 
     assert review.booking == booking
-    assert (
-        review.text
-        == "Very nice except for the dude chasing us and trying to make us eat saucisson and drink pinard. Pretty cringe if you ask me"
-    )
+    assert review.text == text
     assert review.rating == 5
     assert abs(review.created_at - datetime.now()) < timedelta(seconds=1)
     assert abs(review.updated_at - datetime.now()) < timedelta(seconds=1)
@@ -183,9 +201,10 @@ def test_review():
 
 
 # --- Test: Amenity --- #
-
-
 def test_amenity():
+    """
+    Verify Amenity name field and timestamp behavior.
+    """
     amenity = Amenity(name="Wi-Fi")
     assert amenity.name == "Wi-Fi"
     assert abs(amenity.created_at - datetime.now()) < timedelta(seconds=1)
@@ -193,23 +212,27 @@ def test_amenity():
     print("Amenity creation test passed!")
 
 
+# --- Validation: Invalid email format --- #
 def test_invalid_email_format():
+    """
+    Invalid email should raise ValueError with specific message.
+    """
     try:
         User(first_name="Frank", last_name="Zappa", email="+33 9 89 52 47 12")
     except ValueError as e:
         assert str(e) == "Email must have valid mail address format"
-        print("Email went through validation and raised Value Error")
+        print("Email validation raised ValueError as expected")
     else:
         pytest.fail("Expected ValueError for invalid email format")
-        print("Email went through validation successfully")
 
 
+# --- Validation: Guest count overflow --- #
 def test_invalid_guest_count():
-    # guest_count = 5 and Place.capacity = 4 should raise ValueError
+    """
+    Booking with guest_count > Place.capacity must raise ValueError.
+    """
     try:
-        checkin_date = datetime.now() + timedelta(
-            days=5
-        )  # Make sure date is 5 days from whenever this is tested
+        checkin_date = datetime.now() + timedelta(days=5)
         host = Host(first_name="Oui", last_name="Oui", email="ouioui@outlook.fr")
         place = Place(
             title="Maison Champignon",
@@ -230,18 +253,18 @@ def test_invalid_guest_count():
         )
     except ValueError as e:
         assert str(e) == f"Number of guests exceeds {place.title}'s capacity"
-        print("Guest Count exceeded Place capacity and raised Value Error")
+        print("Guest capacity validation raised ValueError as expected")
     else:
-        pytest.fail("Expected ValueError from guests' overflow")
-        print("Guest count did not exceed place capacity")
+        pytest.fail("Expected ValueError for guests overflow")
 
 
+# --- Validation: Past checkin_date --- #
 def test_invalid_checkin_date():
+    """
+    Booking with checkin_date in the past must raise ValueError.
+    """
     try:
-        description = "Vraiment sympa mais y'a quand même beaucoup de mecs hyper tendus, faut être prêt physiquement et mentalement"
-        checkin_date = datetime.now() - timedelta(
-            days=5
-        )  # Make sur chekin_date is set in the past
+        checkin_date = datetime.now() - timedelta(days=5)
         host = Host(first_name="Oui", last_name="Oui", email="ouioui@outlook.fr")
         place = Place(
             title="Le Moulin",
@@ -250,7 +273,7 @@ def test_invalid_checkin_date():
             latitude=-40.0,
             longitude=-120.0,
             host=host,
-            description=description,
+            description="A moulin",
         )
         user = User(first_name="Jean", last_name="Jean", email="juanitodu34@gmail.com")
         Booking(
@@ -262,13 +285,16 @@ def test_invalid_checkin_date():
         )
     except ValueError as e:
         assert str(e) == "Checkin_date must be later than today"
-        print("Checkin date is in the past and raised Value Error")
+        print("Past checkin_date validation raised ValueError as expected")
     else:
-        pytest.fail("Expected ValueError for checkin date being in the past")
-        print("Value Error was not raised")
+        pytest.fail("Expected ValueError for past checkin_date")
 
 
+# --- Validation: Multiple reviews per booking --- #
 def test_two_reviews_one_booking():
+    """
+    Adding two reviews for the same Booking should raise ValueError.
+    """
     try:
         host = Host(
             first_name="Fabien",
@@ -285,7 +311,6 @@ def test_two_reviews_one_booking():
             description="An avant-garde building",
         )
         checking_date1 = datetime.today() + timedelta(days=3)
-        checking_date2 = datetime.today() + timedelta(days=30)
         user1 = User(first_name="Jean", last_name="Jean", email="juanitodu34@gmail.com")
         booking1 = Booking(
             guest_count=3,
@@ -294,23 +319,13 @@ def test_two_reviews_one_booking():
             place=place,
             user=user1,
         )
-        booking2 = Booking(
-            guest_count=3,
-            checkin_date=checking_date2,
-            night_count=3,
-            place=place,
-            user=user1,
-        )
-        review1 = Review(booking1, text="ok", rating=5)
+        Review(booking1, text="ok", rating=5)
         Review(booking1, text="bof", rating=2)
     except ValueError as e:
         assert str(e) == "This Booking already has a review"
-        print(
-            "More than one review was added to a given booking and raised Value Error"
-        )
+        print("Multiple-review validation raised ValueError as expected")
     else:
-        pytest.fail("Expected Value Error for more than one review per booking")
-        print("Value Error was not raised")
+        pytest.fail("Expected ValueError for multiple reviews on one booking")
 
 
 if __name__ == "__main__":
@@ -319,6 +334,7 @@ if __name__ == "__main__":
     test_place()
     test_booking()
     test_review()
+    test_amenity()
 
     print("\n#------- Testing validation -------#\n")
 

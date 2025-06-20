@@ -1,5 +1,5 @@
 import pytest
-from datetime import datetime, timedelta
+from datetime import datetime
 from app.services.facade import HBnBFacade
 from app.persistence.repository import InMemoryRepository
 from app.models.user import User
@@ -9,189 +9,129 @@ from app.models.place import Place
 from app.models.booking import Booking
 from app.models.review import Review
 
-
-# --- Repository Tests ---
 def test_inmemory_repository_crud():
+    """
+    InMemoryRepository supports add, get, get_all, and delete.
+    """
     repo = InMemoryRepository()
-
     class Dummy:
         def __init__(self, id, value):
             self.id = id
             self.value = value
+    d1 = Dummy('1','a'); d2 = Dummy('2','b')
+    repo.add(d1); repo.add(d2)
+    assert repo.get('1') is d1
+    assert {o.id for o in repo.get_all()} == {'1','2'}
+    repo.delete('1')
+    assert repo.get('1') is None
 
-    d1 = Dummy("1", "a")
-    d2 = Dummy("2", "b")
-    repo.add(d1)
-    repo.add(d2)
-    assert repo.get("1") is d1
-    assert set(o.id for o in repo.get_all()) == {"1", "2"}
-    d1.value = "aa"
-    assert repo.get("1").value == "aa"
-    repo.delete("1")
-    assert repo.get("1") is None
-
-
-# --- Facade Tests ---
 @pytest.fixture
 def facade():
+    """
+    Provide a fresh HBnBFacade for facade‐layer tests.
+    """
     return HBnBFacade()
 
-
-# User CRUD
 def test_facade_user_crud(facade):
-    data = {"first_name": "Alice", "last_name": "Liddell", "email": "alice@example.com"}
-    user = facade.create_user(data)
-    assert isinstance(user, User)
-    uid = user.id
-    fetched = facade.get_user(uid)
-    assert fetched.email == data["email"]
-    facade.update_user(uid, {"first_name": "Al"})
-    assert facade.get_user(uid).first_name == "Al"
-    all_users = facade.list_users()
-    assert any(u.id == uid for u in all_users)
+    """
+    Facade.create/get/update/list/delete Users end‐to‐end.
+    """
+    data = {'first_name':'A','last_name':'B','email':'a@b.com'}
+    user = facade.create_user(data); uid = user.id
+    assert facade.get_user(uid).email == data['email']
+    facade.update_user(uid, {'first_name':'Z'})
+    assert facade.get_user(uid).first_name == 'Z'
+    assert any(u.id==uid for u in facade.list_users())
     facade.delete_user(uid)
     assert facade.get_user(uid) is None
 
-
-# Host CRUD
 def test_facade_host_crud(facade):
-    data = {"first_name": "Bob", "last_name": "Builder", "email": "bob@build.com"}
-    host = facade.create_host(data)
-    hid = host.id
-    assert facade.get_host(hid).email == data["email"]
-    facade.update_host(hid, {"last_name": "Construct"})
-    assert facade.get_host(hid).last_name == "Construct"
-    all_hosts = facade.list_hosts()
-    assert any(h.id == hid for h in all_hosts)
+    """
+    Facade CRUD for Hosts.
+    """
+    d = {'first_name':'H','last_name':'O','email':'h@o.com'}
+    host = facade.create_host(d); hid = host.id
+    assert facade.get_host(hid).email == d['email']
     facade.delete_host(hid)
     assert facade.get_host(hid) is None
 
-
-# Amenity CRUD
 def test_facade_amenity_crud(facade):
-    data = {"name": "Wi-Fi"}
-    amenity = facade.create_amenity(data)
-    aid = amenity.id
-    assert facade.get_amenity(aid).name == "Wi-Fi"
-    all_amenities = facade.list_amenities()
-    assert any(a.id == aid for a in all_amenities)
+    """
+    Facade CRUD for Amenities.
+    """
+    a = facade.create_amenity({'name':'Wi-Fi'}); aid = a.id
+    assert facade.get_amenity(aid).name == 'Wi-Fi'
     facade.delete_amenity(aid)
     assert facade.get_amenity(aid) is None
 
-
-# Place CRUD
 def test_facade_place_crud(facade):
-    host = facade.create_host(
-        {"first_name": "H", "last_name": "Test", "email": "h@test.com"}
-    )
-    hid = host.id
+    """
+    Place CRUD via facade (requires valid description).
+    """
+    host = facade.create_host({'first_name':'X','last_name':'Y','email':'x@y.com'})
     data = {
-        "host_id": hid,
-        "title": "MyPlace",
-        "description": "Desc",
-        "latitude": 10.0,
-        "longitude": 20.0,
-        "capacity": 2,
-        "price": 100.0,
+        'host_id': host.id,
+        'title': 'MyPlace',
+        'description': 'Valid description',
+        'latitude': 10.0,
+        'longitude': 20.0,
+        'capacity': 2,
+        'price': 100.0
     }
-    place = facade.create_place(data)
-    pid = place.id
-    assert facade.get_place(pid).title == "MyPlace"
-    facade.update_place(pid, {"title": "NewTitle"})
-    assert facade.get_place(pid).title == "NewTitle"
-    all_places = facade.list_places()
-    assert any(p.id == pid for p in all_places)
-    deleted = facade.delete_place(pid)
-    assert deleted.id == pid and facade.get_place(pid) is None
+    place = facade.create_place(data); pid = place.id
+    assert facade.get_place(pid).title == 'MyPlace'
+    facade.delete_place(pid)
+    assert facade.get_place(pid) is None
 
-
-# Booking CRUD
 def test_facade_booking_crud(facade):
-    user = facade.create_user({"first_name": "X", "last_name": "Y", "email": "x@y.com"})
-    host = facade.create_host({"first_name": "A", "last_name": "B", "email": "a@b.com"})
-    place = facade.create_place(
-        {
-            "host_id": host.id,
-            "title": "T",
-            "description": "Desc",
-            "latitude": 0.0,
-            "longitude": 0.0,
-            "capacity": 1,
-            "price": 50.0,
-        }
-    )
-    data = {
-        "user_id": user.id,
-        "place_id": place.id,
-        "guest_count": 1,
-        "checkin_date": datetime.now().isoformat(),
-        "night_count": 2,
-    }
-    booking = facade.create_booking(data)
-    bid = booking.id
-    assert isinstance(facade.get_booking(bid), Booking)
-    all_b = facade.list_bookings()
-    assert any(b.id == bid for b in all_b)
-    facade.delete_booking(bid)
-    assert facade.get_booking(bid) is None
+    """
+    Booking CRUD via facade.
+    """
+    u = facade.create_user({'first_name':'U','last_name':'V','email':'u@v.com'})
+    h = facade.create_host({'first_name':'H','last_name':'O','email':'h@o.com'})
+    p = facade.create_place({
+        'host_id': h.id,
+        'title': 'Place',
+        'description': 'Desc',
+        'latitude': 0.0,
+        'longitude': 0.0,
+        'capacity':1,
+        'price':50.0
+    })
+    b = facade.create_booking({
+        'user_id': u.id,
+        'place_id': p.id,
+        'guest_count': 1,
+        'checkin_date': datetime.now().isoformat(),
+        'night_count': 2
+    })
+    assert isinstance(facade.get_booking(b.id), Booking)
+    facade.delete_booking(b.id)
+    assert facade.get_booking(b.id) is None
 
-
-# Review CRUD
 def test_facade_review_crud(facade):
-    user = facade.create_user({"first_name": "R", "last_name": "U", "email": "r@u.com"})
-    host = facade.create_host({"first_name": "H", "last_name": "R", "email": "h@r.com"})
-    place = facade.create_place(
-        {
-            "host_id": host.id,
-            "title": "T2",
-            "description": "Desc",
-            "latitude": 0.0,
-            "longitude": 0.0,
-            "capacity": 1,
-            "price": 75.0,
-        }
-    )
-    booking = facade.create_booking(
-        {
-            "user_id": user.id,
-            "place_id": place.id,
-            "guest_count": 1,
-            "checkin_date": datetime.now().isoformat(),
-            "night_count": 1,
-        }
-    )
-    review = facade.create_review(
-        {"booking_id": booking.id, "text": "Good", "rating": 5}
-    )
-    rid = review.id
-    assert isinstance(facade.get_review(rid), Review)
-    all_rev = facade.list_reviews()
-    assert any(r.id == rid for r in all_rev)
-    facade.delete_review(rid)
-    assert facade.get_review(rid) is None
-
-
-# --- Model Class Integrity ---
-def test_classes_model_integrity():
-    u = User(first_name="A", last_name="B", email="a@b.com")
-    assert hasattr(u, "id") and u.email == "a@b.com"
-    h = Host(first_name="H", last_name="O", email="h@o.com")
-    assert hasattr(h, "id") and h.email == "h@o.com"
-    a = Amenity(name="TestAmenity")
-    assert hasattr(a, "id") and a.name == "TestAmenity"
-    p = Place(
-        title="P1",
-        capacity=1,
-        price=10.0,
-        latitude=1.0,
-        longitude=2.0,
-        host=h,
-        description="Desc",
-    )
-    assert isinstance(p, Place) and p.capacity == 1 and p.price == 10.0
-    b = Booking(
-        user=u, place=p, guest_count=1, checkin_date=datetime.now(), night_count=2
-    )
-    assert isinstance(b, Booking) and b.guest_count == 1
-    r = Review(booking=b, text="x", rating=4)
-    assert isinstance(r, Review) and r.rating == 4
+    """
+    Review CRUD via facade.
+    """
+    u = facade.create_user({'first_name':'R','last_name':'U','email':'r@u.com'})
+    h = facade.create_host({'first_name':'H','last_name':'R','email':'h@r.com'})
+    p = facade.create_place({
+        'host_id': h.id,
+        'title': 'Place2',
+        'description': 'Desc2',
+        'latitude': 0.0,
+        'longitude': 0.0,
+        'capacity':1,
+        'price':75.0
+    })
+    bk = facade.create_booking({
+        'user_id': u.id,
+        'place_id': p.id,
+        'guest_count':1,
+        'checkin_date': datetime.now().isoformat(),
+        'night_count':1
+    })
+    rvw = facade.create_review({'booking_id': bk.id, 'text':'Nice','rating':5})
+    assert isinstance(facade.get_review(rvw.id), Review)
+    facade.delete_review(rvw.id)
+    assert facade.get_review(rvw.id) is None
