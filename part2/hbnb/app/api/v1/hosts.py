@@ -1,9 +1,18 @@
+"""
+hosts.py: API endpoints for Host resources.
+
+This module defines the Flask-RESTX namespace, data models, and resource classes
+for listing, creating, retrieving, updating, deleting hosts, fetching ratings,
+and listing owned places.
+"""
+
 from flask_restx import Namespace, Resource, fields
 from app import facade
 
+# ----------------------- namespace ----------------------- #
 ns = Namespace("hosts", description="Host management")
 
-# Full Host model returned by GET/POST/PATCH
+# ----------------------- data models ----------------------- #
 host_model = ns.model(
     "Host",
     {
@@ -15,7 +24,6 @@ host_model = ns.model(
     },
 )
 
-# Separate model for creating a Host (no client-supplied 'id')
 create_host_model = ns.model(
     "HostCreate",
     {
@@ -27,17 +35,34 @@ create_host_model = ns.model(
 )
 
 
+# ----------------------- resource classes ----------------------- #
 @ns.route("")
 class HostList(Resource):
+    """
+    Resource for listing all hosts and creating new hosts.
+    """
+
     @ns.marshal_list_with(host_model)
     def get(self):
-        """List all hosts"""
+        """
+        List all hosts.
+
+        Returns:
+            list: A list of all Host objects.
+        """
         return facade.list_hosts()
 
     @ns.expect(create_host_model, validate=True)
     @ns.marshal_with(host_model, code=201)
     def post(self):
-        """Create a new host; server generates the ID"""
+        """
+        Create a new host.
+
+        Validates payload, enforces unique email, and returns the created Host.
+
+        Returns:
+            tuple: Created Host object and HTTP 201 status.
+        """
         data = ns.payload
 
         # Normalize & enforce unique email
@@ -51,9 +76,21 @@ class HostList(Resource):
 
 @ns.route("/<string:host_id>")
 class HostDetail(Resource):
+    """
+    Resource for retrieving, updating, and deleting a specific host.
+    """
+
     @ns.marshal_with(host_model)
     def get(self, host_id):
-        """Fetch a host by ID"""
+        """
+        Fetch a host by ID.
+
+        Args:
+            host_id (str): Unique identifier of the host.
+
+        Returns:
+            Host: The requested Host object.
+        """
         host = facade.get_host(host_id)
         if not host:
             ns.abort(404, f"Host {host_id} not found")
@@ -62,7 +99,14 @@ class HostDetail(Resource):
     @ns.expect(host_model, validate=True)
     @ns.marshal_with(host_model)
     def patch(self, host_id):
-        """Partially update a host, with email uniqueness enforced"""
+        """
+        Partially update a host.
+
+        Args:
+            host_id (str): Unique identifier of the host.
+
+        Enforces unique email if changed and returns the updated Host.
+        """
         data = ns.payload
         host = facade.get_host(host_id)
         if not host:
@@ -82,7 +126,15 @@ class HostDetail(Resource):
         return updated or ns.abort(404)
 
     def delete(self, host_id):
-        """Delete a host"""
+        """
+        Delete a host.
+
+        Args:
+            host_id (str): Unique identifier of the host.
+
+        Returns:
+            tuple: Empty response and HTTP 204 status.
+        """
         if not facade.get_host(host_id):
             ns.abort(404, f"Host {host_id} not found")
         facade.delete_host(host_id)
@@ -91,20 +143,45 @@ class HostDetail(Resource):
 
 @ns.route("/<string:host_id>/rating")
 class HostRating(Resource):
+    """
+    Resource for fetching a host’s rating.
+    """
+
     def get(self, host_id):
-        """Get a host’s rating"""
-        host = facade.get_host(host_id) or ns.abort(404)
+        """
+        Get the rating for a specific host.
+
+        Args:
+            host_id (str): Unique identifier of the host.
+
+        Returns:
+            dict: Mapping with 'host_rating' as key and rating value.
+        """
+        host = facade.get_host(host_id) or ns.abort(404, f"Host {host_id} not found")
         return {"host_rating": host.rating}
 
 
-# Owned-places endpoint (unchanged)
+# ----------------------- owned places endpoint ----------------------- #
 from app.api.v1.places import place_model
 
 
 @ns.route("/<string:host_id>/owned_places")
 class HostOwnedPlaces(Resource):
+    """
+    Resource for listing all places owned by a specific host.
+    """
+
     @ns.marshal_list_with(place_model)
     def get(self, host_id):
+        """
+        List all places owned by the host.
+
+        Args:
+            host_id (str): Unique identifier of the host.
+
+        Returns:
+            list: A list of Place objects owned by the host.
+        """
         places = facade.get_host_owned_places(host_id)
         if places is None:
             ns.abort(404, f"Host {host_id} not found")

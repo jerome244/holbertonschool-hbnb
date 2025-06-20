@@ -1,31 +1,36 @@
+"""
+places.py: API endpoints for Place resources.
+
+This module defines the Flask-RESTX namespace, data models, and resources
+for listing, creating, retrieving, updating, deleting places, and fetching average ratings.
+"""
+
 from flask_restx import Namespace, Resource, fields
 from app import facade
 
 ns = Namespace("places", description="Place listings with amenities")
 
-# Output model: what you return to clients
 place_model = ns.model(
     "Place",
     {
-        "id": fields.String(readonly=True),
-        "title": fields.String(required=True),
-        "capacity": fields.Integer(required=True),
-        "price": fields.Float(required=True),
-        "latitude": fields.Float,
-        "longitude": fields.Float,
-        "host_id": fields.String(attribute="host.id"),
-        "description": fields.String,
-        "amenity_ids": fields.List(fields.String),
+        "id": fields.String(readOnly=True, description="Place UUID"),
+        "title": fields.String(required=True, description="Title of the place"),
+        "capacity": fields.Integer(required=True, description="Max guests"),
+        "price": fields.Float(required=True, description="Price per night"),
+        "latitude": fields.Float(description="Latitude of the place"),
+        "longitude": fields.Float(description="Longitude of the place"),
+        "host_id": fields.String(attribute="host.id", description="Owner’s UUID"),
+        "description": fields.String(description="Textual description"),
+        "amenity_ids": fields.List(fields.String, description="List of amenity UUIDs"),
     },
 )
 
-# Models for create and patch inputs
 place_create = ns.model(
     "PlaceCreate",
     {
         "title": fields.String(required=True),
-        "capacity": fields.Integer(required=True, description="Max guests (>0)"),
-        "price": fields.Float(required=True, description="Price/night (>0)"),
+        "capacity": fields.Integer(required=True, description="> 0"),
+        "price": fields.Float(required=True, description="> 0"),
         "latitude": fields.Float,
         "longitude": fields.Float,
         "host_id": fields.String(required=True),
@@ -38,8 +43,8 @@ place_patch = ns.model(
     "PlacePatch",
     {
         "title": fields.String,
-        "capacity": fields.Integer(description="Max guests (>0)"),
-        "price": fields.Float(description="Price/night (>0)"),
+        "capacity": fields.Integer(description="> 0"),
+        "price": fields.Float(description="> 0"),
         "description": fields.String,
         "amenity_ids": fields.List(fields.String),
     },
@@ -48,8 +53,15 @@ place_patch = ns.model(
 
 @ns.route("/")
 class PlaceList(Resource):
+    """
+    List all places or create a new place.
+    """
+
     @ns.marshal_list_with(place_model)
     def get(self):
+        """
+        Retrieve all places, appending amenity IDs.
+        """
         places = facade.list_places()
         for p in places:
             p.amenity_ids = [a.id for a in getattr(p, "amenities", [])]
@@ -58,6 +70,14 @@ class PlaceList(Resource):
     @ns.expect(place_create, validate=True)
     @ns.marshal_with(place_model, code=201)
     def post(self):
+        """
+        Create a new place.
+
+        Validates price and capacity, then links amenities if provided.
+
+        Returns:
+            tuple: (Place, HTTP 201)
+        """
         payload = dict(ns.payload)
         amenities = payload.pop("amenity_ids", []) or []
 
@@ -82,8 +102,18 @@ class PlaceList(Resource):
 @ns.route("/<string:place_id>")
 @ns.response(404, "Place not found")
 class PlaceDetail(Resource):
+    """
+    Retrieve, update, or delete a specific place.
+    """
+
     @ns.marshal_with(place_model)
     def get(self, place_id):
+        """
+        Fetch a place by ID, including its amenity IDs.
+
+        Args:
+            place_id (str): Place UUID.
+        """
         p = facade.get_place(place_id) or ns.abort(404)
         p.amenity_ids = [a.id for a in getattr(p, "amenities", [])]
         return p
@@ -91,6 +121,15 @@ class PlaceDetail(Resource):
     @ns.expect(place_patch, validate=True)
     @ns.marshal_with(place_model)
     def patch(self, place_id):
+        """
+        Partially update place attributes.
+
+        Args:
+            place_id (str): Place UUID.
+
+        Returns:
+            Place
+        """
         payload = dict(ns.payload)
         place = facade.get_place(place_id) or ns.abort(404)
 
@@ -112,19 +151,27 @@ class PlaceDetail(Resource):
         return updated
 
     def delete(self, place_id):
+        """
+        Delete a place by ID.
+
+        Args:
+            place_id (str): Place UUID.
+
+        Returns:
+            tuple: Empty response and HTTP 204 status.
+        """
         deleted = facade.delete_place(place_id)
         if not deleted:
             ns.abort(404)
         return "", 204
 
 
-# Output model for place rating
 place_rating_output = ns.model(
     "PlaceRating",
     {
         "place_id": fields.String(readOnly=True, description="Place UUID"),
         "average_rating": fields.Float(
-            readOnly=True, description="Average rating across all bookings"
+            readOnly=True, description="Average across reviews"
         ),
     },
 )
@@ -133,9 +180,21 @@ place_rating_output = ns.model(
 @ns.route("/<string:place_id>/rating")
 @ns.response(404, "Place not found or no ratings available")
 class PlaceRating(Resource):
+    """
+    Fetch the average rating for a place.
+    """
+
     @ns.marshal_with(place_rating_output)
     def get(self, place_id):
-        """Get the average rating across all reviews for this place"""
+        """
+        Calculate and return the average review rating for this place.
+
+        Args:
+            place_id (str): Place UUID.
+
+        Returns:
+            dict: { 'place_id': str, 'average_rating': float }
+        """
         place = facade.get_place(place_id)
         if not place:
             ns.abort(404, f"Place {place_id} not found")

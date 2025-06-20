@@ -1,10 +1,18 @@
+"""
+reviews.py: API endpoints for Review resources.
+
+This module defines the Flask-RESTX namespace, data models, and resource classes
+for listing, creating, retrieving, and updating reviews.
+"""
+
 from flask import request
 from flask_restx import Namespace, Resource, fields
 from app import facade
 
+# ----------------------- namespace ----------------------- #
 ns = Namespace("reviews", description="Review operations")
 
-# Response model for a review
+# ----------------------- data models ----------------------- #
 review_output = ns.model(
     "Review",
     {
@@ -17,7 +25,6 @@ review_output = ns.model(
     },
 )
 
-# Input model for POST
 review_input = ns.model(
     "ReviewInput",
     {
@@ -27,7 +34,6 @@ review_input = ns.model(
     },
 )
 
-# Patch model for PATCH
 review_patch = ns.model(
     "ReviewPatch",
     {
@@ -37,11 +43,24 @@ review_patch = ns.model(
 )
 
 
+# ----------------------- resources ----------------------- #
 @ns.route("/")
 class ReviewList(Resource):
+    """
+    Resource for listing all reviews and creating a new review.
+    """
+
     @ns.marshal_list_with(review_output)
     def get(self):
-        """List all reviews"""
+        """
+        List all reviews.
+
+        Retrieves all reviews via the facade and returns them
+        with coerced integer ratings where possible.
+
+        Returns:
+            list: A list of review dictionaries matching review_output schema.
+        """
         reviews = facade.list_reviews()
         result = []
         for r in reviews:
@@ -62,7 +81,15 @@ class ReviewList(Resource):
     @ns.expect(review_input, validate=True)
     @ns.marshal_with(review_output, code=201)
     def post(self):
-        """Create a new review"""
+        """
+        Create a new review.
+
+        Validates payload, ensures booking exists, non-empty text,
+        and rating between 1 and 5. Delegates creation to the facade.
+
+        Returns:
+            tuple: Created review dictionary and HTTP 201 status.
+        """
         payload = request.json.copy()
 
         # Validate booking exists
@@ -84,7 +111,7 @@ class ReviewList(Resource):
             ns.abort(400, "Rating must be between 1 and 5")
         payload["rating"] = rating
 
-        # Create review and handle duplicate
+        # Create review and handle duplicates
         try:
             review = facade.create_review(payload)
         except Exception as e:
@@ -109,9 +136,21 @@ class ReviewList(Resource):
 
 @ns.route("/<string:review_id>")
 class ReviewDetail(Resource):
+    """
+    Resource for fetching, updating, and deleting a specific review.
+    """
+
     @ns.marshal_with(review_output)
     def get(self, review_id):
-        """Fetch a review by ID"""
+        """
+        Fetch a review by its ID.
+
+        Args:
+            review_id (str): Unique identifier of the review.
+
+        Returns:
+            dict: Review dictionary matching review_output schema.
+        """
         r = facade.get_review(review_id)
         if not r:
             ns.abort(404, f"Review {review_id} not found")
@@ -129,7 +168,15 @@ class ReviewDetail(Resource):
     @ns.expect(review_patch, validate=True)
     @ns.marshal_with(review_output)
     def patch(self, review_id):
-        """Update an existing review"""
+        """
+        Update fields of an existing review.
+
+        Args:
+            review_id (str): Unique identifier of the review.
+
+        Returns:
+            dict: Updated review dictionary matching review_output schema.
+        """
         r = facade.get_review(review_id)
         if not r:
             ns.abort(404, f"Review {review_id} not found")

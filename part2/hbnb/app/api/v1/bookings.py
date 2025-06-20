@@ -1,3 +1,10 @@
+"""
+bookings.py: API endpoints for Booking resources.
+
+This module defines the Flask-RESTX namespace, data models, and resource classes
+for listing, creating, retrieving, updating, deleting bookings, and fetching booking ratings.
+"""
+
 from flask import request
 from flask_restx import Namespace, Resource, fields
 from datetime import datetime, timedelta, date
@@ -58,9 +65,18 @@ rating_output = ns.model(
 
 @ns.route("/")
 class BookingList(Resource):
+    """
+    Resource for listing all bookings and creating new bookings.
+    """
+
     @ns.marshal_list_with(booking_output)
     def get(self):
-        """List all bookings"""
+        """
+        List all bookings.
+
+        Returns:
+            list: A list of all Booking objects with computed prices and checkout dates.
+        """
         bookings = facade.list_bookings()
         return [
             {
@@ -79,7 +95,15 @@ class BookingList(Resource):
     @ns.expect(booking_input, validate=True)
     @ns.marshal_with(booking_output, code=201)
     def post(self):
-        """Create a new booking"""
+        """
+        Create a new booking.
+
+        Validates payload, checks user and place existence, guest and night counts,
+        ensures no date overlap, and returns the created Booking.
+
+        Returns:
+            tuple: Created Booking object and HTTP 201 status.
+        """
         data = request.json
 
         # Validate user
@@ -141,9 +165,21 @@ class BookingList(Resource):
 
 @ns.route("/<string:booking_id>")
 class BookingDetail(Resource):
+    """
+    Resource for retrieving, updating, and deleting a specific booking.
+    """
+
     @ns.marshal_with(booking_output)
     def get(self, booking_id):
-        """Fetch a booking by its ID"""
+        """
+        Fetch a booking by its ID.
+
+        Args:
+            booking_id (str): Unique identifier of the booking.
+
+        Returns:
+            Booking: The requested Booking object.
+        """
         b = facade.get_booking(booking_id) or ns.abort(
             404, f"Booking {booking_id} not found"
         )
@@ -161,7 +197,15 @@ class BookingDetail(Resource):
     @ns.expect(booking_patch, validate=True)
     @ns.marshal_with(booking_output)
     def patch(self, booking_id):
-        """Partially update a booking"""
+        """
+        Partially update a booking’s fields.
+
+        Args:
+            booking_id (str): Unique identifier of the booking.
+
+        Returns:
+            Booking: The updated Booking object.
+        """
         data = request.json
         booking = facade.get_booking(booking_id)
         if not booking:
@@ -219,7 +263,15 @@ class BookingDetail(Resource):
         }
 
     def delete(self, booking_id):
-        """Delete a booking"""
+        """
+        Delete a booking by its ID.
+
+        Args:
+            booking_id (str): Unique identifier of the booking.
+
+        Returns:
+            tuple: Empty response and HTTP 204 status.
+        """
         if not facade.get_booking(booking_id):
             ns.abort(404, f"Booking {booking_id} not found")
         facade.delete_booking(booking_id)
@@ -229,9 +281,21 @@ class BookingDetail(Resource):
 @ns.route("/<string:booking_id>/rating")
 @ns.response(404, "Booking not found or no rating available")
 class BookingRating(Resource):
+    """
+    Resource for fetching the user’s rating of a booking.
+    """
+
     @ns.marshal_with(rating_output)
     def get(self, booking_id):
-        """Get the rating that the user gave to this booking"""
+        """
+        Get the rating that the user gave to this booking.
+
+        Args:
+            booking_id (str): Unique identifier of the booking.
+
+        Returns:
+            dict: Mapping with booking_id and rating value.
+        """
         b = facade.get_booking(booking_id)
         if not b:
             ns.abort(404, f"Booking {booking_id} not found")

@@ -1,11 +1,20 @@
+"""
+users.py: API endpoints for User resources.
+
+This module defines the Flask-RESTX namespace, data models, and resource classes
+for user account operations, including listing, creation, retrieval, update,
+deletion, as well as fetching a user’s bookings and average booking ratings.
+"""
+
 import re
 from flask_restx import Namespace, Resource, fields
 from app import facade
 from app.api.v1.bookings import booking_output as booking_model
 
+# ----------------------- namespace ----------------------- #
 ns = Namespace("users", description="Operations on user accounts")
 
-# Full model: used for GET responses and POST/PUT bodies
+# ----------------------- data models ----------------------- #
 user_model = ns.model(
     "User",
     {
@@ -17,7 +26,6 @@ user_model = ns.model(
     },
 )
 
-# Partial model: used for PATCH bodies (all fields optional)
 patch_user_model = ns.model(
     "UserPatch",
     {
@@ -28,7 +36,6 @@ patch_user_model = ns.model(
     },
 )
 
-# Output model for average booking rating per user
 avg_rating_output = ns.model(
     "UserBookingAverageRating",
     {
@@ -42,17 +49,34 @@ avg_rating_output = ns.model(
 EMAIL_RE = re.compile(r"^[^@]+@[^@]+\.[^@]+$")
 
 
+# ----------------------- resources ----------------------- #
 @ns.route("/")
 class UserList(Resource):
+    """
+    Resource for listing all users and creating a new user.
+    """
+
     @ns.marshal_list_with(user_model)
     def get(self):
-        """List all users"""
+        """
+        List all users.
+
+        Returns:
+            list: A list of all User objects.
+        """
         return facade.list_users()
 
     @ns.expect(user_model, validate=True)
     @ns.marshal_with(user_model, code=201)
     def post(self):
-        """Create a new user"""
+        """
+        Create a new user.
+
+        Validates email format and uniqueness before creation.
+
+        Returns:
+            tuple: Created User object and HTTP 201 status.
+        """
         payload = ns.payload
         email = payload.get("email", "").strip()
 
@@ -68,9 +92,21 @@ class UserList(Resource):
 @ns.route("/<string:user_id>")
 @ns.response(404, "User not found")
 class UserDetail(Resource):
+    """
+    Resource for retrieving, updating, and deleting a specific user.
+    """
+
     @ns.marshal_with(user_model)
     def get(self, user_id):
-        """Fetch a user by ID"""
+        """
+        Fetch a user by ID.
+
+        Args:
+            user_id (str): Unique identifier of the user.
+
+        Returns:
+            User: The requested User object.
+        """
         user = facade.get_user(user_id)
         if not user:
             ns.abort(404, f"User {user_id} doesn't exist")
@@ -79,7 +115,17 @@ class UserDetail(Resource):
     @ns.expect(patch_user_model, validate=True)
     @ns.marshal_with(user_model)
     def patch(self, user_id):
-        """Partially update an existing user"""
+        """
+        Partially update an existing user.
+
+        Validates email format and uniqueness if changed.
+
+        Args:
+            user_id (str): Unique identifier of the user.
+
+        Returns:
+            User: The updated User object.
+        """
         payload = ns.payload
         user = facade.get_user(user_id)
         if not user:
@@ -99,20 +145,40 @@ class UserDetail(Resource):
 
     @ns.response(204, "User deleted")
     def delete(self, user_id):
-        """Delete a user"""
+        """
+        Delete a user by ID.
+
+        Args:
+            user_id (str): Unique identifier of the user.
+
+        Returns:
+            tuple: Empty response and HTTP 204 status.
+        """
         if not facade.get_user(user_id):
             ns.abort(404, f"User {user_id} doesn't exist")
         facade.delete_user(user_id)
         return "", 204
 
 
-# --- New endpoint: list bookings owned by a user ---
+# ----------------------- user bookings ----------------------- #
 @ns.route("/<string:user_id>/bookings")
 @ns.response(404, "User not found")
 class UserBookings(Resource):
+    """
+    Resource for listing all bookings for a given user.
+    """
+
     @ns.marshal_list_with(booking_model)
     def get(self, user_id):
-        """List all bookings for a given user"""
+        """
+        List all bookings for a user.
+
+        Args:
+            user_id (str): Unique identifier of the user.
+
+        Returns:
+            list: A list of Booking objects.
+        """
         if not facade.get_user(user_id):
             ns.abort(404, f"User {user_id} doesn't exist")
 
@@ -132,13 +198,25 @@ class UserBookings(Resource):
         ]
 
 
-# --- New endpoint: average rating across a user’s bookings ---
+# ----------------------- user booking average rating ----------------------- #
 @ns.route("/<string:user_id>/bookings/rating")
 @ns.response(404, "User not found or no ratings available")
 class UserBookingsAverageRating(Resource):
+    """
+    Resource for fetching the average rating across all bookings of a user.
+    """
+
     @ns.marshal_with(avg_rating_output)
     def get(self, user_id):
-        """Get the average rating across all bookings for a given user"""
+        """
+        Get the average rating for a user's bookings.
+
+        Args:
+            user_id (str): Unique identifier of the user.
+
+        Returns:
+            dict: Mapping with 'user_id' and 'average_rating'.
+        """
         user = facade.get_user(user_id)
         if not user:
             ns.abort(404, f"User {user_id} not found")

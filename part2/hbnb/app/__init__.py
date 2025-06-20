@@ -1,13 +1,22 @@
+"""
+Stub for documenting __init__.py without modifying the original source.
+"""
+
+# ----------------------- standard imports ----------------------- #
 import sys
+
+# ----------------------- flask imports ----------------------- #
 from flask import Flask
 from flask_restx import Api
 
-# 1) Instantiate facade before aliasing to avoid circular imports
+# ----------------------- facade instantiation ----------------------- #
+# Instantiate facade before aliasing to avoid circular imports
 from .services.facade import HBnBFacade
 
 facade = HBnBFacade()
 
-# 2) Alias bare-module imports so top-level modules (booking, review, etc.) are found
+# ----------------------- module aliasing ----------------------- #
+# Alias bare-module imports so top-level modules (booking, review, etc.) are found
 from .models import place as _place_mod
 
 sys.modules["place"] = _place_mod
@@ -25,7 +34,7 @@ import app.models.review as _rv_mod
 
 sys.modules["review"] = _rv_mod
 
-# 3) Register API namespaces
+# ----------------------- API namespace imports ----------------------- #
 from .api.v1.users import ns as users_ns
 from .api.v1.hosts import ns as hosts_ns
 from .api.v1.places import ns as places_ns
@@ -34,7 +43,17 @@ from .api.v1.bookings import ns as bookings_ns
 from .api.v1.reviews import ns as reviews_ns
 
 
-def create_app():
+# ----------------------- application factory ----------------------- #
+def create_app() -> Flask:
+    """
+    Factory to create and configure the HBnB Flask application.
+
+    Sets up Flask app, initializes RESTX API with versioning
+    and namespaces for users, hosts, places, amenities, bookings, and reviews.
+
+    Returns:
+        Flask: Configured HBnB API application.
+    """
     app = Flask(__name__)
     api = Api(
         app,
