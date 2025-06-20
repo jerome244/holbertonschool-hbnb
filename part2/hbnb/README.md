@@ -383,6 +383,7 @@ More than one review was added to a given booking and raised Value Error
 ```
 No error message, meaning every test went through as asserted values are as expected.
 
+
 ### 📡 Testing API Endpoints and HTTP Methods
 
 We use **pytest** to verify all endpoints, including:
@@ -392,20 +393,63 @@ We use **pytest** to verify all endpoints, including:
 - **Edge Cases** such as invalid dates, guest counts, capacity/price bounds.
 - **Aggregation Endpoints** (`/rating`, `/cost`) marked as **xfail** until implemented.
 
-To access the **Swagger UI** for testing the API endpoints, navigate to the following URL in your browser:
-- **Swagger UI**: `http://127.0.0.1:5000/api/v1/`
+To get started with testing, please follow these steps to set up the environment:
 
-Snippets:
+1. **Create a Virtual Environment:** It's a good practice to create a virtual environment for the project to avoid conflicts with global Python packages.
 
-```bash
-# Run all tests
-pytest -q
+   ```bash
+   python -m venv venv
+   ```
 
-# Run only API tests
-pytest app/tests/test_api.py -q
+2. **Activate the Virtual Environment:**
+   - On **Windows**:
+     ```bash
+     .env\Scriptsctivate
+     ```
+   - On **macOS/Linux**:
+     ```bash
+     source venv/bin/activate
+     ```
 
-# Show verbose output with skipped/xfails
-pytest -v
-```
+3. **Install the Required Dependencies:** Install all necessary dependencies using `pip` by running the following command:
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **Run the Application:** Start the Flask application by running:
+
+   ```bash
+   python run.py
+   ```
+
+   This will start the server, and you can access the Swagger UI and the API documentation at:
+   - **Swagger UI**: `http://127.0.0.1:5000/api/v1/`
+
+5. **Testing the API Endpoints:** We use **pytest** to verify all endpoints, including:
+
+   - **Happy Paths** for CRUD operations on each resource.
+   - **Validation Errors** for missing/invalid fields.
+   - **Edge Cases** such as invalid dates, guest counts, capacity/price bounds.
+   - **Aggregation Endpoints** (`/rating`, `/cost`) marked as **xfail** until implemented.
+
+   To run all tests:
+
+   ```bash
+   pytest -q
+   ```
+
+   To run only API tests:
+
+   ```bash
+   pytest app/tests/test_api.py -q
+   ```
+
+   To show verbose output with skipped/xfails:
+
+   ```bash
+   pytest -v
+   ```
+
 ---
 Authors - [DESSAIGNE Théo](https://github.com/Theo-D) & [TRAN Jérôme](https://github.com/jerome244)
