@@ -2,6 +2,7 @@ import pytest
 from app import create_app
 from datetime import date
 
+
 # --- Fixtures ---
 @pytest.fixture(scope="module")
 def app():
@@ -12,12 +13,14 @@ def app():
     application.config["TESTING"] = True
     return application
 
+
 @pytest.fixture(scope="module")
 def client(app):
     """
     Provide a Flask test client for sending HTTP requests.
     """
     return app.test_client()
+
 
 # --- Helper Fixtures ---
 @pytest.fixture(scope="module")
@@ -37,6 +40,7 @@ def user_id(client):
         pytest.skip(f"User creation skipped; status {rv.status_code}")
     return rv.get_json()["id"]
 
+
 @pytest.fixture(scope="module")
 def host_id(client):
     """
@@ -50,6 +54,7 @@ def host_id(client):
         pytest.skip(f"Host creation skipped; status {rv.status_code}")
     return rv.get_json()["id"]
 
+
 @pytest.fixture(scope="module")
 def amenity_id(client):
     """
@@ -59,6 +64,7 @@ def amenity_id(client):
     if rv.status_code != 201:
         pytest.skip(f"Amenity creation skipped; status {rv.status_code}")
     return rv.get_json()["id"]
+
 
 @pytest.fixture(scope="module")
 def place_id(client, user_id, amenity_id):
@@ -78,6 +84,7 @@ def place_id(client, user_id, amenity_id):
         pytest.skip(f"Place creation skipped; status {rv.status_code}")
     return rv.get_json()["id"]
 
+
 @pytest.fixture(scope="module")
 def booking_id(client, user_id, place_id):
     """
@@ -96,6 +103,7 @@ def booking_id(client, user_id, place_id):
     if rv.status_code != 201:
         pytest.skip(f"Booking creation skipped; status {rv.status_code}")
     return rv.get_json()["id"]
+
 
 # --- CRUD Tests ---
 @pytest.mark.parametrize(
@@ -150,23 +158,27 @@ def test_get_not_found(client, endpoint, id_):
         ("amenities", "name", "", False),
     ],
 )
-def test_put_endpoints(client, user_id, endpoint, field, value, ok):  # Changed from PATCH to PUT
+def test_put_endpoints(
+    client, user_id, endpoint, field, value, ok
+):  # Changed from PATCH to PUT
     """
     Verify PUT /api/v1/<endpoint>/<id> with various payloads.
     """
     if endpoint == "hosts":
         pytest.xfail("Hosts PUT not implemented")
-    
+
     # Ensure full user data is sent in the PUT request
     payload = {
         "first_name": "Updated",  # Assuming the first name is required for the full update
-        "last_name": "User",      # Assuming the last name is required for the full update
-        "email": value,           # Email field that is being updated
-        "is_admin": False,        # Assuming the 'is_admin' field is also required
+        "last_name": "User",  # Assuming the last name is required for the full update
+        "email": value,  # Email field that is being updated
+        "is_admin": False,  # Assuming the 'is_admin' field is also required
     }
 
     eid = user_id if endpoint in ["users", "hosts"] else 1
-    rv = client.put(f"/api/v1/{endpoint}/{eid}", json=payload)  # Use PUT instead of PATCH
+    rv = client.put(
+        f"/api/v1/{endpoint}/{eid}", json=payload
+    )  # Use PUT instead of PATCH
     assert (rv.status_code in (200, 204)) == ok
 
 

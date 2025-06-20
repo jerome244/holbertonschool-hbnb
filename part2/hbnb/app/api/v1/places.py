@@ -8,14 +8,12 @@ This module defines a namespace and models for places, including:
 
 Swagger UI will display these descriptions alongside each endpoint.
 """
+
 from flask_restx import Namespace, Resource, fields
 from app import facade
 
 # ----------------------- namespace ----------------------- #
-ns = Namespace(
-    "places",
-    description="Place listings with amenities"
-)
+ns = Namespace("places", description="Place listings with amenities")
 
 # ----------------------- data models ----------------------- #
 place_model = ns.model(
@@ -23,14 +21,16 @@ place_model = ns.model(
     {
         "id": fields.String(readOnly=True, description="Place UUID"),
         "title": fields.String(required=True, description="Title of the place"),
-        "capacity": fields.Integer(required=True, description="Maximum number of guests"),
+        "capacity": fields.Integer(
+            required=True, description="Maximum number of guests"
+        ),
         "price": fields.Float(required=True, description="Price per night"),
         "latitude": fields.Float(description="Latitude of the place"),
         "longitude": fields.Float(description="Longitude of the place"),
         "host_id": fields.String(attribute="host.id", description="Owner’s UUID"),
         "description": fields.String(description="Textual description"),
         "amenity_ids": fields.List(fields.String, description="List of amenity UUIDs"),
-    }
+    },
 )
 
 place_create = ns.model(
@@ -44,8 +44,9 @@ place_create = ns.model(
         "host_id": fields.String(required=True, description="UUID of the owner"),
         "description": fields.String(description="Textual description"),
         "amenity_ids": fields.List(fields.String, description="List of amenity UUIDs"),
-    }
+    },
 )
+
 
 @ns.route("/")
 class PlaceList(Resource):
@@ -62,7 +63,8 @@ class PlaceList(Resource):
                         "amenity_ids": ["<amenity_uuid>"]
                       }
     """
-    @ns.doc('list_places', description='Retrieve all places with amenity IDs')
+
+    @ns.doc("list_places", description="Retrieve all places with amenity IDs")
     @ns.marshal_list_with(place_model)
     def get(self):
         places = facade.list_places()
@@ -70,7 +72,9 @@ class PlaceList(Resource):
             p.amenity_ids = [a.id for a in getattr(p, "amenities", [])]
         return places
 
-    @ns.doc('create_place', description='Create a new place with validation and amenities')
+    @ns.doc(
+        "create_place", description="Create a new place with validation and amenities"
+    )
     @ns.expect(place_create, validate=True)
     @ns.marshal_with(place_model, code=201)
     def post(self):
@@ -103,6 +107,7 @@ class PlaceList(Resource):
         place.amenity_ids = [a.id for a in getattr(place, "amenities", [])]
         return place, 201
 
+
 @ns.route("/<string:place_id>")
 @ns.response(404, "Place not found")
 class PlaceDetail(Resource):
@@ -122,14 +127,15 @@ class PlaceDetail(Resource):
                           }
     DELETE /places/{id}  -> Delete a place by ID.
     """
-    @ns.doc('get_place', description='Fetch a place by its ID')
+
+    @ns.doc("get_place", description="Fetch a place by its ID")
     @ns.marshal_with(place_model)
     def get(self, place_id):
         p = facade.get_place(place_id) or ns.abort(404, f"Place {place_id} not found")
         p.amenity_ids = [a.id for a in getattr(p, "amenities", [])]
         return p
 
-    @ns.doc('replace_place', description='Replace an existing place completely')
+    @ns.doc("replace_place", description="Replace an existing place completely")
     @ns.expect(place_create, validate=True)
     @ns.marshal_with(place_model)
     def put(self, place_id):
@@ -144,7 +150,9 @@ class PlaceDetail(Resource):
         required = {"title", "capacity", "price", "host_id"}
         missing = required - set(payload.keys())
         if missing:
-            ns.abort(400, f"Missing fields for full update: {', '.join(sorted(missing))}")
+            ns.abort(
+                400, f"Missing fields for full update: {', '.join(sorted(missing))}"
+            )
         if payload["price"] <= 0:
             ns.abort(400, "Price must be greater than 0")
         if payload["capacity"] <= 0:
@@ -180,7 +188,7 @@ class PlaceDetail(Resource):
         updated.amenity_ids = [a.id for a in getattr(updated, "amenities", [])]
         return updated, 200
 
-    @ns.doc('delete_place', description='Delete a place by ID')
+    @ns.doc("delete_place", description="Delete a place by ID")
     @ns.response(204, "Place deleted")
     def delete(self, place_id):
         deleted = facade.delete_place(place_id)
@@ -188,20 +196,27 @@ class PlaceDetail(Resource):
             ns.abort(404, f"Place {place_id} not found")
         return "", 204
 
+
 @ns.route("/<string:place_id>/rating")
 @ns.response(404, "Place not found or no ratings available")
 class PlaceRating(Resource):
     """
     GET /places/{id}/rating  -> Calculate and return the average review rating for this place.
     """
-    @ns.doc('get_place_rating', description='Calculate and return the average review rating for this place')
+
+    @ns.doc(
+        "get_place_rating",
+        description="Calculate and return the average review rating for this place",
+    )
     @ns.marshal_with(
         ns.model(
             "PlaceRating",
             {
                 "place_id": fields.String(readOnly=True, description="Place UUID"),
-                "average_rating": fields.Float(readOnly=True, description="Average across reviews"),
-            }
+                "average_rating": fields.Float(
+                    readOnly=True, description="Average across reviews"
+                ),
+            },
         )
     )
     def get(self, place_id):

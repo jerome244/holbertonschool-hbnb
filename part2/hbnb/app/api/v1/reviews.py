@@ -7,53 +7,35 @@ This module defines a namespace and models for reviews, including:
 
 Swagger UI will display these descriptions alongside each endpoint.
 """
+
 from flask import request
 from flask_restx import Namespace, Resource, fields
 from app import facade
 
-ns = Namespace(
-    "reviews",
-    description="Review management"
-)
+ns = Namespace("reviews", description="Review management")
 
 # ----------------------- data models ----------------------- #
 review_output = ns.model(
     "Review",
     {
-        "id": fields.String(
-            readonly=True,
-            description="Review UUID"
-        ),
+        "id": fields.String(readonly=True, description="Review UUID"),
         "booking_id": fields.String(
-            readonly=True,
-            description="UUID of the associated booking"
+            readonly=True, description="UUID of the associated booking"
         ),
-        "text": fields.String(
-            description="Review text"
-        ),
-        "rating": fields.Integer(
-            description="Rating between 1 and 5"
-        ),
-    }
+        "text": fields.String(description="Review text"),
+        "rating": fields.Integer(description="Rating between 1 and 5"),
+    },
 )
 
 review_input = ns.model(
     "ReviewInput",
     {
-        "booking_id": fields.String(
-            required=True,
-            description="UUID of the booking"
-        ),
-        "text": fields.String(
-            required=True,
-            description="Review text"
-        ),
-        "rating": fields.Integer(
-            required=True,
-            description="Rating between 1 and 5"
-        ),
-    }
+        "booking_id": fields.String(required=True, description="UUID of the booking"),
+        "text": fields.String(required=True, description="Review text"),
+        "rating": fields.Integer(required=True, description="Rating between 1 and 5"),
+    },
 )
+
 
 # ----------------------- resources ----------------------- #
 @ns.route("/")
@@ -68,7 +50,8 @@ class ReviewList(Resource):
                          "rating": 5
                        }
     """
-    @ns.doc('list_reviews', description='Retrieve all reviews with ratings')
+
+    @ns.doc("list_reviews", description="Retrieve all reviews with ratings")
     @ns.marshal_list_with(review_output)
     def get(self):
         """List all reviews."""
@@ -89,7 +72,10 @@ class ReviewList(Resource):
             )
         return result
 
-    @ns.doc('create_review', description='Create a new review; Payload: booking_id, text, rating')
+    @ns.doc(
+        "create_review",
+        description="Create a new review; Payload: booking_id, text, rating",
+    )
     @ns.expect(review_input, validate=True)
     @ns.marshal_with(review_output, code=201)
     def post(self):
@@ -134,6 +120,7 @@ class ReviewList(Resource):
             "rating": int(review.rating) if review.rating is not None else None,
         }, 201
 
+
 @ns.route("/<string:review_id>")
 @ns.response(404, "Review not found")
 class ReviewDetail(Resource):
@@ -148,7 +135,8 @@ class ReviewDetail(Resource):
                          }
     DELETE /reviews/{id}  -> Delete a review by ID.
     """
-    @ns.doc('get_review', description='Retrieve a review by its ID')
+
+    @ns.doc("get_review", description="Retrieve a review by its ID")
     @ns.marshal_with(review_output)
     def get(self, review_id):
         """Fetch a review by its ID."""
@@ -166,7 +154,10 @@ class ReviewDetail(Resource):
             "rating": rating_val,
         }
 
-    @ns.doc('replace_review', description='Replace an existing review; Payload: booking_id, text, rating')
+    @ns.doc(
+        "replace_review",
+        description="Replace an existing review; Payload: booking_id, text, rating",
+    )
     @ns.expect(review_input, validate=True)
     @ns.marshal_with(review_output)
     def put(self, review_id):
@@ -200,7 +191,7 @@ class ReviewDetail(Resource):
             ns.abort(404, f"Review {review_id} not found")
         return updated, 200
 
-    @ns.doc('delete_review', description='Delete a review by its ID')
+    @ns.doc("delete_review", description="Delete a review by its ID")
     @ns.response(204, "Review deleted")
     def delete(self, review_id):
         """Delete a review by its ID."""

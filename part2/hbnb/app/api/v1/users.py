@@ -4,100 +4,64 @@ from app import facade
 from app.api.v1.bookings import booking_output as booking_model
 
 # ----------------------- namespace ----------------------- #
-ns = Namespace(
-    "users",
-    description="Operations on user accounts"
-)
+ns = Namespace("users", description="Operations on user accounts")
 
 # ----------------------- data models ----------------------- #
 # Output model for a User resource
 user_model = ns.model(
     "User",
     {
-        "id": fields.String(
-            readonly=True,
-            description="Unique user identifier (UUID)"
-        ),
-        "first_name": fields.String(
-            required=True,
-            description="User's first name"
-        ),
-        "last_name": fields.String(
-            required=True,
-            description="User's last name"
-        ),
-        "email": fields.String(
-            required=True,
-            description="User's email address"
-        ),
+        "id": fields.String(readonly=True, description="Unique user identifier (UUID)"),
+        "first_name": fields.String(required=True, description="User's first name"),
+        "last_name": fields.String(required=True, description="User's last name"),
+        "email": fields.String(required=True, description="User's email address"),
         "is_admin": fields.Boolean(
             required=True,
-            description="Flag indicating if the user has admin privileges"
+            description="Flag indicating if the user has admin privileges",
         ),
-    }
+    },
 )
 
 # Input model for creating a new user (is_admin optional)
 user_create = ns.model(
     "UserCreate",
     {
-        "first_name": fields.String(
-            required=True,
-            description="User's first name"
-        ),
-        "last_name": fields.String(
-            required=True,
-            description="User's last name"
-        ),
-        "email": fields.String(
-            required=True,
-            description="User's email address"
-        ),
+        "first_name": fields.String(required=True, description="User's first name"),
+        "last_name": fields.String(required=True, description="User's last name"),
+        "email": fields.String(required=True, description="User's email address"),
         "is_admin": fields.Boolean(
             description="Optional admin flag; defaults to False if omitted"
         ),
-    }
+    },
 )
 
 # Input model for full replacement of a user
 user_input = ns.model(
     "UserInput",
     {
-        "first_name": fields.String(
-            required=True,
-            description="User's first name"
-        ),
-        "last_name": fields.String(
-            required=True,
-            description="User's last name"
-        ),
-        "email": fields.String(
-            required=True,
-            description="User's email address"
-        ),
+        "first_name": fields.String(required=True, description="User's first name"),
+        "last_name": fields.String(required=True, description="User's last name"),
+        "email": fields.String(required=True, description="User's email address"),
         "is_admin": fields.Boolean(
-            required=True,
-            description="Admin flag; must be provided for full replace"
+            required=True, description="Admin flag; must be provided for full replace"
         ),
-    }
+    },
 )
 
 # Output model for average booking rating per user
 avg_rating_output = ns.model(
     "UserBookingAverageRating",
     {
-        "user_id": fields.String(
-            readonly=True,
-            description="UUID of the user"
-        ),
+        "user_id": fields.String(readonly=True, description="UUID of the user"),
         "average_rating": fields.Float(
             readonly=True,
-            description="Average rating across all of the user's bookings"
+            description="Average rating across all of the user's bookings",
         ),
-    }
+    },
 )
 
 EMAIL_RE = re.compile(r"^[^@]+@[^@]+\.[^@]+$")
+
 
 # ----------------------- resources ----------------------- #
 @ns.route("/")
@@ -131,6 +95,7 @@ class UserList(Resource):
         data.setdefault("is_admin", False)
         return facade.create_user(data), 201
 
+
 @ns.route("/<string:user_id>")
 @ns.response(404, "User not found")
 class UserDetail(Resource):
@@ -161,13 +126,18 @@ class UserDetail(Resource):
         email = data.get("email", "").strip()
         if not EMAIL_RE.match(email):
             ns.abort(400, "Invalid email address")
-        if any(u.email.lower() == email.lower() and u.id != user_id for u in facade.list_users()):
+        if any(
+            u.email.lower() == email.lower() and u.id != user_id
+            for u in facade.list_users()
+        ):
             ns.abort(400, "Email already in use")
         data["email"] = email
         required = {"first_name", "last_name", "email", "is_admin"}
         missing = required - set(data.keys())
         if missing:
-            ns.abort(400, f"Missing fields for full update: {', '.join(sorted(missing))}")
+            ns.abort(
+                400, f"Missing fields for full update: {', '.join(sorted(missing))}"
+            )
         return facade.update_user(user_id, data), 200
 
     @ns.doc("delete_user")

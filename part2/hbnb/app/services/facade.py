@@ -4,6 +4,7 @@ facade.py: Provides a unified interface (facade) to application repositories and
 The HBnBFacade class wraps repository operations for users, hosts, places, amenities,
 bookings, and reviews, coordinating data persistence and business logic.
 """
+
 from datetime import datetime
 from flask import abort
 from app.persistence.repository import InMemoryRepository
@@ -88,7 +89,11 @@ class HBnBFacade:
         host = self.get_host(hid)
         if not host:
             return None
-        owned = [p for p in self.list_places() if getattr(p, 'host', None) and p.host.id == hid]
+        owned = [
+            p
+            for p in self.list_places()
+            if getattr(p, "host", None) and p.host.id == hid
+        ]
         seen = set()
         unique = []
         for p in owned:
@@ -100,17 +105,21 @@ class HBnBFacade:
     # ---- Places ----
 
     def create_place(self, data):
-        lat = float(data.pop('latitude', 0.0) or 0.0)
-        lon = float(data.pop('longitude', 0.0) or 0.0)
-        host_id = data.pop('host_id', None)
+        lat = float(data.pop("latitude", 0.0) or 0.0)
+        lon = float(data.pop("longitude", 0.0) or 0.0)
+        host_id = data.pop("host_id", None)
         if host_id is None:
-            raise ValueError('Missing required field: host_id')
+            raise ValueError("Missing required field: host_id")
         host = self.get_host(host_id)
         if not host:
             return None
-        title = data.get('title')
+        title = data.get("title")
         for existing in self.list_places():
-            if getattr(existing, 'host', None) and existing.host.id == host_id and existing.title == title:
+            if (
+                getattr(existing, "host", None)
+                and existing.host.id == host_id
+                and existing.title == title
+            ):
                 return None
         place = Place(host=host, latitude=lat, longitude=lon, **data)
         self.place_repo.add(place)
@@ -164,12 +173,18 @@ class HBnBFacade:
     # ---- Bookings ----
 
     def create_booking(self, data):
-        user = self.get_user(data['user_id'])
-        place = self.get_place(data['place_id'])
-        checkin = data['checkin_date']
+        user = self.get_user(data["user_id"])
+        place = self.get_place(data["place_id"])
+        checkin = data["checkin_date"]
         if isinstance(checkin, str):
             checkin = datetime.fromisoformat(checkin)
-        booking = Booking(user=user, place=place, guest_count=data['guest_count'], checkin_date=checkin, night_count=data['night_count'])
+        booking = Booking(
+            user=user,
+            place=place,
+            guest_count=data["guest_count"],
+            checkin_date=checkin,
+            night_count=data["night_count"],
+        )
         self.booking_repo.add(booking)
         return booking
 
@@ -199,10 +214,10 @@ class HBnBFacade:
     # ---- Reviews ----
 
     def create_review(self, data):
-        booking_obj = self.get_booking(data.pop('booking_id'))
+        booking_obj = self.get_booking(data.pop("booking_id"))
         if not booking_obj:
-            raise ValueError('Booking not found')
-        booking_obj.user.leave_review(booking_obj, data.get('text'), data.get('rating'))
+            raise ValueError("Booking not found")
+        booking_obj.user.leave_review(booking_obj, data.get("text"), data.get("rating"))
         review_obj = booking_obj.review
         self.review_repo.add(review_obj)
         return review_obj
