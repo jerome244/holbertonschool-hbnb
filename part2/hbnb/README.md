@@ -2,14 +2,14 @@
 
 ---
 
-# Scope of the Project
+# 🎯 Scope of the Project
 In this phase of the Hbnb project, we focused on building the `Presentation and Business Logic layers` using `Python` and `Flask`. We defined the core functionality by creating the necessary classes, methods, and endpoints that will define the foundation of the **HBnB application**.
 
 We structured the project by first developing the business logic classes upon which we implemented the API endpoints to build a robust and scalable skeleton for further implementation of the project. Our work included setting up essential features such as managing `users`, `places`, `reviews`, `bookings` and `amenities`, while following best practices in `RESTful API design`.
 
 ---
 
-## Structure Description
+## 📁 Structure Description
 The project structure will be laid out ad follow:
 
 ```
@@ -17,36 +17,33 @@ hbnb/
 ├── app/
 │   ├── __init__.py
 │   ├── api/
-│   │   ├── __init__.py
-│   │   ├── v1/
-│   │   │   ├── __init__.py
-│   │   │   ├── users.py
-│   │   │   ├── places.py
-│   │   │   ├── reviews.py
-│   │   │   ├── amenities.py
-│   │   │   ├── bookings.py
-│   │   │   ├── host.py
+│   │   └── v1/
+│   │       ├── amenities.py
+│   │       ├── bookings.py
+│   │       ├── hosts.py
+│   │       ├── places.py
+│   │       ├── reviews.py
+│   │       └── users.py
 │   ├── models/
-│   │   ├── __init__.py
-│   │   ├── user.py
-│   │   ├── base.py
-│   │   ├── place.py
-│   │   ├── review.py
 │   │   ├── amenity.py
+│   │   ├── base.py
 │   │   ├── booking.py
 │   │   ├── host.py
-│   ├── services/
-│   │   ├── __init__.py
-│   │   ├── facade.py
+│   │   ├── place.py
+│   │   ├── review.py
+│   │   └── user.py
 │   ├── persistence/
-│   │   ├── __init__.py
-│   │   ├── repository.py
-│   ├── tests/
-│   │   ├── test_classes.py
-├── run.py
+│   │   └── repository.py
+│   ├── services/
+│   │   └── facade.py
+│   └── tests/
+│       ├── test_api.py
+│       ├── test_classes.py
+│       └── test_facade_and_repo.py
 ├── config.py
-├── requirements.txt
 ├── README.md
+├── requirements.txt
+└── run.py
 
 ```
 
@@ -77,14 +74,14 @@ Contains `facede.py` that implements the Facade pattern describing layers and co
 Contains `repository.py` that allows in memory persistence and serves as a placeholder for the future database integration.
 
 
-## Building the Business Logic Layer
+## 🧩 Building the Business Logic Layer
 
 The **Business Logic Layer** represented by classes used to abstract and describe relevant **Business Entities** to the functioning of the app.
 
 As a rule of thumb, attributes of the classes described below will be private and be accessed and updated through getters (``@property``) and setters (``@attribute.setter``) to ensure data integrity.</br>
 Their behavior in relation to one another is described by the Class diagram from the previous part of the project. They will be elaborated on a little bit later.
 
-### Classes Presentation
+### 🔍 Classes Presentation
 
 **Base Class**
 
@@ -275,13 +272,78 @@ if hasattr(host, "add_place") and isinstance(host, Host):
 ```
 The above code is from the `Place` class object constructor. When creating a `place` object, an `host` object is passed as attribute. The `place` object created is then passed as an argument to `host.add_place()` appending it to `host.owned_places[]`. Furthermore, we check if passed argument is indeed of the type `Host` and that it contains the method `add_place`
 
-## Building RESTful API Endpoints
+## 🚀 Building RESTful API Endpoints
 
+Below is a summary of all available API routes, grouped by resource.
 
+### 👤 Users
 
-## Testing and Validating
+| Method | Path                        | Description                              | Request Body                                    | Response Codes           |
+|--------|-----------------------------|------------------------------------------|-------------------------------------------------|--------------------------|
+| GET    | `/api/v1/users/`            | List all users                           | _none_                                          | 200 OK                   |
+| POST   | `/api/v1/users/`            | Create a new user                        | `{ first_name, last_name, email }`              | 201 Created, 400 Bad Request |
+| GET    | `/api/v1/users/{user_id}`   | Retrieve a user by ID                    | _none_                                          | 200 OK, 404 Not Found    |
+| PATCH  | `/api/v1/users/{user_id}`   | Update user fields                       | Partial `{ first_name?, last_name?, email? }`   | 200 OK, 400 Bad Request  |
+| DELETE | `/api/v1/users/{user_id}`   | Delete a user                            | _none_                                          | 204 No Content, 404 Not Found |
 
-### Testing Model Classes
+### 🧑‍💼 Hosts
+
+| Method | Path                          | Description                              | Request Body                                    | Response Codes              |
+|--------|-------------------------------|------------------------------------------|-------------------------------------------------|-----------------------------|
+| GET    | `/api/v1/hosts/`              | List all hosts                           | _none_                                          | 200 OK                      |
+| POST   | `/api/v1/hosts/`              | Create a new host                        | `{ first_name, last_name, email }`              | 201 Created, 400 Bad Request |
+| GET    | `/api/v1/hosts/{host_id}`     | Retrieve a host by ID                    | _none_                                          | 200 OK, 404 Not Found       |
+| PATCH  | `/api/v1/hosts/{host_id}`     | Update host fields                       | Partial `{ first_name?, last_name?, email? }`   | 200 OK, 400 Bad Request     |
+| DELETE | `/api/v1/hosts/{host_id}`     | Delete a host                            | _none_                                          | 204 No Content, 404 Not Found |
+| GET    | `/api/v1/hosts/{host_id}/rating` | Get average rating for a host        | _none_                                          | 200 OK, 404 Not Found       |
+
+### 🏷️ Amenities
+
+| Method | Path                            | Description                              | Request Body                       | Response Codes              |
+|--------|---------------------------------|------------------------------------------|------------------------------------|-----------------------------|
+| GET    | `/api/v1/amenities/`            | List all amenities                       | _none_                             | 200 OK                      |
+| POST   | `/api/v1/amenities/`            | Create a new amenity                     | `{ name }`                         | 201 Created, 400 Bad Request |
+| GET    | `/api/v1/amenities/{amenity_id}`| Retrieve an amenity by ID                | _none_                             | 200 OK, 404 Not Found       |
+| PATCH  | `/api/v1/amenities/{amenity_id}`| Update amenity name                      | `{ name }`                         | 200 OK, 400 Bad Request     |
+| DELETE | `/api/v1/amenities/{amenity_id}`| Delete an amenity                        | _none_                             | 204 No Content, 404 Not Found |
+
+### 🏠 Places
+
+| Method | Path                          | Description                              | Request Body                                               | Response Codes               |
+|--------|-------------------------------|------------------------------------------|------------------------------------------------------------|------------------------------|
+| GET    | `/api/v1/places/`             | List all places                          | _none_                                                     | 200 OK                       |
+| POST   | `/api/v1/places/`             | Create a new place                       | `{ name, description, user_id, amenity_ids, capacity, price }` | 201 Created, 400 Bad Request |
+| GET    | `/api/v1/places/{place_id}`   | Retrieve a place by ID                   | _none_                                                     | 200 OK, 404 Not Found        |
+| PATCH  | `/api/v1/places/{place_id}`   | Update place fields                      | Partial of the POST body                                   | 200 OK, 400 Bad Request      |
+| DELETE | `/api/v1/places/{place_id}`   | Delete a place                           | _none_                                                     | 204 No Content, 404 Not Found |
+| GET    | `/api/v1/places/{place_id}/rating` | Get average rating for a place      | _none_                                                     | 200 OK, 404 Not Found        |
+
+### 📅 Bookings
+
+| Method | Path                          | Description                              | Request Body                                                 | Response Codes               |
+|--------|-------------------------------|------------------------------------------|--------------------------------------------------------------|------------------------------|
+| GET    | `/api/v1/bookings/`           | List all bookings                        | _none_                                                       | 200 OK                       |
+| POST   | `/api/v1/bookings/`           | Create a booking                         | `{ user_id, place_id, guest_count, checkin_date, night_count, price_per_night? }` | 201 Created, 400 Bad Request |
+| GET    | `/api/v1/bookings/{booking_id}`| Retrieve a booking by ID                 | _none_                                                       | 200 OK, 404 Not Found        |
+| PATCH  | `/api/v1/bookings/{booking_id}`| Update booking fields                    | Partial of the POST body                                     | 200 OK, 400 Bad Request      |
+| DELETE | `/api/v1/bookings/{booking_id}`| Delete a booking                         | _none_                                                       | 204 No Content, 404 Not Found |
+| GET    | `/api/v1/bookings/{booking_id}/cost` | Compute total cost of a booking    | _none_                                                       | 200 OK, 404 Not Found        |
+
+### ⭐ Reviews
+
+| Method | Path                            | Description                              | Request Body                                              | Response Codes               |
+|--------|---------------------------------|------------------------------------------|-----------------------------------------------------------|------------------------------|
+| GET    | `/api/v1/reviews/`              | List all reviews                         | _none_                                                    | 200 OK                       |
+| POST   | `/api/v1/reviews/`              | Create a review                          | `{ booking_id, text, rating }`                            | 201 Created, 400 Bad Request |
+| GET    | `/api/v1/reviews/{review_id}`   | Retrieve a review by ID                  | _none_                                                    | 200 OK, 404 Not Found        |
+| PATCH  | `/api/v1/reviews/{review_id}`   | Update review text or rating             | Partial `{ text?, rating? }`                              | 200 OK, 400 Bad Request      |
+| DELETE | `/api/v1/reviews/{review_id}`   | Delete a review                          | _none_                                                    | 204 No Content, 404 Not Found |
+
+---
+
+## 🛠️ Testing and Validating
+
+### 🔬 Testing Model Classes
 
 Classes and their methods and attributes are tested in the file `app/tests/test_classes.py`.
 The following function calls are used to test every attribute, and every methods of every classes:
@@ -323,7 +385,26 @@ More than one review was added to a given booking and raised Value Error
 ```
 No error message, meaning every test went through as asserted values are as expected.
 
-### Testing API Endpoints and HTTP Methods
+### 📡 Testing API Endpoints and HTTP Methods
 
+We use **pytest** to verify all endpoints, including:
+
+- **Happy Paths** for CRUD operations on each resource.
+- **Validation Errors** for missing/invalid fields.
+- **Edge Cases** such as invalid dates, guest counts, capacity/price bounds.
+- **Aggregation Endpoints** (`/rating`, `/cost`) marked as **xfail** until implemented.
+
+Snippets:
+
+```bash
+# Run all tests
+pytest -q
+
+# Run only API tests
+pytest app/tests/test_api.py -q
+
+# Show verbose output with skipped/xfails
+pytest -v
+```
 ---
 Authors - [DESSAIGNE Théo](https://github.com/Theo-D) & [TRAN Jérôme](https://github.com/jerome244)
