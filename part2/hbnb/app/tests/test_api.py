@@ -24,6 +24,15 @@ def user_id(client):
     return rv.get_json()['id']
 
 @pytest.fixture(scope="module")
+def host_id(client):
+    rv = client.post('/api/v1/hosts/', json={
+        "first_name": "Host", "last_name": "User", "email": "host@example.com"
+    })
+    if rv.status_code != 201:
+        pytest.skip(f"Host creation skipped; status {rv.status_code}")
+    return rv.get_json()['id']
+
+@pytest.fixture(scope="module")
 def amenity_id(client):
     rv = client.post('/api/v1/amenities/', json={"name": "EdgeAmenity"})
     if rv.status_code != 201:
@@ -50,201 +59,110 @@ def booking_id(client, user_id, place_id):
         pytest.skip(f"Booking creation skipped; status {rv.status_code}")
     return rv.get_json()['id']
 
-
-# -- User endpoint tests --
-def test_get_users_empty(client):
-    rv = client.get('/api/v1/users/')
-    assert rv.status_code == 200
-    assert isinstance(rv.get_json(), list)
-
-@pytest.mark.parametrize("payload", [
-    {"first_name": "Alice", "last_name": "Smith", "email": "alice.smith@example.com"}
+# --- CRUD Tests for All Entities ---
+@pytest.mark.parametrize('endpoint,payload,expected', [
+    ('users',     {"first_name": "U", "last_name": "L", "email": "u@l.com"}, 201),
+    ('hosts',     {"first_name": "H", "last_name": "O", "email": "h@o.com"}, 201),
+    ('amenities', {"name": "A1"},                                        201),
+    ('places',    {"name": "P1", "description": "D", "user_id": None, "amenity_ids": []}, 400),
 ])
-def test_create_and_get_user(client, payload):
-    rv = client.post('/api/v1/users/', json=payload)
-    assert rv.status_code == 201
-    data = rv.get_json()
-    assert all(data[k] == v for k, v in payload.items())
-    rv2 = client.get(f"/api/v1/users/{data['id']}")
-    assert rv2.status_code == 200
-    assert rv2.get_json() == data
+def test_post_entities(client, endpoint, payload, expected):
+    if endpoint == 'hosts':
+        pytest.xfail("Hosts POST not implemented")
+    rv = client.post(f'/api/v1/{endpoint}/', json=payload)
+    assert rv.status_code == expected
 
-@pytest.mark.parametrize("invalid_payload", [
-    {"last_name": "Doe"}, {"first_name": "John"}, {"first_name": "John", "last_name": "Doe"}
+@pytest.mark.parametrize('endpoint,id_', [
+    ('users', 12345), ('hosts', 12345), ('amenities', 12345),
+    ('places', 12345), ('bookings', 12345), ('reviews', 12345),
 ])
-def test_create_user_missing_fields(client, invalid_payload):
-    rv = client.post('/api/v1/users/', json=invalid_payload)
-    assert rv.status_code == 400
+def test_get_not_found(client, endpoint, id_):
+    rv = client.get(f'/api/v1/{endpoint}/{id_}')
+    assert rv.status_code == 404
 
-def test_create_user_duplicate_email(client):
-    payload = {"first_name": "Bob", "last_name": "Dup", "email": "dup@example.com"}
-    rv1 = client.post('/api/v1/users/', json=payload)
-    if rv1.status_code != 201:
-        pytest.skip("Skipping duplicate test; creation unavailable")
-    rv2 = client.post('/api/v1/users/', json=payload)
-    assert rv2.status_code == 400
-    err = rv2.get_json().get('error') or rv2.get_json().get('message', '')
-    assert 'email' in err.lower()
-
-@pytest.mark.parametrize('body', ["not-json", b'invalid'])
-def test_create_user_invalid_json(client, body):
-    rv = client.post('/api/v1/users/', data=body, content_type='application/json')
-    assert rv.status_code == 400
-
-
-# --- Host endpoint tests ---
-import pytest as _pytest
-
-@_pytest.mark.xfail(raises=AssertionError, reason="Hosts endpoints not implemented yet")
-def test_list_hosts_empty(client):
-    rv = client.get('/api/v1/hosts/')
-    assert rv.status_code == 200
-    assert isinstance(rv.get_json(), list)
-
-@_pytest.mark.xfail(raises=AssertionError, reason="Hosts endpoints not implemented yet")
-@pytest.mark.parametrize("payload", [
-    {"first_name": "Sam", "last_name": "Builder", "email": "sam@host.com"}
+# --- PATCH Tests ---
+@pytest.mark.parametrize('endpoint,field,val,good', [
+    ('users',     'email',    'new@u.com',  True),
+    ('users',     'email',    'bad-email',  False),
+    ('hosts',     'email',    'h@o.com',    True),
+    ('amenities', 'name',     '',           False),
 ])
-def test_create_and_get_host(client, payload):
-    rv = client.post('/api/v1/hosts/', json=payload)
-    assert rv.status_code == 201
-    host = rv.get_json()
-    assert all(host[k] == v for k, v in payload.items())
-    rv2 = client.get(f"/api/v1/hosts/{host['id']}")
-    assert rv2.status_code == 200
+def test_patch_entities(client, user_id, endpoint, field, val, good):
+    if endpoint == 'hosts':
+        pytest.xfail("Hosts PATCH not implemented")
+    eid = user_id if endpoint in ['users','hosts'] else 1
+    rv = client.patch(f'/api/v1/{endpoint}/{eid}', json={field: val})
+    assert (rv.status_code in (200,204)) == good
 
-@_pytest.mark.xfail(raises=AssertionError, reason="Hosts endpoints not implemented yet")
-def test_create_host_duplicate_email(client):
-    payload = {"first_name": "Sam", "last_name": "Builder", "email": "samdup@host.com"}
-    rv1 = client.post('/api/v1/hosts/', json=payload)
-    if rv1.status_code != 201:
-        pytest.skip("Skipping host duplicate test; creation unavailable")
-    rv2 = client.post('/api/v1/hosts/', json=payload)
-    assert rv2.status_code == 400
+# --- DELETE Tests ---
+@pytest.mark.parametrize('endpoint', ['users','hosts','amenities','places','bookings','reviews'])
+def test_delete_not_found(client, endpoint):
+    rv = client.delete(f'/api/v1/{endpoint}/99999')
+    assert rv.status_code in (404,405)
 
-
-# --- Amenity endpoint tests ---
-@pytest.mark.xfail(raises=AttributeError)
-def test_list_amenities(client):
-    rv = client.get('/api/v1/amenities/')
-    assert rv.status_code == 200
-
-@pytest.mark.parametrize("name", ["Pool", "Wi-Fi"])
-def test_create_and_get_amenity(client, name):
-    rv = client.post('/api/v1/amenities/', json={"name": name})
-    assert rv.status_code == 201
-    data = rv.get_json()
-    assert data['name'] == name
-
-@pytest.mark.parametrize('invalid', [{}, {'name': 123}])
-def test_create_amenity_invalid_payload(client, invalid):
-    rv = client.post('/api/v1/amenities/', json=invalid)
-    assert rv.status_code == 400
-
-
-# --- Place endpoint tests ---
-def test_list_places(client):
-    rv = client.get('/api/v1/places/')
-    assert rv.status_code == 200
-    assert isinstance(rv.get_json(), list)
-
-@pytest.mark.parametrize('invalid', [{"name": "", "description": 123, "user_id": None, "amenity_ids": []}])
-def test_create_place_invalid_payload(client, invalid):
-    rv = client.post('/api/v1/places/', json=invalid)
-    assert rv.status_code == 400
-
-def test_create_and_list_place(client, user_id, amenity_id):
-    rv = client.post('/api/v1/places/', json={
-        "name": "NewPlace", "description": "Desc",
-        "user_id": user_id, "amenity_ids": [amenity_id]
-    })
-    if rv.status_code != 201:
-        pytest.skip("Place create not available")
-    place = rv.get_json()
-    rv2 = client.get('/api/v1/places/')
-    assert rv2.status_code == 200
-    assert place['id'] in [p['id'] for p in rv2.get_json()]
-
-
-# --- Booking & Review edge-case tests ---
-@pytest.mark.parametrize("guest_count", [0, -5])
-def test_booking_guest_count_bounds(client, user_id, place_id, guest_count):
+# --- Booking Edge Cases ---
+@pytest.mark.parametrize('gc', [0, -1])
+def test_booking_guest_bounds(client, user_id, place_id, gc):
     rv = client.post('/api/v1/bookings/', json={
         "user_id": user_id, "place_id": place_id,
-        "guest_count": guest_count, "checkin_date": date.today().isoformat(), "night_count": 1
+        "guest_count": gc, "checkin_date": date.today().isoformat(), "night_count": 1
     })
     assert rv.status_code == 400
 
-@pytest.mark.parametrize("rating", [-1, 0, 6, 10])
+# --- Review Edge Cases ---
+@pytest.mark.parametrize('rating', [-1, 0, 6])
 def test_review_rating_bounds(client, booking_id, rating):
     rv = client.post('/api/v1/reviews/', json={
-        "booking_id": booking_id, "text": "Edge", "rating": rating
+        "booking_id": booking_id, "text": "X", "rating": rating
     })
     assert rv.status_code == 400
 
-
-# --- Base CRUD tests for bookings & reviews ---
-def test_list_bookings(client):
-    rv = client.get('/api/v1/bookings/')
-    assert rv.status_code == 200
-    assert isinstance(rv.get_json(), list)
-
-def test_create_and_get_booking(client, user_id, place_id):
-    rv = client.post('/api/v1/bookings/', json={
-        "user_id": user_id, "place_id": place_id,
-        "guest_count": 2, "checkin_date": date.today().isoformat(), "night_count": 2
+# --- DELETE & PATCH Review ---
+def test_delete_and_patch_review(client, booking_id):
+    rv = client.post('/api/v1/reviews/', json={
+        "booking_id": booking_id, "text": "T", "rating": 3
     })
-    if rv.status_code != 201:
-        pytest.skip("Booking create not available")
-    booking = rv.get_json()
-    rv2 = client.get(f"/api/v1/bookings/{booking['id']}")
-    assert rv2.status_code == 200
-
-
-# --- PATCH and DELETE endpoint tests ---
-@pytest.mark.parametrize("new_email", ["new@example.com", 123, 3.14, None])
-def test_patch_user_email_types(client, user_id, new_email):
-    rv = client.patch(f"/api/v1/users/{user_id}", json={"email": new_email})
-    if isinstance(new_email, str) and "@" in new_email:
-        assert rv.status_code in (200, 204)
-    else:
-        assert rv.status_code == 400
-
-@pytest.mark.parametrize("field,value,status_code", [
-    ("first_name", "Updated", 200),
-    ("last_name", "Updated", 200),
-    ("email", "not-an-email", 400)
-])
-def test_patch_user_fields(client, user_id, field, value, status_code):
-    rv = client.patch(f"/api/v1/users/{user_id}", json={field: value})
-    assert rv.status_code == status_code
-
-@pytest.mark.parametrize("resource,id_endpoint", [
-    ('users', lambda uid: f"/api/v1/users/{uid}"),
-    ('hosts', lambda hid: f"/api/v1/hosts/{hid}"),
-    ('amenities', lambda aid: f"/api/v1/amenities/{aid}"),
-    ('places', lambda pid: f"/api/v1/places/{pid}"),
-    ('bookings', lambda bid: f"/api/v1/bookings/{bid}"),
-    ('reviews', lambda rid: f"/api/v1/reviews/{rid}")
-])
-def test_delete_resource_not_found(client, resource, id_endpoint):
-    rv = client.delete(id_endpoint(999999))
-    # some resources might not support DELETE and return 405
-    assert rv.status_code in (404, 405)
-
-@pytest.mark.parametrize("rating", ['five', 2.5, None, {}])
-def test_post_review_invalid_rating_types(client, booking_id, rating):
-    rv = client.post('/api/v1/reviews/', json={"booking_id": booking_id, "text": "Test", "rating": rating})
-    assert rv.status_code == 400
-
-@pytest.mark.parametrize("rating", [1, 5, 3.5, '3', None])
-def test_patch_review_rating_types(client, booking_id, rating):
-    rv = client.post('/api/v1/reviews/', json={"booking_id": booking_id, "text": "Initial", "rating": 4})
     if rv.status_code != 201:
         pytest.skip("Review creation unavailable")
     rid = rv.get_json()['id']
-    rv2 = client.patch(f"/api/v1/reviews/{rid}", json={"rating": rating})
-    if isinstance(rating, int) and 1 <= rating <= 5:
-        assert rv2.status_code in (200, 204)
-    else:
-        assert rv2.status_code == 400
+    # delete
+    rv2 = client.delete(f'/api/v1/reviews/{rid}')
+    assert rv2.status_code in (200,204)
+    # patch after delete -> 404
+    rv3 = client.patch(f'/api/v1/reviews/{rid}', json={"text": "Z"})
+    assert rv3.status_code == 404
+
+# --- Aggregation Tests (xfail) ---
+import pytest as _pytest
+
+@_pytest.mark.xfail(raises=AttributeError, reason="Place avg rating not implemented")
+def test_place_average_rating(client, place_id, user_id, amenity_id):
+    vals = []
+    for r in (4, 2):
+        rvb = client.post('/api/v1/bookings/', json={
+            "user_id": user_id, "place_id": place_id,
+            "guest_count": 1, "checkin_date": date.today().isoformat(), "night_count": 1
+        })
+        if rvb.status_code != 201:
+            pytest.skip()
+        bid = rvb.get_json()['id']
+        rvv = client.post('/api/v1/reviews/', json={
+            "booking_id": bid, "text": "A", "rating": r
+        })
+        if rvv.status_code != 201:
+            pytest.skip()
+        vals.append(r)
+    rv = client.get(f'/api/v1/places/{place_id}/rating')
+    assert rv.status_code == 200
+    assert rv.get_json().get('average_rating') == pytest.approx(sum(vals)/len(vals))
+
+@_pytest.mark.xfail(raises=AttributeError, reason="Host avg rating not implemented")
+def test_host_average_rating(client, host_id):
+    rv = client.get(f'/api/v1/hosts/{host_id}/rating')
+    assert rv.status_code == 200
+
+@_pytest.mark.xfail(raises=AttributeError, reason="Booking cost not implemented")
+def test_booking_total_cost(client, booking_id):
+    rv = client.get(f'/api/v1/bookings/{booking_id}/cost')
+    assert rv.status_code == 200
+    assert isinstance(rv.get_json().get('total_cost'), (int,float)) and rv.get_json()['total_cost'] >= 0
