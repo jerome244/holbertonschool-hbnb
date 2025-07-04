@@ -70,3 +70,5 @@ secret_key.txt
 
 # Misc
 *.swp
+
+*Zone.Identifier*
