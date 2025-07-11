@@ -1,19 +1,20 @@
 #!/usr/bin/python3
 
-"""
-    A function to generate an hash compatible
-    with werkzeug password check function.
-"""
-
 from werkzeug.security import generate_password_hash, check_password_hash
+from sys import argv
 
-def make_hash(password, test_password):
-
+def make_hash():
+    """
+        A function to generate an hash compatible
+        with werkzeug password check function.
+        argv[1] : Password to generate hash for and to test.
+    """
+    password = argv[1]
     hashed = generate_password_hash(password)
     print(f"Original password: {password}")
     print(f"Hashed password: {hashed}")
 
-    is_hashed = check_password_hash(hashed, test_password)
+    is_hashed = check_password_hash(hashed, password)
 
     if is_hashed:
         print("test_password and hashed are matching")
@@ -22,7 +23,4 @@ def make_hash(password, test_password):
 
 if __name__ == "__main__":
 
-    original_password = "admin1234"
-    input_password = "admin1234"
-
-    make_hash(original_password, input_password)
+    make_hash()
