@@ -20,8 +20,6 @@ def make_hash(password, test_password):
     else:
         print("test_password and hashed are not matching")
 
-    return is_hashed
-
 if __name__ == "__main__":
 
     original_password = "admin1234"
