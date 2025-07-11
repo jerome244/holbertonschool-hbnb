@@ -1,5 +1,3 @@
-# app/api/v1/auth.py
-
 """
 auth.py: Authentication endpoints for logging in users or hosts.
 """

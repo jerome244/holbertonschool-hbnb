@@ -1,4 +1,3 @@
-# tests/test_api.py
 import pytest
 import app.api.v1.users     # Ensure your @ns.route handlers are registered
 import app.api.v1.bookings

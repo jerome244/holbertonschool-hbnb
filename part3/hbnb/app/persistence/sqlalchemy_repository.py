@@ -1,4 +1,3 @@
-# app/persistence/sqlalchemy_repository.py
 from app import db
 from app.persistence.repository import Repository
 
