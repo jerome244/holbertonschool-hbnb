@@ -1,69 +1,36 @@
-# app/models/host.py
-
-from datetime import datetime
-from typing import TYPE_CHECKING
-from .user import User
-
-if TYPE_CHECKING:
-    from .place import Place
+from app.models.user import User
+from app.database import db
+from werkzeug.security import generate_password_hash, check_password_hash
 
 class Host(User):
-    """
-    Host model, subclass of User, with owned places and average rating.
-    Inherits password hashing and verification from User.
-    """
-    def __init__(self, first_name: str, last_name: str, email: str,
-                 password: str, is_admin: bool = False, **kwargs):
-        """
-        Initialize a new Host instance.
+    __tablename__ = 'hosts'
 
-        Args:
-            first_name (str): Host's first name
-            last_name (str): Host's last name
-            email (str): Host's email address
-            password (str): Plaintext password, min length 8
-            is_admin (bool): Admin flag (optional; defaults to False)
-            **kwargs: Additional BaseModel kwargs
-        """
-        # Pass password (and is_admin) through to User so it gets hashed
-        super().__init__(
-            first_name=first_name,
-            last_name=last_name,
-            email=email,
-            password=password,
-            is_admin=is_admin,
-            **kwargs
-        )
-        self.__owned_places = []
+    id = db.Column(db.String(36), db.ForeignKey('users.id'), primary_key=True)
 
-    @property
-    def owned_places(self):
-        """Return the list of places owned by this host."""
-        return self.__owned_places
+    # --- Relationships ---
+    places = db.relationship(
+        "Place",
+        back_populates="host",
+        lazy=True,
+        cascade="all, delete-orphan",
+        foreign_keys='Place.host_id'
+    )
 
-    def add_place(self, place):
-        """Associate a Place with this Host."""
-        from .place import Place
-        if not isinstance(place, Place):
-            raise TypeError("place must be a Place instance")
-        self.__owned_places.append(place)
-        self.updated_at = datetime.now()
+    # --- Password utils ---
+    def set_password(self, password):
+        self.password = generate_password_hash(password)
 
-    @property
-    def rating(self):
-        """
-        Compute and return the host's average rating across owned places.
+    def check_password(self, password):
+        return check_password_hash(self.password, password)
 
-        Returns:
-            float: Average rating of all owned places.
-
-        Raises:
-            AttributeError: If the host owns no places.
-        """
-        if not self.__owned_places:
-            raise AttributeError("Must own at least one place")
-        total = 0
-        for place in self.__owned_places:
-            total += place.get_average_rating()
-        self.__rating = total / len(self.__owned_places)
-        return self.__rating
+    # --- Serialization ---
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "email": self.email,
+            "is_admin": self.is_admin,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None
+        }

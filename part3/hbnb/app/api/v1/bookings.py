@@ -1,5 +1,5 @@
 from flask import request
-from flask_restx import Namespace, Resource, fields, marshal
+from flask_restx import Namespace, Resource, fields
 from datetime import datetime, timedelta, date
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from app.services import facade
@@ -10,7 +10,6 @@ ns = Namespace(
     security='BearerAuth'
 )
 
-# ----------------------- data models ----------------------- #
 booking_input = ns.model(
     "BookingInput",
     {
@@ -27,13 +26,13 @@ booking_output = ns.model(
         "id": fields.String(description="Booking unique identifier (UUID)"),
         "user_id": fields.String(description="UUID of the user who made the booking"),
         "place_id": fields.String(description="ID of the booked place"),
-        "check_in": fields.Date(description="Check-in date"),
-        "nights": fields.Integer(description="Number of nights"),
+        "start_date": fields.Date(description="Check-in date"),
+        "end_date": fields.Date(description="Check-out date"),
         "guest_count": fields.Integer(description="Number of guests"),
-        "check_out": fields.Date(description="Calculated check-out date"),
         "total_price": fields.Float(description="Total price for the stay"),
     }
 )
+
 
 rating_output = ns.model(
     "BookingRating",
@@ -46,115 +45,72 @@ rating_output = ns.model(
 @ns.route("")
 class Bookings(Resource):
     @jwt_required()
-    @ns.doc(
-        "list_bookings",
-        description="List all bookings (Admin only)",
-        security='BearerAuth'
-    )
     @ns.marshal_list_with(booking_output)
-    @ns.response(403, "Unauthorized action")
     def get(self):
-        """
-        Retrieve a list of all bookings. Only accessible by administrators.
-        """
+        current_user = get_jwt_identity()
         claims = get_jwt()
-        if not claims.get("is_admin"):
-            ns.abort(403, "Unauthorized action")
 
-        bookings = facade.get_all_bookings()
+        if claims.get("is_admin"):
+            bookings = facade.list_bookings()
+        else:
+            bookings = facade.get_user_bookings(current_user)
+
         result = []
-        for b in bookings:
-            check_out = b.checkin_date + timedelta(days=b.night_count)
-            total = b.place.price * b.night_count
+        for booking in bookings:
             result.append({
-                "id": b.id,
-                "user_id": b.user.id,
-                "place_id": b.place.id,
-                "check_in": b.checkin_date,
-                "nights": b.night_count,
-                "guest_count": b.guest_count,
-                "check_out": check_out,
-                "total_price": total,
+                "id": booking.id,
+                "user_id": booking.user.id,
+                "place_id": booking.place.id,
+                "start_date": booking.start_date,
+                "end_date": booking.end_date,
+                "guest_count": booking.guest_count,
+                "total_price": booking.total_price
             })
         return result, 200
 
+
     @jwt_required()
-    @ns.doc(
-        "create_booking",
-        description="Create a new booking (Authenticated users)",
-        security='BearerAuth'
-    )
     @ns.expect(booking_input, validate=True)
     @ns.marshal_with(booking_output, code=201)
-    @ns.response(400, "Invalid input or booking conflict")
     def post(self):
-        """
-        Create a new booking for the authenticated user. Validates dates and place availability.
-        """
         payload = request.json or {}
         user_id = get_jwt_identity()
 
-        # Required fields
-        for field in ("place_id", "check_in", "nights"):
-            if field not in payload:
-                ns.abort(400, f"Missing required field: {field}")
-
-        # Parse and validate check_in date
         try:
-            checkin_date = datetime.strptime(payload.get("check_in"), "%Y-%m-%d")
+            start_date = datetime.strptime(payload["check_in"], "%Y-%m-%d").date()
         except Exception:
             ns.abort(400, "Invalid or missing 'check_in'. Format must be YYYY-MM-DD.")
-        if checkin_date.date() < date.today():
-            ns.abort(400, "Check-in date cannot be in the past.")
 
-        # Validate nights
-        try:
-            nights = int(payload.get("nights"))
-        except Exception:
-            ns.abort(400, "'nights' must be an integer.")
+        nights = int(payload.get("nights", 1))
         if nights <= 0:
-            ns.abort(400, "Number of nights must be at least 1.")
+            ns.abort(400, "'nights' must be a positive integer")
 
-        # Guest count
-        guest_count = payload.get("guest_count", 1)
-        try:
-            guest_count = int(guest_count)
-        except Exception:
-            ns.abort(400, "'guest_count' must be an integer.")
+        end_date = start_date + timedelta(days=nights)
+
+        guest_count = int(payload.get("guest_count", 1))
         if guest_count <= 0:
-            ns.abort(400, "Guest count must be at least 1.")
+            ns.abort(400, "'guest_count' must be at least 1")
 
-        # Validate place
-        place = facade.get_place(payload.get("place_id"))
-        if not place:
-            ns.abort(400, "Place not found.")
-
-        # Build data for facade
         data = {
             "user_id": user_id,
-            "place_id": payload.get("place_id"),
-            "place": place,
-            "checkin_date": checkin_date,
-            "night_count": nights,
-            "guest_count": guest_count,
+            "place_id": payload["place_id"],
+            "start_date": start_date,
+            "end_date": end_date,
+            "guest_count": guest_count
         }
 
-        # Create booking
         booking = facade.create_booking(data)
         if not booking:
             ns.abort(400, "Cannot create booking: conflict or invalid data.")
 
-        check_out = booking.checkin_date + timedelta(days=booking.night_count)
-        total = booking.place.price * booking.night_count
         return {
             "id": booking.id,
             "user_id": booking.user.id,
             "place_id": booking.place.id,
-            "check_in": booking.checkin_date,
-            "nights": booking.night_count,
+            "start_date": booking.start_date,
+            "end_date": booking.end_date,
             "guest_count": booking.guest_count,
-            "check_out": check_out,
-            "total_price": total,
+            "total_price": booking.total_price,
         }, 201
 
 @ns.route("/<string:booking_id>")
@@ -163,35 +119,30 @@ class BookingResource(Resource):
     @jwt_required()
     @ns.doc(
         "get_booking",
-        description="Get booking details (Owner or Admin only)",
+        description="Retrieve a specific booking",
         security='BearerAuth'
     )
     @ns.marshal_with(booking_output)
     @ns.response(403, "Unauthorized action")
     def get(self, booking_id):
-        """
-        Retrieve details for a specific booking. Users may fetch their own bookings; admins may fetch any.
-        """
         booking = facade.get_booking(booking_id)
         if not booking:
             ns.abort(404, f"Booking {booking_id} not found")
         user_id = get_jwt_identity()
         claims = get_jwt()
-        if booking.user.id != user_id and not claims.get("is_admin"):
+        if str(booking.user.id) != str(user_id) and not claims.get("is_admin", False):
             ns.abort(403, "Unauthorized action")
 
-        check_out = booking.checkin_date + timedelta(days=booking.night_count)
-        total = booking.place.price * booking.night_count
         return {
             "id": booking.id,
             "user_id": booking.user.id,
             "place_id": booking.place.id,
-            "check_in": booking.checkin_date,
-            "nights": booking.night_count,
+            "start_date": booking.start_date,
+            "end_date": booking.end_date,
             "guest_count": booking.guest_count,
-            "check_out": check_out,
-            "total_price": total,
+            "total_price": booking.total_price
         }, 200
+
 
     @jwt_required()
     @ns.doc(

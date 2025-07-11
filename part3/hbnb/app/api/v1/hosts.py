@@ -42,11 +42,8 @@ class HostList(Resource):
         claims = get_jwt()
         caller_is_admin = claims.get("is_admin", False)
 
-        if facade.is_first_user():
-            is_admin = True
-        else:
-            requested_admin = bool(data.get("is_admin", False))
-            is_admin = requested_admin if caller_is_admin else False
+        requested_admin = bool(data.get("is_admin", False))
+        is_admin = requested_admin if caller_is_admin else False
 
         print("Is first user:", facade.is_first_user())
         print("Caller is admin:", caller_is_admin)

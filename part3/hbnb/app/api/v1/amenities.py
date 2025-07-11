@@ -62,6 +62,7 @@ class AmenityDetail(Resource):
         claims = get_jwt()
         if not claims.get("is_admin"):
             return {"error": "Unauthorized action"}, 403
+        
         amenity = facade.get_amenity(amenity_id)
         if not amenity:
             ns.abort(404, f"Amenity {amenity_id} not found")

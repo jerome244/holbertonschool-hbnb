@@ -43,21 +43,21 @@ class Login(Resource):
 
         # Try User first
         user = facade.get_user_by_email(email)
-        if user and user.verify_password(password):
-            identity = user.id
+        if user and user.check_password(password):
+            identity = str(user.id)  # ✅ cast to string
             claims = {"is_admin": user.is_admin}
             access_token = create_access_token(identity=identity, additional_claims=claims)
             refresh_token = create_refresh_token(identity=identity, additional_claims=claims)
             return {"access_token": access_token, "refresh_token": refresh_token}, 200
 
-        # Try Host if user not found or wrong password
+        # Try Host
         try:
             host = facade.get_host_by_email(email)
         except AttributeError:
             host = None
 
-        if host and host.verify_password(password):
-            identity = host.id
+        if host and host.check_password(password):
+            identity = str(host.id)  # ✅ cast to string
             claims = {"is_admin": host.is_admin}
             access_token = create_access_token(identity=identity, additional_claims=claims)
             refresh_token = create_refresh_token(identity=identity, additional_claims=claims)

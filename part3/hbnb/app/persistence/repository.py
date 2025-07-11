@@ -6,7 +6,6 @@ Provides a uniform API for data persistence across different model types.
 
 from abc import ABC, abstractmethod
 
-
 class Repository(ABC):
     """Abstract base class for a generic data repository."""
 

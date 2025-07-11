@@ -76,9 +76,10 @@ class ReviewList(Resource):
         if not booking:
             ns.abort(400, "Booking not found")
 
-        # Ensure only booking owner can submit review
+        # Ensure only booking owner (or admin) can submit review
         current_user = get_jwt_identity()
-        if booking.user.id != current_user:
+        claims = get_jwt()
+        if str(booking.user.id) != str(current_user) and not claims.get("is_admin", False):
             ns.abort(403, "Unauthorized action")
 
         # Prevent reviewing own place (if booking owner is also host)
@@ -105,12 +106,13 @@ class ReviewList(Resource):
             review = facade.create_review(payload)
         except Exception as e:
             if "already has a review" in str(e):
-                ns.abort(400, "You have already reviewed this booking.")
+                ns.abort(409, "You have already reviewed this booking.")
             ns.abort(500, "Could not create review")
 
         setattr(review, "booking_id", review.booking.id)
-        
+
         return review, 201
+
 
 @ns.route("/<string:review_id>")
 @ns.response(404, "Review not found")

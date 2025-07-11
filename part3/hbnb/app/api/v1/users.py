@@ -1,9 +1,10 @@
 from flask_restx import Resource, marshal
 from flask_jwt_extended import jwt_required, get_jwt, get_jwt_identity
-from app.services import facade
+from app.services.facade import facade
 from .models import EMAIL_RE, user_model, user_create, user_update
 from flask import request
 from .ns import ns
+from app.api.v1.bookings import booking_output
 
 # ----------------------- data models ----------------------- #
 
@@ -50,10 +51,7 @@ class UserList(Resource):
         claims = get_jwt()
         caller_is_admin = claims.get("is_admin", False)
 
-        if facade.is_first_user():
-            is_admin = True
-        else:
-            is_admin = bool(data.get("is_admin", False)) if caller_is_admin else False
+        is_admin = bool(data.get("is_admin", False)) if caller_is_admin else False
 
         if not first or not last:
             ns.abort(400, "First and last name required")
@@ -132,3 +130,34 @@ class UserResource(Resource):
             ns.abort(403, "Unauthorized action")
         facade.delete_user(user_id)
         return "", 204
+
+@ns.route("/<string:user_id>/bookings")
+@ns.response(404, "User not found")
+class UserBookings(Resource):
+    @jwt_required()
+    @ns.doc(
+        "list_user_bookings",
+        description="List all bookings made by a user (Self or Admin)",
+        security='BearerAuth'
+    )
+    @ns.marshal_list_with(booking_output)      # import booking_output from bookings.py
+    @ns.response(403, "Unauthorized action")
+    def get(self, user_id):
+        """
+        Retrieve all bookings for the given user.
+        """
+        # 1) fetch user, abort if missing
+        user = facade.get_user(user_id)
+        if not user:
+            ns.abort(404, f"User {user_id} not found")
+
+        # 2) enforce self-or-admin
+        caller = get_jwt_identity()
+        claims = get_jwt()
+        if caller != user_id and not claims.get("is_admin"):
+            ns.abort(403, "Unauthorized action")
+
+        # 3) list bookings via facade
+        bookings = facade.list_bookings_for_user(user_id)
+        # 4) return marshaled
+        return bookings, 200

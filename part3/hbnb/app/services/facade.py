@@ -1,15 +1,8 @@
-
-"""
-facade.py: Provides a unified interface (facade) to application repositories and models.
-
-The HBnBFacade class wraps repository operations for users, hosts, places, amenities,
-bookings, and reviews, coordinating data persistence and business logic.
-"""
-
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from flask import abort
 from dateutil.parser import parse
-from app.persistence.repository import InMemoryRepository
+
+from app.persistence import SQLAlchemyRepository
 from app.models.user import User
 from app.models.host import Host
 from app.models.place import Place
@@ -19,30 +12,23 @@ from app.models.review import Review
 
 
 class HBnBFacade:
-    """
-    Facade for the HBnB application, managing repository interactions.
-
-    Attributes:
-        user_repo: Repository for User objects.
-        host_repo: Repository for Host objects.
-        place_repo: Repository for Place objects.
-        amenity_repo: Repository for Amenity objects.
-        booking_repo: Repository for Booking objects.
-        review_repo: Repository for Review objects.
-    """
-
     def __init__(self):
-        self.user_repo = InMemoryRepository()
-        self.host_repo = InMemoryRepository()
-        self.place_repo = InMemoryRepository()
-        self.amenity_repo = InMemoryRepository()
-        self.booking_repo = InMemoryRepository()
-        self.review_repo = InMemoryRepository()
+        self.user_repo = SQLAlchemyRepository(User)
+        self.host_repo = SQLAlchemyRepository(Host)
+        self.place_repo = SQLAlchemyRepository(Place)
+        self.amenity_repo = SQLAlchemyRepository(Amenity)
+        self.booking_repo = SQLAlchemyRepository(Booking)
+        self.review_repo = SQLAlchemyRepository(Review)
 
     # ---- Users ----
-
     def create_user(self, data):
-        user = User(**data)
+        user = User(
+            first_name=data["first_name"],
+            last_name=data["last_name"],
+            email=data["email"],
+            is_admin=data.get("is_admin", False)
+        )
+        user.set_password(data["password"])
         self.user_repo.add(user)
         return user
 
@@ -50,14 +36,10 @@ class HBnBFacade:
         return self.user_repo.get(uid)
 
     def list_users(self):
-        users_list = self.user_repo.get_all() + self.host_repo.get_all()
-        return users_list
+        return self.user_repo.get_all() + self.host_repo.get_all()
 
-    def get_user_by_email(self, email: str):
-        for u in self.list_users():
-            if u.email.lower() == email.lower():
-                return u
-        return None
+    def get_user_by_email(self, email):
+        return next((u for u in self.list_users() if u.email.lower() == email.lower()), None)
 
     def update_user(self, uid, data):
         user = self.get_user(uid)
@@ -71,14 +53,17 @@ class HBnBFacade:
         self.user_repo.delete(uid)
 
     def is_first_user(self):
-        users_list = self.user_repo.get_all() + self.host_repo.get_all()
-        is_first = len(users_list) == 0
-        return is_first
+        return len(self.list_users()) == 0
 
     # ---- Hosts ----
-
     def create_host(self, data):
-        host = Host(**data)
+        host = Host(
+            first_name=data["first_name"],
+            last_name=data["last_name"],
+            email=data["email"],
+            is_admin=data.get("is_admin", False)
+        )
+        host.set_password(data["password"])
         self.host_repo.add(host)
         return host
 
@@ -103,28 +88,18 @@ class HBnBFacade:
         host = self.get_host(hid)
         if not host:
             return None
-        owned = [p for p in self.list_places() if getattr(p, "host", None) and p.host.id == hid]
         seen = set()
-        unique = []
-        for p in owned:
-            if p.id not in seen:
-                seen.add(p.id)
-                unique.append(p)
-        return unique
+        return [p for p in self.list_places() if getattr(p, "host", None) and p.host.id == hid and not (p.id in seen or seen.add(p.id))]
 
-    def get_host_by_email(self, email: str):
-        for h in self.list_hosts():
-            if h.email.lower() == email.lower():
-                return h
-        return None
+    def get_host_by_email(self, email):
+        return next((h for h in self.list_hosts() if h.email.lower() == email.lower()), None)
 
     # ---- Places ----
-
     def create_place(self, data):
         lat = float(data.pop("latitude", 0.0) or 0.0)
         lon = float(data.pop("longitude", 0.0) or 0.0)
         host_id = data.pop("host_id", None)
-        if host_id is None:
+        if not host_id:
             raise ValueError("Missing required field: host_id")
         host = self.get_host(host_id)
         if not host:
@@ -159,7 +134,6 @@ class HBnBFacade:
         return place
 
     # ---- Amenities ----
-
     def create_amenity(self, data):
         amenity = Amenity(**data)
         self.amenity_repo.add(amenity)
@@ -182,51 +156,36 @@ class HBnBFacade:
     def delete_amenity(self, aid):
         self.amenity_repo.delete(aid)
 
-    # ---- Bookings ----
-
-    def get_booking(self, bid):
-        return self.booking_repo.get(bid)
-
-    def list_bookings(self):
-        return self.booking_repo.get_all()
-
+    # ---- Bookings (patched) ----
     def create_booking(self, data):
         user = self.get_user(data["user_id"])
         place = self.get_place(data["place_id"])
 
-        # Parse checkin_date
-        checkin = data.get("checkin_date")
-        if isinstance(checkin, str):
-            try:
-                checkin = datetime.fromisoformat(checkin)
-            except ValueError:
-                try:
-                    checkin = parse(checkin)
-                except Exception:
-                    raise TypeError("checkin_date must be a valid ISO or recognizable datetime string")
-        if not isinstance(checkin, datetime):
-            raise TypeError("checkin_date must be a datetime object or valid ISO string")
+        start = data.get("start_date")
+        if start is None:
+            raise TypeError("start_date is required and cannot be None")
+        start = start if isinstance(start, date) else parse(str(start)).date()
 
-        data["checkin_date"] = checkin
-        # Compute end date
-        end_date = checkin + timedelta(days=data.get("night_count", 0))
+        end = data.get("end_date")
+        if end is None:
+            raise TypeError("end_date is required and cannot be None")
+        end = end if isinstance(end, date) else parse(str(end)).date()
 
-        # Enforce no overlap
         for existing in self.list_bookings():
-            if existing.place.id != place.id:
-                continue
-            existing_start = existing.checkin_date
-            existing_end = existing_start + timedelta(days=existing.night_count)
-            if checkin < existing_end and end_date > existing_start:
-                abort(400, f"Place {place.id} is already booked from {existing_start.date()} to {existing_end.date()}")
+            if existing.place and existing.place.id == place.id:
+                if start < existing.end_date and end > existing.start_date:
+                    abort(400, f"Place {place.id} is already booked from {existing.start_date} to {existing.end_date}")
 
-        # No conflict → create booking
+        days = (end - start).days
+        total_price = place.price * days
+
         booking = Booking(
             user=user,
             place=place,
             guest_count=data["guest_count"],
-            checkin_date=checkin,
-            night_count=data["night_count"],
+            start_date=start,
+            end_date=end,
+            total_price=total_price
         )
         self.booking_repo.add(booking)
         return booking
@@ -236,19 +195,17 @@ class HBnBFacade:
         if not booking:
             return None
 
-        checkin = data.get("checkin_date")
-        if checkin:
-            if isinstance(checkin, str):
-                try:
-                    checkin = datetime.fromisoformat(checkin)
-                except ValueError:
-                    try:
-                        checkin = parse(checkin)
-                    except Exception:
-                        raise TypeError("checkin_date must be a valid ISO or recognizable datetime string")
-            if not isinstance(checkin, datetime):
-                raise TypeError("checkin_date must be a datetime object or valid ISO string")
-            data["checkin_date"] = checkin
+        if "start_date" in data:
+            start = data["start_date"]
+            if start is None:
+                raise TypeError("start_date cannot be None")
+            data["start_date"] = start if isinstance(start, date) else parse(str(start)).date()
+
+        if "end_date" in data:
+            end = data["end_date"]
+            if end is None:
+                raise TypeError("end_date cannot be None")
+            data["end_date"] = end if isinstance(end, date) else parse(str(end)).date()
 
         for k, v in data.items():
             setattr(booking, k, v)
@@ -257,26 +214,36 @@ class HBnBFacade:
     def delete_booking(self, bid):
         self.booking_repo.delete(bid)
 
+    def get_booking(self, bid):
+        return self.booking_repo.get(bid)
+
+    def list_bookings(self):
+        return self.booking_repo.get_all()
+
     def get_user_bookings(self, uid):
         user = self.get_user(uid)
-        if not user:
-            return None
-        return [b for b in self.list_bookings() if b.user.id == uid]
+        return [b for b in self.list_bookings() if b.user.id == uid] if user else None
 
-    # Alias for API compatibility
-    def get_all_bookings(self):
-        return self.list_bookings()
+    def list_bookings_for_place(self, pid):
+        place = self.get_place(pid)
+        return [b for b in self.list_bookings() if b.place.id == pid] if place else None
 
     # ---- Reviews ----
-
     def create_review(self, data):
         booking_obj = self.get_booking(data.pop("booking_id"))
         if not booking_obj:
             raise ValueError("Booking not found")
-        booking_obj.user.leave_review(booking_obj, data.get("text"), data.get("rating"))
-        review_obj = booking_obj.review
+        if booking_obj.review:
+            raise ValueError("This booking already has a review")
+    
+        review_obj = booking_obj.user.leave_review(
+            booking_obj,
+            data.get("text"),
+            data.get("rating")
+        )
         self.review_repo.add(review_obj)
         return review_obj
+
 
     def get_review(self, rid):
         return self.review_repo.get(rid)
@@ -296,5 +263,4 @@ class HBnBFacade:
         self.review_repo.delete(rid)
 
 
-# Global facade instance
 facade = HBnBFacade()

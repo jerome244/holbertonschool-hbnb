@@ -1,6 +1,9 @@
 from flask_restx import Namespace, Resource, fields, marshal
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
-from app.services import facade
+from app.services.facade import facade
+from flask import abort
+from app.models.amenity import Amenity
+from app.api.v1.bookings import booking_output
 
 ns = Namespace(
     "places",
@@ -34,6 +37,14 @@ place_create = ns.model(
         "longitude": fields.Float(description="Longitude of the place"),
         "description": fields.String(description="Textual description"),
         "amenity_ids": fields.List(fields.String, description="List of amenity UUIDs"),
+    }
+)
+
+amenity_model = ns.model(
+    "Amenity",
+    {
+        "id":   fields.String(readOnly=True, description="Amenity UUID"),
+        "name": fields.String(required=True, description="Amenity name"),
     }
 )
 
@@ -109,7 +120,7 @@ class PlaceDetail(Resource):
         """
         place = facade.get_place(place_id)
         if not place:
-            return {"error": f"Place {place_id} not found"}, 404
+            ns.abort(404, f"Place {place_id} not found")
         place.amenity_ids = [a.id for a in getattr(place, "amenities", [])]
         return place, 200
 
@@ -216,3 +227,70 @@ class PlaceRating(Resource):
         if not ratings:
             return {"error": f"No ratings found for place {place_id}"}, 404
         return {"place_id": place_id, "average_rating": sum(ratings) / len(ratings)}, 200
+
+@ns.route("/<string:place_id>/bookings")
+@ns.response(404, "Place not found")
+class PlaceBookings(Resource):
+    @jwt_required(optional=True)
+    @ns.doc(
+        "list_place_bookings",
+        description="List all bookings for a place (Owners, Admins or Public?)",
+        security='BearerAuth'
+    )
+    @ns.marshal_list_with(booking_output)
+    def get(self, place_id):
+        """
+        Retrieve all bookings for the given place.
+        """
+        place = facade.get_place(place_id)
+        if not place:
+            ns.abort(404, f"Place {place_id} not found")
+
+        # Optional: enforce owner/admin if you don’t want these public
+        caller = get_jwt_identity(); claims = get_jwt()
+        if place.host.id != caller and not claims.get("is_admin"):
+            ns.abort(403, "Unauthorized action")
+
+        bookings = facade.list_bookings_for_place(place_id)
+        return bookings, 200
+
+
+@ns.route("/<string:place_id>/amenities")
+@ns.response(404, "Place not found")
+class PlaceAmenitiesList(Resource):
+    @ns.doc("list_place_amenities")
+    @ns.marshal_list_with(amenity_model)
+    def get(self, place_id):
+        place = facade.get_place(place_id)
+        if not place:
+            abort(404)
+        if hasattr(place, "amenities"):
+            items = place.amenities
+        else:
+            items = [facade.get_amenity(aid) for aid in place.amenity_ids]
+        return items, 200
+
+
+@ns.route("/<string:place_id>/amenities/<string:amenity_id>")
+@ns.response(404, "Place or Amenity not found")
+class PlaceAmenityLink(Resource):
+    @ns.doc("link_place_amenity")
+    @ns.marshal_with(amenity_model, code=201)
+    def post(self, place_id, amenity_id):
+        place   = facade.get_place(place_id)
+        amenity = facade.get_amenity(amenity_id)
+        if not place or not amenity:
+            abort(404)
+        if amenity in getattr(place, "amenities", []):
+            return amenity, 200
+        place.add_amenity(amenity)
+        return amenity, 201
+
+    @ns.doc("unlink_place_amenity")
+    def delete(self, place_id, amenity_id):
+        place   = facade.get_place(place_id)
+        amenity = facade.get_amenity(amenity_id)
+        if not place or not amenity or amenity not in getattr(place, "amenities", []):
+            abort(404)
+        place.remove_amenity(amenity)
+        return {}, 200
