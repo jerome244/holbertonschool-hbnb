@@ -198,13 +198,13 @@ erDiagram
     float latitude
     float longitude
     int capacity
-    string user_id
-    string host_id
+    string user_id FK
+    string host_id FK
   }
   BOOKING {
     string id PK
-    string user_id
-    string place_id
+    string user_id FK
+    string place_id FK
     date start_date
     date end_date
     float total_price
@@ -213,9 +213,9 @@ erDiagram
   REVIEW {
     string id PK
     string text
-    string user_id
-    string place_id
-    string booking_id
+    string user_id FK
+    string place_id FK
+    string booking_id FK
     int rating
   }
   AMENITY {
@@ -223,8 +223,8 @@ erDiagram
     string name
   }
   PLACE_AMENITIES {
-    string place_id PK
-    string amenity_id PK
+    string place_id FK
+    string amenity_id FK
   }
 
   USER ||--o{ BOOKING : makes
