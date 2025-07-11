@@ -31,16 +31,39 @@ sys.modules["review"] = _rv_mod
 @click.command('init-db')
 @with_appcontext
 def init_db_command():
-    """Create all database tables."""
-    # import all models so SQLAlchemy knows about them
-    from app.models.user    import User
-    from app.models.place   import Place
-    from app.models.review  import Review
+    """Create all database tables and create a default admin user if no users exist."""
+    # Import all models so SQLAlchemy knows about them
+    from app.models.user import User
+    from app.models.place import Place
+    from app.models.review import Review
     from app.models.amenity import Amenity
-    from app.models.host    import Host
+    from app.models.host import Host
     from app.models.booking import Booking
 
+    # Create all tables
     db.create_all()
+
+    # Check if there are any users in the users table
+    admin_user = User.query.filter_by(email="admin@hbnb.io").first()
+
+    if not admin_user:
+        # Create a default admin user if no admin exists
+        admin_user = User(
+            first_name="Admin",
+            last_name="User",
+            email="admin@hbnb.io",
+            is_admin=True
+        )
+        # Hash the password before saving it
+        admin_user.set_password("admin1234")
+
+        # Add the user to the database and commit
+        db.session.add(admin_user)
+        db.session.commit()
+        click.echo('✅ Admin user created.')
+    else:
+        click.echo('✅ Admin user already exists.')
+
     click.echo('✅ Database initialized.')
 
 # ----------------------- application factory ----------------------- #

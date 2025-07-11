@@ -1,67 +1,63 @@
-# app/tests/test_repository.py
-
-from app.persistence.sqlalchemy_repository import SQLAlchemyRepository
+# tests/test_repository.py
+import pytest
+from app import create_app, db
 from app.models.user import User
+from app.persistence.sqlalchemy_repository import SQLAlchemyRepository as Repository
 
-def test_add_and_get_user(user_repo, db_session):
-    # create a new user
-    u = User(
-        first_name="Foo",
-        last_name="Bar",
-        email="foo@bar.com",
-        password="secretpw"
-    )
-    user_repo.add(u)
+@pytest.fixture(scope="module")
+def app():
+    app = create_app()
+    app.config['TESTING']                 = True
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+    with app.app_context():
+        db.create_all()
+    yield app
+    with app.app_context():
+        db.drop_all()
 
-    # fetch by id
-    fetched = user_repo.get(u.id)
-    assert fetched is not None
-    assert fetched.email == "foo@bar.com"
+@pytest.fixture(autouse=True)
+def ctx(app):
+    with app.app_context():
+        yield
 
-def test_update_user(user_repo, db_session):
-    u = User(
-        first_name="Xavier",
-        last_name="Y",
-        email="x@y.com",
-        password="password1"
-    )
-    user_repo.add(u)
+@pytest.fixture
+def repo():
+    return Repository(User)
 
-    user_repo.update(u.id, {"email": "new@z.com"})
-    updated = user_repo.get(u.id)
-    assert updated.email == "new@z.com"
+class TestRepository:
+    def test_add_and_get_user(self, repo):
+        u = User(first_name="Alice", last_name="Smith", email="alice@example.com", password="pw")
+        repo.add(u)
+        fetched = repo.get(u.id)
+        assert fetched is not None
+        assert fetched.email == "alice@example.com"
 
-def test_delete_user(user_repo, db_session):
-    u = User(
-        first_name="Del",
-        last_name="User",
-        email="del@me.com",
-        password="deletepw"
-    )
-    user_repo.add(u)
-    uid = u.id
+    def test_get_all_and_delete_user(self, repo):
+        u1 = User(first_name="Bob", last_name="Jones", email="bob@example.com", password="pw")
+        u2 = User(first_name="Carol", last_name="King", email="carol@example.com", password="pw")
+        repo.add(u1)
+        repo.add(u2)
+        all_users = repo.get_all()
+        emails = [u.email for u in all_users]
+        assert "bob@example.com" in emails and "carol@example.com" in emails
 
-    user_repo.delete(uid)
-    assert user_repo.get(uid) is None
+        repo.delete(u1.id)
+        remaining = repo.get_all()
+        assert all(u.email != "bob@example.com" for u in remaining)
 
-def test_get_all_and_by_attribute(user_repo, db_session):
-    u1 = User(
-        first_name="A",
-        last_name="One",
-        email="a@a.com",
-        password="password1"
-    )
-    u2 = User(
-        first_name="B",
-        last_name="Two",
-        email="b@b.com",
-        password="password2"
-    )
-    user_repo.add(u1)
-    user_repo.add(u2)
+    def test_update_user(self, repo):
+        u = User(first_name="Dave", last_name="Brown", email="dave@example.com", password="pw")
+        repo.add(u)
+        # perform update
+        repo.update(u.id, {"last_name": "White"})
+        # fetch back to verify
+        fetched = repo.get(u.id)
+        assert fetched is not None
+        assert fetched.last_name == "White"
 
-    all_users = user_repo.get_all()
-    assert len(all_users) == 2
-
-    by_email = user_repo.get_by_attribute("email", "b@b.com")
-    assert by_email.id == u2.id
+    def test_get_by_attribute(self, repo):
+        u = User(first_name="Eve", last_name="Black", email="eve@example.com", password="pw")
+        repo.add(u)
+        found = repo.get_by_attribute("email", "eve@example.com")
+        assert found is not None
+        assert found.id == u.id
