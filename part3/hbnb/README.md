@@ -1,5 +1,5 @@
 
-# HBnB (Holberton-Uy AirBnB Clone)
+# HBnB (Holberton AirBnB Clone)
 
 ## Project Overview
 
