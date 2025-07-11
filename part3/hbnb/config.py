@@ -29,6 +29,9 @@ class DevelopmentConfig(Config):
     """
     DEBUG = True
 
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///development.db'
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+
 # ----------------------- config mapping ----------------------- #
 """
 Mapping of configuration environment names to their config classes.
