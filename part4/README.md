@@ -214,16 +214,16 @@ sequenceDiagram
 Here are some screenshots of the application in action:
 
 ### Dashboard Page
-![Dashboard](static/images/dashboard.png)
+![Dashboard](https://github.com/jerome244/holbertonschool-hbnb/raw/main/part4/app/static/images/dashboard.png)
 
 ### Admin: All Users List
-![Admin Users](static/images/admin_all_users_list.png)
+![Admin Users](https://github.com/jerome244/holbertonschool-hbnb/raw/main/part4/app/static/images/admin_all_users_list.png)
 
 ### Index Page
-![Index](static/images/index.png)
+![Index](https://github.com/jerome244/holbertonschool-hbnb/raw/main/part4/app/static/images/index.png)
 
 ### Place Details Page
-![Place Details](static/images/place.png)
+![Place Details](https://github.com/jerome244/holbertonschool-hbnb/raw/main/part4/app/static/images/place.png)
 
 
 ---
