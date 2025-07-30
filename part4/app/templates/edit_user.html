@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Edit User{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/edit_user.css') }}"> <!-- Link to your CSS file -->
+</head>
+
+<body>
+    {% extends 'base.html' %}
+
+    {% block content %}
+    <div class="edit-user-container">
+        <!-- 1st row: Edit Profile Title -->
+        <div class="row title-row">
+            <h2>Edit Profile</h2>
+        </div>
+
+        <!-- 2nd row: User Profile Picture and Name -->
+        <div class="row user-info-row">
+            <div class="profile-image-container">
+                <img src="{{ url_for('static', filename='uploads/' + (user.profile_pic if user.profile_pic else 'default.jpg')) }}"
+                    alt="{{ user.pseudo }}'s Profile Picture" class="profile-img">
+            </div>
+            <div class="user-name">
+                <p>{{ user.pseudo }}</p>
+            </div>
+        </div>
+
+        <!-- 3rd row: Username, Empty Column, Grant Admin Dropdown -->
+        <div class="row username-grant-admin-row">
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" value="{{ user.pseudo }}" class="form-control" required>
+            </div>
+            <div class="empty-space"></div>
+            <div class="grant-admin-container">
+                <label for="is_admin">Grant Admin:</label>
+                <select id="is_admin" name="is_admin" class="form-control">
+                    <option value="True" {% if user.is_admin %} selected{% endif %}>Yes</option>
+                    <option value="False" {% if not user.is_admin %} selected{% endif %}>No</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- 4th row: Email, Empty Column, Empty Column -->
+        <div class="row email-empty-row">
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" value="{{ user.email }}" class="form-control" required>
+            </div>
+            <div class="empty-space"></div>
+            <div class="empty-space"></div>
+        </div>
+
+        <!-- 5th row: Save Changes Button and Empty Columns -->
+        <div class="row save-btn-row">
+            <button type="submit">Save Changes</button>
+            <div class="empty-space"></div>
+            <div class="empty-space"></div>
+        </div>
+    </div>
+    {% endblock %}
+</body>
+
+</html>

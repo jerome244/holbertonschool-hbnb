@@ -1,0 +1,91 @@
+/* Bookings Grid */
+.bookings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+/* Booking Card Style */
+.booking-card {
+  background-color: #fff;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.booking-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+.booking-info {
+  margin-bottom: 1.5rem;
+}
+
+.place-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #0077b6;
+}
+
+.booking-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-start;
+}
+
+/* Status Styling */
+.status {
+  font-weight: bold;
+  text-transform: capitalize;
+}
+
+.status.pending {
+  color: #ffcc00;
+}
+
+.status.confirmed {
+  color: #28a745;
+}
+
+.status.cancelled {
+  color: #dc3545;
+}
+
+/* Buttons Styling */
+.btn {
+  padding: 10px 20px;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn-primary {
+  background-color: #0077b6;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #0096c7;
+}
+
+.btn-danger {
+  background-color: #d9534f;
+  color: white;
+}
+
+.btn-danger:hover {
+  background-color: #c9302c;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .bookings-grid {
+    grid-template-columns: 1fr; /* Stack columns on smaller screens */
+  }
+}

@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}Become a Host - HBnB{% endblock %}  <!-- Override the title for this page -->
+
+{% block content %}
+  <div class="host-container">
+    <h1 class="host-heading">Become a Host</h1>
+
+    <form method="POST" class="host-form">
+      <div class="form-group">
+        <label for="first_name">First Name:</label>
+        <input type="text" name="first_name" id="first_name" value="{{ user.first_name }}" required>
+      </div>
+
+      <div class="form-group">
+        <label for="last_name">Last Name:</label>
+        <input type="text" name="last_name" id="last_name" value="{{ user.last_name }}" required>
+      </div>
+
+      <button type="submit" class="btn btn-primary">Become a Host</button>
+    </form>
+  </div>
+{% endblock %}

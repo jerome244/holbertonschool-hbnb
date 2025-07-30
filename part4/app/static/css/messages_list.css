@@ -1,0 +1,218 @@
+/* ====== General Styles ====== */
+body {
+  margin: 0;
+  font-family: 'Roboto', sans-serif;
+  background-color: #f4f4f4;
+  color: #333;
+  line-height: 1.6;
+}
+
+/* ====== Message List Styling ====== */
+.message-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 15px;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Auto layout for multiple columns */
+  margin-bottom: 30px; /* Space between message list and the next section */
+}
+
+/* ====== Message Item Styling ====== */
+.message-item {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease-in-out, background-color 0.3s ease;
+  margin-bottom: 10px; /* Space between message items */
+}
+
+.message-item:hover {
+  transform: translateY(-5px);
+  background-color: #fafafa;
+}
+
+.message-link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+  width: 100%;
+}
+
+/* ====== Profile Image Styling ====== */
+.profile-img {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 15px;
+  border: 2px solid #e0e0e0;
+}
+
+/* ====== User Name Styling ====== */
+.user-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  transition: color 0.3s ease;
+  margin-right: auto; /* Push user name to the left */
+}
+
+.user-name:hover {
+  color: #0096c7;
+}
+
+/* ====== Empty State for No Conversations ====== */
+p {
+  font-size: 18px;
+  color: #555;
+  text-align: center;
+  margin-top: 20px;
+}
+
+/* ====== Grid Layout for Message Cards ====== */
+.messages-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 3rem 2rem;
+  margin-bottom: 40px; /* Space after container */
+}
+
+/* Responsive Grid Layout */
+.messages-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Two columns layout for message list and actions */
+  gap: 2rem;
+  margin-bottom: 40px; /* Space between message grid and other content */
+}
+
+/* Message Card Styling */
+.message-card {
+  background-color: white;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease-in-out;
+  margin-bottom: 20px; /* Space between message cards */
+}
+
+.message-card:hover {
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+}
+
+.message-card h3 {
+  font-size: 1.6rem;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.message-card p {
+  font-size: 1rem;
+  color: #666;
+}
+
+.message-card a {
+  display: inline-block;
+  margin-top: 10px;
+  color: #0096c7;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.message-card a:hover {
+  text-decoration: underline;
+}
+
+/* ====== Action Buttons Styling ====== */
+.message-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-start;
+  margin-top: 20px;
+}
+
+.message-actions .btn {
+  padding: 12px 24px;
+  font-size: 1rem;
+  text-decoration: none;
+  border-radius: 6px;
+  display: inline-block;
+  transition: background-color 0.3s ease;
+}
+
+/* Primary Button */
+.message-actions .btn-primary {
+  background-color: #0096c7;
+  color: white;
+}
+
+.message-actions .btn-primary:hover {
+  background-color: #0077b6;
+}
+
+/* Danger Button */
+.message-actions .btn-danger {
+  background-color: #d9534f;
+  color: white;
+}
+
+.message-actions .btn-danger:hover {
+  background-color: #c9302c;
+}
+
+/* ====== Right Column for Additional Actions ====== */
+.message-actions-info {
+  background-color: #f9f9f9;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  margin-top: 20px;
+}
+
+.message-actions-info h3 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.message-actions-info .btn {
+  padding: 12px 24px;
+  font-size: 1rem;
+  background-color: #0077b6;
+  color: white;
+  text-decoration: none;
+  border-radius: 6px;
+  margin-top: 20px;
+}
+
+.message-actions-info .btn:hover {
+  background-color: #0096c7;
+}
+
+/* ====== Responsive Design ====== */
+@media (max-width: 768px) {
+  .messages-grid {
+    grid-template-columns: 1fr; /* Stack sections on smaller screens */
+  }
+
+  .message-card h3 {
+    font-size: 1.4rem;
+  }
+
+  .message-actions {
+    flex-direction: column; /* Stack action buttons vertically */
+    gap: 1rem;
+  }
+
+  .message-actions-info {
+    margin-top: 2rem;
+  }
+
+  .message-list {
+    padding: 0 1rem; /* Padding adjustments for smaller screens */
+  }
+}

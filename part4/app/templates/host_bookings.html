@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block title %}Host Bookings - HBnB{% endblock %}
+
+{% block content %}
+  <h1 class="text-center mb-4">Host Bookings</h1>
+
+  <!-- Pending Bookings Section -->
+  <section class="booking-section pending-bookings">
+    <h2 class="text-center mb-4">Pending Bookings</h2>
+    {% if bookings %}
+      <div class="booking-list">
+        {% for booking in bookings %}
+          {% set place_photo = booking.place.photos[0].url if booking.place.photos else 'default.jpg' %}
+          {% set user_photo = booking.user.profile_pic if booking.user.profile_pic else 'default.jpg' %}
+          <div class="booking-item">
+            <div class="booking-header">
+              <h4>Booking ID: {{ booking.id }}</h4>
+              <p><strong>Place:</strong> {{ booking.place.title }}</p>
+            </div>
+
+            <div class="booking-details">
+              <div class="place-photo">
+                <img src="{{ url_for('static', filename='uploads/' + place_photo) }}" 
+                     alt="Place Image" class="place-image">
+              </div>
+
+              <div class="booking-info">
+                <div class="booking-dates">
+                  <p><strong>Dates:</strong> {{ booking.start_date.strftime('%Y-%m-%d') }} to {{ booking.end_date.strftime('%Y-%m-%d') }}</p>
+                </div>
+
+                <div class="guest-info">
+                  <div class="profile-pic-container">
+                    <img src="{{ url_for('static', filename='uploads/' + user_photo) }}" 
+                         alt="Profile Picture" class="profile-img">
+                  </div>
+                  <div>
+                    <span><strong>Guest:</strong> {{ booking.user.first_name }} {{ booking.user.last_name }}</span>
+                    <p><strong>Guest Count:</strong> {{ booking.guest_count }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="booking-actions">
+              <form action="{{ url_for('bookings.approve_booking', booking_id=booking.id) }}" method="post">
+                <button type="submit" class="btn btn-success btn-sm">Approve</button>
+              </form>
+              <form action="{{ url_for('bookings.decline_booking', booking_id=booking.id) }}" method="post">
+                <button type="submit" class="btn btn-danger btn-sm">Decline</button>
+              </form>
+            </div>
+          </div>
+          <hr>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p>No pending bookings.</p>
+    {% endif %}
+  </section>
+
+  <!-- Last Requests History Section -->
+  <section class="booking-section last-requests">
+    <h2 class="text-center mb-4">History of Last Requests</h2>
+    {% if last_requests %}
+      <div class="booking-list">
+        {% for request in last_requests %}
+          {% set place_photo = request.place.photos[0].url if request.place.photos else 'default.jpg' %}
+          {% set user_photo = request.user.profile_pic if request.user.profile_pic else 'default.jpg' %}
+          <div class="booking-item">
+            <div class="booking-header">
+              <h4>Request ID: {{ request.id }}</h4>
+              <p><strong>Place:</strong> {{ request.place.title }}</p>
+            </div>
+
+            <div class="booking-details">
+              <div class="place-photo">
+                <img src="{{ url_for('static', filename='uploads/' + place_photo) }}" 
+                     alt="Place Image" class="place-image">
+              </div>
+
+              <div class="booking-info">
+                <div class="booking-dates">
+                  <p><strong>Dates:</strong> {{ request.start_date.strftime('%Y-%m-%d') }} to {{ request.end_date.strftime('%Y-%m-%d') }}</p>
+                </div>
+
+                <div class="guest-info">
+                  <div class="profile-pic-container">
+                    <img src="{{ url_for('static', filename='uploads/' + user_photo) }}" 
+                         alt="Profile Picture" class="profile-img">
+                  </div>
+                  <div>
+                    <span><strong>Guest:</strong> {{ request.user.first_name }} {{ request.user.last_name }}</span>
+                    <p><strong>Guest Count:</strong> {{ request.guest_count }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="booking-actions">
+              <a href="{{ url_for('bookings.view_booking', booking_id=request.id) }}" class="btn btn-primary btn-sm">View Details</a>
+            </div>
+          </div>
+          <hr>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p>No historical requests available.</p>
+    {% endif %}
+  </section>
+
+{% endblock %}

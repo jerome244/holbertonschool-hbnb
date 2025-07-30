@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Notifications</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/notifications.css') }}">
+</head>
+<body>
+
+<!-- Notification Bell with Unread Count -->
+<div id="notification-container">
+  <div id="notification-bell" title="Notifications" class="notification-bell">
+    <span class="bell-icon">🔔</span>
+    <span id="unread-count">{{ unread_count }}</span> <!-- Unread Notifications Count -->
+  </div>
+  
+  <!-- Notification Dropdown List -->
+  <div id="notification-list" class="notification-dropdown">
+    <h3>Recent Notifications</h3>
+    <div id="notification-items">
+      {% for notification in notifications %}
+        <div class="notification-item {% if notification.status == 'unread' %}unread{% endif %}">
+          <p>{{ notification.message }}</p>
+          <small>{{ notification.timestamp }}</small>
+        </div>
+      {% endfor %}
+    </div>
+    <button id="mark-all-btn" class="mark-all-btn">Mark All as Read</button>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/modules/notifications.js') }}"></script>
+
+</body>
+</html>

@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Booking Details - HBnB{% endblock %}
+
+{% block content %}
+  <h1 class="text-center mb-4">Booking Details</h1>
+
+  <!-- Booking Details Section -->
+  <div class="booking-detail-container">
+    <div class="booking-header">
+      <h3>Booking ID: {{ booking.id }}</h3>
+      <p><strong>Status:</strong> {{ booking.status }}</p>
+      <p><strong>Place:</strong> {{ booking.place.title }}</p>
+    </div>
+
+    <div class="booking-details">
+      <!-- Place Image Section -->
+      <div class="place-photo">
+        <!-- Correct the url_for usage here -->
+        <img src="{{ url_for('static', filename='uploads/' ~ (booking.place.photos[0].url if booking.place.photos else 'default.jpg')) }}" 
+             alt="Place Image" class="place-image">
+      </div>
+
+      <!-- Booking Info Section -->
+      <div class="booking-info">
+        <p><strong>Start Date:</strong> {{ booking.start_date.strftime('%Y-%m-%d') }}</p>
+        <p><strong>End Date:</strong> {{ booking.end_date.strftime('%Y-%m-%d') }}</p>
+        <p><strong>Total Price:</strong> ${{ booking.total_price }}</p>
+        <p><strong>Guest Count:</strong> {{ booking.guest_count }}</p>
+      </div>
+    </div>
+
+    <div class="guest-info">
+      <h4><strong>Guest Information</strong></h4>
+      <div class="profile-pic-container">
+        <!-- Correct the url_for usage for guest profile image -->
+        <img src="{{ url_for('static', filename='uploads/' ~ (booking.user.profile_pic if booking.user.profile_pic else 'default.jpg')) }}" 
+             alt="Guest Profile Picture" class="profile-img">
+      </div>
+      <div>
+        <p><strong>Guest Name:</strong> {{ booking.user.first_name }} {{ booking.user.last_name }}</p>
+        <p><strong>Email:</strong> {{ booking.user.email }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <!-- Correct the URL generation here for 'Back to Host Bookings' -->
+    <a href="{{ url_for('bookings.host_bookings') }}" class="btn btn-secondary">Back to Host Bookings</a>
+  </div>
+{% endblock %}

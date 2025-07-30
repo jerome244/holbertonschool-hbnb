@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Place - HBnB{% endblock %}
+
+{% block content %}
+<h1>Edit Place</h1>
+
+<!-- Leaflet CSS & JS, and Leaflet-Geosearch for address field -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet-geosearch@3.1.0/dist/geosearch.css">
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-geosearch@3.1.0/dist/bundle.min.js"></script>
+
+<!-- Form Layout with grid -->
+<form method="POST" enctype="multipart/form-data" class="edit-place-form">
+  <!-- First row: Title (Spans all columns) -->
+  <div class="form-section" style="grid-column: span 4;">
+    <div class="form-group">
+      <label for="title">Title:</label>
+      <input type="text" id="title" name="title" required value="{{ place.title }}">
+    </div>
+  </div>
+
+  <!-- Second row: Description, Price per night, Capacity -->
+  <div class="form-section" style="grid-column: span 1;">
+    <div class="form-group">
+      <label for="description">Description:</label>
+      <textarea id="description" name="description" rows="4" required>{{ place.description }}</textarea>
+    </div>
+  </div>
+
+  <div class="form-section" style="grid-column: span 1;">
+    <div class="form-group">
+      <label for="price">Price per night:</label>
+      <input type="number" id="price" name="price" step="0.01" required value="{{ place.price }}">
+    </div>
+  </div>
+
+  <div class="form-section" style="grid-column: span 1;">
+    <div class="form-group">
+      <label for="capacity">Capacity:</label>
+      <input type="number" id="capacity" name="capacity" min="1" required value="{{ place.capacity }}">
+    </div>
+  </div>
+
+  <!-- Third row: Upload Photos and Existing Photos -->
+  <div class="form-section" style="grid-column: span 1;">
+    <div class="form-group">
+      <label for="photos">Upload Additional Photos:</label>
+      <input type="file" id="photos" name="photos" multiple accept="image/*">
+    </div>
+  </div>
+
+  {% if place.photos %}
+    <h3>Existing Photos</h3>
+    <div class="existing-photos" style="grid-column: span 1;">
+      {% for photo in place.photos %}
+        <div class="photo-item">
+          <img src="{{ url_for('static', filename='uploads/' + photo.url) }}" alt="Photo" >
+          <button class="delete-photo-btn" type="button" data-photo-id="{{ photo.id }}" data-place-id="{{ place.id }}">
+            Delete
+          </button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <!-- Fourth row: Photos Preview -->
+  <div class="form-section" style="grid-column: span 2;">
+    <div class="photos">
+      <!-- Photos preview will go here -->
+    </div>
+  </div>
+
+  <!-- Fifth row: Search Address and Map -->
+  <div class="form-section" style="grid-column: span 1;">
+    <div class="form-group">
+      <label for="address-search">Search Address:</label>
+      <input type="text" id="address-search" placeholder="Type an address..." autocomplete="off">
+    </div>
+  </div>
+
+  <div class="map-section" style="grid-column: span 3;">
+    <div id="map" style="height: 400px; margin-top: 10px; border-radius: 8px;"></div>
+    <input type="hidden" id="latitude" name="latitude" value="{{ place.latitude }}">
+    <input type="hidden" id="longitude" name="longitude" value="{{ place.longitude }}">
+  </div>
+
+  <!-- Sixth row: Amenities -->
+  <div class="form-section" style="grid-column: span 4;">
+    <h3>Amenities</h3>
+    <div class="amenities-grid">
+      {% for amenity in amenities %}
+        <label class="amenity-item">
+          <input type="checkbox" name="amenities" value="{{ amenity.id }}"
+          {% if amenity in place.amenities %}checked{% endif %}>
+          <span class="checkmark"></span>
+          {{ amenity.name }}
+        </label>
+      {% endfor %}
+      {% if amenities|length == 0 %}
+        <em>No amenities available.</em>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Seventh row: Update Place Button -->
+  <div class="form-section" style="grid-column: span 4;">
+    <button type="submit">Update Place</button>
+  </div>
+</form>
+
+<!-- JS for photo deletion (if needed) -->
+<script src="{{ url_for('static', filename='js/modules/edit_place.js') }}"></script>
+<!-- Map + address input logic -->
+<script src="{{ url_for('static', filename='js/modules/edit_map.js') }}"></script>
+{% endblock %}

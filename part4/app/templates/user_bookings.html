@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}My Bookings{% endblock %}
+
+{% block content %}
+  <h1>My Bookings</h1>
+
+  {% if bookings %}
+    <div class="bookings-grid">
+      {% for booking in bookings %}
+        <div class="booking-card">
+          <div class="booking-info">
+            <!-- Wrap the place title in an anchor tag that links to the Booking Details page -->
+            <h3 class="place-title">
+              <a href="{{ url_for('bookings.view_booking', booking_id=booking.id) }}">
+                {{ booking.place.title }}
+              </a>
+            </h3>
+            <p><strong>Dates:</strong> {{ booking.start_date.strftime('%Y-%m-%d') }} to {{ booking.end_date.strftime('%Y-%m-%d') }}</p>
+            <p><strong>Guests:</strong> {{ booking.guest_count }}</p>
+            <p><strong>Status:</strong> <span class="status {{ booking.status }}">{{ booking.status|capitalize }}</span></p>
+          </div>
+
+          <div class="booking-actions">
+            {% if booking.status == 'confirmed' %}
+              <a href="{{ url_for('places.leave_review', place_id=booking.place.id) }}" class="btn btn-primary">Leave a Review</a>
+            {% endif %}
+
+            {% if booking.status in ['pending', 'confirmed'] %}
+              <form action="{{ url_for('bookings.cancel_booking', booking_id=booking.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to cancel this booking?');">
+                <button type="submit" class="btn btn-danger">Cancel</button>
+              </form>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>You have no bookings.</p>
+  {% endif %}
+{% endblock %}

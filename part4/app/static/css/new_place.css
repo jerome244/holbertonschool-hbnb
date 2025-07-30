@@ -1,0 +1,139 @@
+/* Overall layout for form and map */
+.place-form {
+  display: grid;
+  gap: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Form container grid layout */
+.form-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr; /* 4 equal columns */
+  grid-template-rows: auto auto auto auto auto; /* 5 rows */
+  gap: 30px;
+  margin: 0 auto;
+}
+
+/* Form section layout */
+.form-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.map-section {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  flex-grow: 1; /* Map takes more available space */
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 15px;
+}
+
+label {
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+input[type="text"],
+input[type="number"],
+textarea,
+input[type="file"] {
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+textarea {
+  resize: vertical;
+}
+
+button {
+  background-color: #007bff;
+  color: white;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+.map-container {
+  height: 700px; /* Increased height of the map */
+  width: 100%;  /* Map takes 100% of its container's width */
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.reset-map-btn {
+  background-color: #28a745;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  position: absolute;
+  bottom: 15px;
+  left: 15px;
+}
+
+.reset-map-btn:hover {
+  background-color: #218838;
+}
+
+/* Image Previews */
+#photo-previews {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+#photo-previews img {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Amenities Grid */
+.amenities-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.amenity-option {
+  display: flex;
+  align-items: center;
+}
+
+.amenity-option input {
+  margin-right: 10px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .place-form {
+    grid-template-columns: 1fr; /* Stack form and map in one column */
+  }
+
+  .map-container {
+    height: 400px; /* Reduce map height on smaller screens */
+  }
+
+  .reset-map-btn {
+    font-size: 0.9rem;
+  }
+}

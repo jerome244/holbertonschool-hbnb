@@ -1,0 +1,81 @@
+/* General Styles for Become a Host Page */
+.host-container {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.host-heading {
+  font-size: 2rem;
+  margin-bottom: 30px;
+  font-weight: bold;
+  color: #333;
+  text-align: center;
+}
+
+/* Form Layout */
+.host-form {
+  display: grid;
+  grid-template-columns: 1fr;  /* One column for the form */
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+label {
+  font-weight: bold;
+  margin-bottom: 8px;
+  font-size: 1rem;
+  color: #333;
+}
+
+input[type="text"] {
+  padding: 12px;
+  font-size: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  transition: border-color 0.3s ease;
+}
+
+input[type="text"]:focus {
+  border-color: #0077b6;
+  outline: none;
+}
+
+button {
+  padding: 12px 24px;
+  font-size: 1.2rem;
+  background-color: #0077b6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 20px;
+  width: 100%;
+}
+
+button:hover {
+  background-color: #005f73;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .host-container {
+    padding: 20px;
+  }
+
+  .host-form {
+    grid-template-columns: 1fr;  /* Stack form fields vertically on smaller screens */
+  }
+
+  button {
+    width: 100%;  /* Full-width button on mobile */
+  }
+}

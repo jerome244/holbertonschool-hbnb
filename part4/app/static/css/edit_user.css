@@ -1,0 +1,180 @@
+/* General Layout for Edit User */
+.edit-user-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr; /* 3 equal columns */
+  grid-template-rows: auto 1fr auto; /* 3 rows: auto size for first, 1fr for second, and auto for the third */
+  gap: 2rem;
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 30px;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+  border: 1px solid #ddd;
+}
+
+/* Header Section (1st row) */
+.edit-user-container h2 {
+  font-size: 2rem;
+  color: #0077b6;
+  grid-column: span 3;
+  text-align: center;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #0077b6;
+}
+
+/* Profile Picture Section */
+.profile-image-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  grid-row: 1 / 2; /* Place it on the first row */
+}
+
+.profile-img {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid #0077b6;
+  margin-bottom: 10px;
+}
+
+/* User Information */
+.user-info-container {
+  grid-row: 2 / 3; /* Place on the second row */
+}
+
+.user-info-container p {
+  font-size: 1rem;
+  margin-bottom: 10px;
+  font-weight: bold;
+  color: #555;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+input, select {
+  padding: 10px;
+  font-size: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  transition: border-color 0.3s ease;
+}
+
+input:focus, select:focus {
+  border-color: #0077b6;
+  outline: none;
+}
+
+/* Save Button Section */
+.save-button-container {
+  grid-row: 3 / 4; /* Place it on the third row */
+  display: flex;
+  justify-content: center;
+}
+
+.save-button-container button {
+  padding: 14px 24px;
+  font-size: 1.1rem;
+  background-color: #0077b6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 20px;
+  width: 80%;
+}
+
+.save-button-container button:hover {
+  background-color: #0096c7;
+}
+
+/* Grant Admin Select */
+.grant-admin-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  grid-column: span 1;
+}
+
+.grant-admin-container label {
+  font-size: 1rem;
+  color: #555;
+}
+
+.grant-admin-container select {
+  padding: 12px;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+.grant-admin-container select:focus {
+  border-color: #0077b6;
+  outline: none;
+}
+
+/* Buttons and Actions */
+button {
+  padding: 10px 20px;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-block;
+  text-align: center;
+}
+
+button:hover {
+  background-color: #0077b6;
+  transform: scale(1.05);
+}
+
+/* Flexbox for the second row */
+.edit-user-container .user-info-container,
+.edit-user-container .grant-admin-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+}
+
+.edit-user-container .user-info-container {
+  grid-column: 1 / 2;
+}
+
+.edit-user-container .grant-admin-container {
+  grid-column: 3 / 4;
+}
+
+.edit-user-container .user-info-container label,
+.edit-user-container .grant-admin-container label {
+  font-weight: bold;
+  color: #333;
+}
+
+/* Responsive Design for Mobile */
+@media (max-width: 768px) {
+  .edit-user-container {
+    grid-template-columns: 1fr; /* Stack sections on smaller screens */
+  }
+
+  .save-button-container button {
+    width: 100%; /* Make the save button full-width on mobile */
+  }
+
+  .profile-image-container {
+    justify-content: flex-start; /* Align profile image on the left */
+  }
+
+  .save-button-container {
+    justify-content: center;
+  }
+}

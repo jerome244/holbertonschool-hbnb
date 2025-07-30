@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="owner-profile-container">
+    <div class="profile-header">
+      <!-- Profile Image & Name Section -->
+      <div class="profile-img-container">
+        {% if owner.profile_pic %}
+          <img src="{{ url_for('static', filename='uploads/' + owner.profile_pic) }}" 
+               alt="Profile Picture" class="profile-img">
+        {% else %}
+          <img src="{{ url_for('static', filename='images/default-profile.png') }}" 
+               alt="Default Profile Picture" class="profile-img">
+        {% endif %}
+      </div>
+      <div class="profile-info">
+        <h2>{{ owner.pseudo }}</h2>
+        {% if owner.bio %}
+          <p><strong>Bio:</strong> {{ owner.bio }}</p>
+        {% endif %}
+        <p>{{ owner.description }}</p>
+
+        {% if avg_rating %}
+          <p><strong>Average Rating:</strong> {{ avg_rating }}</p>
+        {% endif %}
+        
+        {% if owner.id != your_user_id %}
+          <a href="{{ url_for('views.start_message', receiver_id=owner.id) }}" class="btn start-message-btn">
+            Start messaging with {{ owner.first_name }}
+          </a>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Places by Owner Section -->
+    <section class="places-section">
+      <h3>Places by this owner:</h3>
+      <div class="place-list">
+        {% for place in places %}
+          <div class="place-card">
+            <img src="{{ url_for('static', filename='uploads/' + (place.photos[0].url if place.photos else 'default.jpg')) }}" 
+                 alt="Place Image" class="place-img">
+            <a href="{{ url_for('places.place', place_id=place.id) }}">{{ place.title }}</a>
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <!-- Reviews Section -->
+    <section class="reviews-section">
+      <h3>Reviews:</h3>
+      <div class="review-list">
+        {% for review in reviews %}
+          <div class="review-card">
+            <b>
+              <a href="{{ url_for('views.user_profile', user_id=review.user.id) }}">
+                {{ review.user.first_name }} {{ review.user.last_name }}
+              </a>
+            </b> 
+            ({{ review.rating }}/5): {{ review.content }}
+          </div>
+        {% else %}
+          <div class="review-card">No reviews yet.</div>
+        {% endfor %}
+      </div>
+    </section>
+  </div>
+{% endblock %}

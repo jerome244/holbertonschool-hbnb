@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}HBnB{% endblock %}</title>
+  
+  <!-- Link to CSS Files -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/add_amenity.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/become_host.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/booking.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/chat.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/edit_amenity.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/edit_place.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/edit_user.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/host_bookings.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/leave_review.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/manage_amenities.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/message_form.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/messages_list.css') }}" >
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/new_place.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/notifications.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/owner_profile.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/place.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/register.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/search_places.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/user_bookings.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/view_booking.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/view_users.css') }}">
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+
+</head>
+<body>
+  <!-- Navbar -->
+  <header class="navbar">
+    <a href="{{ url_for('views.index') }}">
+      <img src="{{ url_for('static', filename='images/logo.png') }}" class="logo" alt="HBnB Logo" >
+    </a>
+
+    <nav aria-label="Primary navigation">
+      <ul class="nav-links" id="nav-links">
+        <li><a href="{{ url_for('views.index') }}">Home</a></li>
+        
+        {% if 'user' in session %}
+          <li><a href="{{ url_for('messages_bp.messages_list') }}">Messages</a></li>
+          <li><a href="{{ url_for('dashboard.dashboard_view') }}">Dashboard</a></li>
+          <li><a href="{{ url_for('places.search_places') }}">Search Places</a></li>
+          <li><a href="{{ url_for('auth.profile') }}">Profile</a></li>
+          
+          <!-- Notifications -->
+          <li style="position: relative;">
+            <div id="notification-bell" title="Notifications" style="cursor:pointer; font-size:24px;">
+              🔔
+              <span id="unread-count"></span>
+            </div>
+            <div id="notification-list"></div>
+          </li>
+
+          {% if user and user.is_admin %}
+            <li class="dropdown">
+              <a href="#" class="dropbtn">Admin</a>
+              <div class="dropdown-content">
+                <a href="{{ url_for('dashboard.manage_amenities') }}">Manage Amenities</a>
+                <a href="{{ url_for('admin.view_users') }}">See All Users</a>
+              </div>
+            </li>
+          {% endif %}
+
+          <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
+        {% else %}
+          <li><a href="{{ url_for('auth.login') }}">Login</a></li>
+          <li><a href="{{ url_for('auth.register') }}">Register</a></li>
+        {% endif %}
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <div class="flash-messages" role="alert" aria-live="assertive">
+        <ul>
+          {% for message in messages %}
+            <li>{{ message }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- Main Content Area -->
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- JS for Notifications -->
+  <script>
+    const TOKEN = "{{ session.get('jwt_token', '') }}";
+  </script>
+  <script type="module" src="{{ url_for('static', filename='js/modules/notifications.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+  <!-- Block for adding page-specific JS -->
+  {% block scripts %}{% endblock %}
+
+  <!-- Toggle Navbar visibility on mobile -->
+  <script>
+    const navToggle = document.getElementById("nav-toggle");
+    const navLinks = document.getElementById("nav-links");
+
+    navToggle.addEventListener("click", () => {
+      navLinks.classList.toggle("active");
+    });
+  </script>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2025 HBnB. All rights reserved.</p>
+  </footer>
+
+  <!-- Add jQuery and Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
+
+
+</body>
+</html>

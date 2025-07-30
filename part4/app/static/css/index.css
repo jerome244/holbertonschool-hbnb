@@ -1,0 +1,139 @@
+/* Index Page Container */
+.index-container {
+  padding: 3rem 2rem; /* Added more padding to give space on the sides */
+  max-width: 1200px; /* Ensure this is the max width */
+  margin: 0 auto;
+}
+
+/* Centering the Buttons (Login, Register, and Search) using Grid */
+.cta-btn.grid-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;  /* 2 equal columns for Login and Register buttons */
+  grid-template-rows: auto auto;  /* 2 rows: one for Login/Register, one for Search Places */
+  gap: 20px;  /* Space between buttons */
+  margin-top: 30px;
+}
+
+/* Position the "Search Places" button in the second row */
+.cta-btn .btn-search-places {
+  grid-column: span 2;  /* Make the "Search Places" button span both columns */
+  padding: 12px 30px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  border-radius: 6px;
+  background-color: #0077b6; /* Primary blue color */
+  color: white;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+}
+
+/* Individual Button Styling */
+.cta-btn .btn {
+  padding: 12px 30px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  border-radius: 6px;
+  background-color: #0077b6; /* Primary blue color */
+  color: white;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+}
+
+.cta-btn .btn:hover {
+  background-color: #005f73; /* Hover color */
+}
+
+/* Newest Places Section */
+.latest-places,
+.top-rated-places {
+  margin-top: 2rem;
+  max-width: 1200px;  /* Aligns with the container width */
+  margin-left: auto;
+  margin-right: auto;  /* Center align sections */
+}
+
+/* Place Cards Grid Styling */
+.place-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); /* Flexibly adjust grid items */
+  gap: 1.5rem;
+  padding: 0 2rem;  /* Ensure content within grid is properly aligned */
+  max-width: 1200px;  /* Make sure the grid width is aligned with the container */
+  margin-left: auto;
+  margin-right: auto;  /* Center align grid */
+}
+
+/* Place card styling */
+.place-card {
+  background: #fff;
+  padding: 10px;
+  margin: 20px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.place-card:hover {
+  transform: scale(1.05);
+}
+
+
+/* Remove underline from links inside the place card */
+.place-card a {
+  text-decoration: none !important;
+}
+
+
+
+/* Place card image */
+.place-card img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+/* Title inside place card */
+.place-card h3 {
+  font-size: 1.2rem;
+  color: #333;
+  margin: 10px 0;
+}
+
+/* Price and rating text */
+.place-card p {
+  font-size: 1rem;
+  color: #555;
+  margin-bottom: 10px;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .index-container {
+    padding: 3rem 1.5rem; /* Adjust padding for medium-sized screens */
+  }
+
+  .place-cards-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); /* Adjust grid for medium screens */
+  }
+
+  .place-card {
+    padding: 12px; /* Slightly reduce padding */
+  }
+}
+
+@media (max-width: 768px) {
+  .index-container {
+    padding: 3rem 1rem; /* Adjust padding for smaller screens */
+  }
+
+  .place-cards-grid {
+    grid-template-columns: 1fr; /* Stack place cards vertically on small screens */
+    padding: 0 1rem;  /* Adjust padding for smaller screens */
+  }
+
+  .place-card {
+    padding: 10px; /* Adjust padding for place cards on smaller screens */
+  }
+}

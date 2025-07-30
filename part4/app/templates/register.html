@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}Register - HBnB{% endblock %}
+
+{% block content %}
+<div class="register-container">
+  <h1 class="register-title">Register</h1>
+
+  {% if error %}
+    <div class="error-message">
+      <p>{{ error }}</p>
+    </div>
+  {% endif %}
+
+  <form method="POST" class="register-form">
+    <div class="form-group">
+      <label for="first_name">First Name:</label>
+      <input type="text" name="first_name" id="first_name" required placeholder="Enter your first name">
+    </div>
+
+    <div class="form-group">
+      <label for="last_name">Last Name:</label>
+      <input type="text" name="last_name" id="last_name" required placeholder="Enter your last name">
+    </div>
+
+    <div class="form-group">
+      <label for="email">Email:</label>
+      <input type="email" name="email" id="email" required placeholder="Enter your email">
+    </div>
+
+    <div class="form-group">
+      <label for="password">Password:</label>
+      <input type="password" name="password" id="password" required placeholder="Enter your password">
+    </div>
+
+    <div class="form-group">
+      <label for="pseudo">Nickname:</label>
+      <input type="text" name="pseudo" id="pseudo" placeholder="Enter a nickname (optional)">
+    </div>
+
+    <button type="submit" class="submit-btn">Register</button>
+  </form>
+
+  <p class="login-link">
+    Already have an account? <a href="{{ url_for('auth.login') }}">Login here</a>
+  </p>
+</div>
+{% endblock %}

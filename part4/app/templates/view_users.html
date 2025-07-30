@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard - Users{% endblock %}
+
+{% block content %}
+  <h1>Admin Dashboard - Users</h1>
+
+  <div class="grid-container">
+    <!-- Admin Profile Header (1st row) -->
+    <div class="admin-profile-header">
+      <img src="{{ url_for('static', filename='uploads/' ~ (user.profile_pic if user.profile_pic else 'default.jpg')) }}"
+           alt="{{ user.pseudo }}'s Profile Picture" class="profile-img">
+      <div>
+        <h2>{{ user.pseudo }}</h2>
+        <p>{{ user.email }}</p>
+      </div>
+    </div>
+
+    <!-- Users List (2nd and 3rd rows) -->
+    <div class="table">
+      <table>
+        <thead>
+          <tr>
+            <th>Profile Picture</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Creation Date</th> <!-- New column for creation date -->
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for user in users %}
+            <tr>
+              <td>
+                <img src="{{ url_for('static', filename='uploads/' ~ (user.profile_pic if user.profile_pic else 'default.jpg')) }}"
+                     alt="{{ user.pseudo }}'s Profile Picture" class="profile-img">
+              </td>
+              <td>{{ user.pseudo }}</td>
+              <td>{{ user.email }}</td>
+              <td>{{ 'Admin' if user.is_admin else 'User' }}</td>
+              <td>{{ user.created_at.strftime('%Y-%m-%d') }}</td> <!-- Display creation date -->
+              <td class="actions">
+                <a href="{{ url_for('admin.edit_user', user_id=user.id) }}" class="btn btn-warning">Edit</a>
+                <form action="{{ url_for('admin.delete_user', user_id=user.id) }}" method="POST" style="display:inline;">
+                  <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endblock %}

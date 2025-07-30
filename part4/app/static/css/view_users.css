@@ -1,0 +1,202 @@
+/* General Styles */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f4f7fc;
+  margin: 0;
+  padding: 0;
+}
+
+h2 {
+  text-align: center;
+  font-size: 2.5rem;
+  color: #333;
+  margin: 20px 0;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* Grid Layout */
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr); /* 6 equal-width columns */
+  grid-template-rows: auto 1fr 1fr; /* 3 rows, first for admin header, second and third for users list */
+  gap: 20px;
+  max-width: 1200px;
+  margin: 30px auto;
+  padding: 10px;
+}
+
+.admin-profile-header {
+  grid-column: span 6; /* Admin profile header spans across all 6 columns */
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.admin-profile-header img {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #007bff;
+}
+
+.admin-profile-header div {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.admin-profile-header h2 {
+  margin: 0;
+  font-size: 1.8rem;
+  color: #333;
+}
+
+.admin-profile-header p {
+  margin-top: 10px;
+  font-size: 1.1rem;
+  color: #777;
+}
+
+/* Table Layout */
+.table {
+  grid-column: span 6; /* Users list spans across all 6 columns */
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  overflow-x: auto;
+}
+
+thead {
+  background-color: #007bff;
+  color: white;
+  border-radius: 8px;
+}
+
+thead th {
+  padding: 14px;
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+tbody {
+  display: contents;
+}
+
+td {
+  text-align: center;
+  padding: 16px;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+/* Profile Image */
+.profile-img {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* Actions Section */
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* Button Styles */
+.btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  display: inline-block;
+  text-transform: uppercase;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.btn-warning {
+  background-color: #ffc107;
+  color: white;
+}
+
+.btn-warning:hover {
+  background-color: #e0a800;
+  transform: translateY(-2px);
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  color: white;
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
+  transform: translateY(-2px);
+}
+
+/* Hover Effect for Rows */
+tbody tr:hover {
+  background-color: #f1f1f1;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+tbody td {
+  padding: 14px;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .grid-container {
+    grid-template-columns: repeat(5, 1fr); /* 5 columns on medium screens */
+  }
+
+  .table {
+    grid-column: span 5;
+  }
+
+  td {
+    padding: 8px;
+  }
+
+  .btn {
+    font-size: 0.85rem;
+    padding: 6px 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .grid-container {
+    grid-template-columns: 1fr; /* Stack everything in a single column for small screens */
+  }
+
+  .table {
+    grid-column: span 1;
+  }
+
+  td {
+    padding: 12px 5px;
+  }
+
+  .actions {
+    justify-content: center;
+  }
+
+  .btn {
+    font-size: 0.85rem;
+    padding: 6px 12px;
+  }
+}

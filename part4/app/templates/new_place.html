@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block title %}Add New Place - HBnB{% endblock %}
+
+{% block head %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/new_place.css') }}">
+{% endblock %}
+
+{% block content %}
+<h1 class="text-center">Add New Place</h1>
+
+<form method="POST" enctype="multipart/form-data" action="{{ url_for('places.new_place') }}" class="place-form">
+  <div class="form-container">
+    
+    <!-- First row: Title -->
+    <div class="form-section" style="grid-column: span 4;">
+      <div class="form-group">
+        <label for="title">Title:</label>
+        <input type="text" id="title" name="title" class="form-control" required />
+      </div>
+    </div>
+
+    <!-- Second row: Description, Price per night, Capacity, and Upload Photos -->
+    <div class="form-section" style="grid-column: span 1;">
+      <div class="form-group">
+        <label for="description">Description:</label>
+        <textarea id="description" name="description" rows="4" class="form-control" required></textarea>
+      </div>
+    </div>
+
+    <div class="form-section" style="grid-column: span 1;">
+      <div class="form-group">
+        <label for="price">Price per night ($):</label>
+        <input type="number" id="price" name="price" step="0.01" class="form-control" required />
+      </div>
+    </div>
+
+    <div class="form-section" style="grid-column: span 1;">
+      <div class="form-group">
+        <label for="capacity">Capacity:</label>
+        <input type="number" id="capacity" name="capacity" min="1" class="form-control" required />
+      </div>
+    </div>
+
+    <div class="form-section" style="grid-column: span 1;">
+      <div class="form-group">
+        <label for="photos">Upload Photos:</label>
+        <input type="file" id="photos" name="photos" multiple accept="image/*" class="form-control" />
+        <div id="photo-previews" class="photo-previews"></div> <!-- Previews container -->
+      </div>
+    </div>
+
+    <!-- Third row: Location and Map -->
+    <div class="form-section" style="grid-column: span 1;">
+      <div class="form-group">
+        <label for="location">Location:</label>
+        <input
+          type="text"
+          id="location"
+          name="location"
+          placeholder="e.g. 12 Main Street, Paris, France"
+          autocomplete="off"
+          class="form-control"
+          required
+        />
+        <small class="text-muted">
+          Tip: Enter full street address, city, and country for best results.
+          If no match, try clicking the map directly.
+        </small>
+        <div id="autocomplete-results" class="autocomplete-results"></div>
+
+        <input type="hidden" id="latitude" name="latitude" />
+        <input type="hidden" id="longitude" name="longitude" />
+      </div>
+    </div>
+
+    <div class="map-section" style="grid-column: span 3;">
+      <div id="map" class="map-container"></div>
+    </div>
+
+    <!-- Fourth row: Amenities -->
+    <div class="form-section" style="grid-column: span 4;">
+      <div class="form-group">
+        <label>Amenities:</label>
+        <div class="amenities-grid">
+          {% for amenity in amenities %}
+            <div class="amenity-option">
+              <!-- Ensuring no spaces in ID and label for checkboxes -->
+              <input type="checkbox" id="amenity_{{ amenity.id }}" name="amenities" value="{{ amenity.id }}">
+              <label for="amenity_{{ amenity.id }}">{{ amenity.name }}</label>
+            </div>
+          {% endfor %}
+          {% if amenities|length == 0 %}
+            <em>No amenities available.</em>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom-most row: Add Place Button -->
+    <div class="form-section" style="grid-column: span 4;">
+      <div class="form-group">
+        <button type="submit" class="btn btn-primary">Add Place</button>
+      </div>
+    </div>
+
+  </div>
+</form>
+
+<!-- Leaflet CSS & JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+
+<script src="{{ url_for('static', filename='js/modules/new_place_map.js') }}"></script>
+{% endblock %}

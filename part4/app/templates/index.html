@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - HBnB{% endblock %}
+
+{% block content %}
+  <div class="index-container">
+    {% if current_user.is_authenticated %}
+      <h1 class="welcome-text">Welcome back, {{ current_user.first_name or current_user.username }}!</h1>
+      <!-- Centered Search Section -->
+      <div class="search-container">
+        <div class="search-wrapper">
+          <a href="{{ url_for('places.search_places') }}" class="btn btn-primary">Search Places</a>
+        </div>
+      </div>
+    {% else %}
+      <h1 class="welcome-text">Welcome to HBnB!</h1>
+      <div class="cta-btn grid-buttons">
+        <!-- Login Button (Left) -->
+        <a href="{{ url_for('auth.login') }}" class="btn btn-primary">Login</a>
+        
+        <!-- Register Button (Right) -->
+        <a href="{{ url_for('auth.register') }}" class="btn btn-secondary">Register</a>
+        
+        <!-- Search for Places Button below -->
+        <a href="{{ url_for('places.search_places') }}" class="btn btn-primary btn-search-places">Search for Places as a Guest</a>
+      </div>
+    {% endif %}
+
+    <!-- 🆕 Newest Places Section -->
+    <section class="latest-places">
+      <h2>🆕 Newest Places</h2>
+      <div class="place-cards-grid">
+
+
+        {% for place in places %}
+  {% set place_image = place.photos[0].url if place.photos else 'default.jpg' %}
+  <div class="place-card">
+    <a href="{{ url_for('places.place', place_id=place.id) }}">
+      <img src="{{ url_for('static', filename='uploads/' + place_image) }}" alt="{{ place.title }}" />
+      <h3>{{ place.title }}</h3>
+      <p><strong>Price: </strong>${{ place.price }}</p>
+    </a>
+  </div>
+{% endfor %}
+
+
+
+      </div>
+    </section>
+
+    <!-- ⭐ Top-Rated Reviewed Places Section -->
+    <section class="top-rated-places">
+  <h2>⭐ Top-Rated Places</h2>
+  <div class="place-cards-grid">
+    {% for place in top_rated_places %}
+      {% set place_image = place.photos[0].url if place.photos else 'default.jpg' %}
+      <div class="place-card">
+        <a href="{{ url_for('places.place', place_id=place.id) }}">
+          <img src="{{ url_for('static', filename='uploads/' + place_image) }}" alt="{{ place.title }}" />
+          <h3>{{ place.title }}</h3>
+          <p><strong>Rating: </strong>{{ place.average_rating }} ⭐</p>
+          {% if place.top_review %}
+            <p><strong>Top Review: </strong>{{ place.top_review.text[:100] }}...</p>
+          {% else %}
+            <p>No reviews yet.</p>
+          {% endif %}
+        </a>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+
+
+  </div>
+{% endblock %}

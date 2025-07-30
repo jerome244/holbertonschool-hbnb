@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Your Messages{% endblock %}
+
+{% block content %}
+<h1>Your Conversations</h1>
+
+{% if users %}
+  <ul class="message-list">
+    {% for user in users %}
+      <li class="message-item">
+        <a href="{{ url_for('messages_bp.chat', other_user_id=user.id) }}" class="message-link">
+          <!-- Display Profile Picture -->
+          <img src="{{ url_for('static', filename='uploads/' + (user.profile_pic if user.profile_pic else 'default.jpg')) }}" 
+               alt="{{ user.first_name or user.email }}'s Profile Picture" 
+               class="profile-img">
+          <span class="user-name">{{ user.first_name or user.email }}</span>
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>You have no conversations yet.</p>
+{% endif %}
+
+{% endblock %}

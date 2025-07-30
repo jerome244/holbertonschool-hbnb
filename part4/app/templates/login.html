@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Login - HBnB{% endblock %}
+
+{% block content %}
+<div class="login-container">
+  <h1 class="login-title">Login</h1>
+  
+  {% if error %}
+    <div class="error-message">
+      <p>{{ error }}</p>
+    </div>
+  {% endif %}
+  
+  <form method="POST" class="login-form">
+    <div class="form-group">
+      <label for="email">Email:</label>
+      <input type="email" name="email" id="email" required placeholder="Enter your email">
+    </div>
+    
+    <div class="form-group">
+      <label for="password">Password:</label>
+      <input type="password" name="password" id="password" required placeholder="Enter your password">
+    </div>
+    
+    <button type="submit" class="submit-btn">Log In</button>
+  </form>
+  
+  <p class="register-link">
+    Not registered? <a href="{{ url_for('auth.register') }}">Create an account</a>
+  </p>
+</div>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h2>{{ user.pseudo }}</h2>
+
+  {% if user.profile_pic %}
+    <img src="{{ url_for('static', filename='uploads/' + user.profile_pic) }}"
+         alt="Profile Picture" width="120" style="border-radius:50%">
+  {% else %}
+    <img src="{{ url_for('static', filename='images/default-profile.png') }}"
+         alt="Default Profile Picture" width="120" style="border-radius:50%">
+  {% endif %}
+
+  {% if user.bio %}
+    <p><strong>Bio:</strong> {{ user.bio }}</p>
+  {% endif %}
+
+  {% if places %}
+    <h3>Places listed by this user:</h3>
+    <ul>
+      {% for place in places %}
+        <li>
+          <a href="{{ url_for('places.place', place_id=place.id) }}">{{ place.title }}</a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  {% if reviews %}
+    <h3>Reviews by this user:</h3>
+    <ul>
+      {% for review in reviews %}
+        <li>
+          <strong>
+            <a href="{{ url_for('places.place', place_id=review.place.id) }}">
+              {{ review.place.title }}
+            </a>
+          </strong>
+          <br>
+          Rating: {{ review.rating }} / 5
+          <br>
+          Review: {{ review.content }}  <!-- Assuming 'content' is the review text -->
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endblock %}

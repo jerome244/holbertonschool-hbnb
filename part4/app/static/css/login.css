@@ -1,0 +1,112 @@
+/* Login Page Container */
+.login-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 30px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  margin-top: 100px; /* Center vertically */
+}
+
+/* Title */
+.login-title {
+  font-size: 2rem;
+  margin-bottom: 20px;
+  color: #333;
+  text-align: center;
+}
+
+/* Error Message */
+.error-message {
+  color: #e74c3c;
+  margin-bottom: 20px;
+  font-size: 1rem;
+}
+
+/* Form */
+.login-form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 15px;
+}
+
+/* Form Group */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.form-group label {
+  font-weight: bold;
+  color: #555;
+}
+
+.form-group input {
+  padding: 12px;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+/* Submit Button */
+.submit-btn {
+  padding: 12px;
+  background-color: #3498db;
+  color: white;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.submit-btn:hover {
+  background-color: #2980b9;
+}
+
+/* Register Link */
+.register-link {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 1rem;
+}
+
+.register-link a {
+  color: #3498db;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.register-link a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .login-container {
+    padding: 20px;
+    width: 90%;
+  }
+  
+  .login-title {
+    font-size: 1.6rem;
+  }
+  
+  .form-group input {
+    font-size: 0.9rem;
+  }
+}

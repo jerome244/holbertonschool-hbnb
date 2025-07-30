@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}Edit Amenity{% endblock %}</title>
+</head>
+<body>
+  {% extends 'base.html' %}
+
+  {% block content %}
+  <div class="add-amenity-container">
+    <div class="add-amenity-header">
+      <h1>Edit Amenity</h1>
+    </div>
+    
+    <form method="POST" class="add-amenity-form">
+      <div class="form-group">
+        <label for="name">Amenity Name</label>
+        <input type="text" name="name" id="name" value="{{ amenity.name }}" required placeholder="Enter the amenity name">
+      </div>
+      
+      <button type="submit">Update Amenity</button>
+    </form>
+  </div>
+  {% endblock %}
+</body>
+</html>

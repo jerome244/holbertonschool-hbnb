@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}Add Amenity{% endblock %}</title>
+</head>
+<body>
+  {% extends 'base.html' %}
+
+  {% block content %}
+    <div class="add-amenity-container">
+      <h1>Add New Amenity</h1>
+
+      <form method="POST">
+        <div class="form-group">
+          <label for="name">Amenity Name</label>
+          <input type="text" name="name" id="name" required placeholder="Enter the amenity name">
+        </div>
+
+        <button type="submit">Add Amenity</button>
+      </form>
+    </div>
+  {% endblock %}
+</body>
+</html>

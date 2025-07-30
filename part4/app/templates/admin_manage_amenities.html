@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Manage Amenities - HBnB</title>
+
+  <!-- Link to CSS Files -->
+  <link rel="stylesheet" href="/static/css/styles.css">
+  <link rel="stylesheet" href="/static/css/navbar.css">
+  <link rel="stylesheet" href="/static/css/latest_places.css">
+  <link rel="stylesheet" href="/static/css/place_cards.css">
+  <link rel="stylesheet" href="/static/css/search_places.css">
+  <link rel="stylesheet" href="/static/css/messages_list.css">
+  <link rel="stylesheet" href="/static/css/place.css">
+  <link rel="stylesheet" href="/static/css/new_place.css">
+  <link rel="stylesheet" href="/static/css/edit_place.css">
+  <link rel="stylesheet" href="/static/css/profile.css">
+  <link rel="stylesheet" href="/static/css/manage_amenities.css">
+  <link rel="stylesheet" href="/static/css/add_amenity.css">
+  <link rel="stylesheet" href="/static/css/edit_amenity.css">
+  <link rel="stylesheet" href="/static/css/login.css">
+  <link rel="stylesheet" href="/static/css/register.css">
+  <link rel="stylesheet" href="/static/css/index.css">
+  <link rel="stylesheet" href="/static/css/chat.css">
+  <link rel="stylesheet" href="/static/css/owner_profile.css">
+  <link rel="stylesheet" href="/static/css/booking.css">
+  <link rel="stylesheet" href="/static/css/become_host.css">
+  <link rel="stylesheet" href="/static/css/host_bookings.css">
+  <link rel="stylesheet" href="/static/css/user_bookings.css">
+  <link rel="stylesheet" href="/static/css/leave_review.css">
+  <link rel="stylesheet" href="/static/css/message_form.css">
+  <link rel="stylesheet" href="/static/css/notifications.css">
+  <link rel="stylesheet" href="/static/css/footer.css">
+  <link rel="stylesheet" href="/static/css/view_users.css">
+</head>
+
+<body>
+  <!-- Navbar -->
+  <header class="navbar">
+    <a href="/index">
+      <img src="/static/images/logo.png" class="logo" alt="HBnB Logo" />
+    </a>
+
+    <!-- Hamburger menu for mobile -->
+    <button class="nav-toggle" id="nav-toggle">
+      ☰
+    </button>
+
+    <nav aria-label="Primary navigation">
+      <ul class="nav-links" id="nav-links">
+        <li><a href="/index">Home</a></li>
+        <li><a href="/messages">Messages</a></li>
+        <li><a href="/admin/dashboard">Dashboard</a></li>
+        <li><a href="/places/search">Search Places</a></li>
+        <li><a href="/auth/profile">Profile</a></li>
+        <li style="position: relative;">
+          <div id="notification-bell" title="Notifications" style="cursor:pointer; font-size:24px;">
+            🔔
+            <span id="unread-count"></span>
+          </div>
+          <div id="notification-list"></div>
+        </li>
+        <li class="dropdown">
+          <a href="#" class="dropbtn">Admin</a>
+          <div class="dropdown-content">
+            <a href="/admin/amenities">Manage Amenities</a>
+            <a href="/admin/users">See All Users</a>
+          </div>
+        </li>
+        <li><a href="/auth/logout">Logout</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Main Content Area -->
+  <main>
+    <div class="manage-amenities-container">
+      <div class="manage-amenities-header">
+        <h1>Manage Amenities</h1>
+        <a href="/admin/amenities/add" class="add-amenity-btn">Add New Amenity</a>
+      </div>
+
+      <div class="amenities-list">
+        <div class="amenity-item">
+          <span>wifi</span>
+          <div>
+            <a href="/admin/amenities/13813e7b-9547-40cb-a92b-58e3029c5885/edit">Edit</a>
+            <form action="/admin/amenities/13813e7b-9547-40cb-a92b-58e3029c5885/delete" method="POST" style="display:inline;" onsubmit="return confirm('Delete this amenity?');">
+              <button type="submit">Delete</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="amenity-item">
+          <span>pool</span>
+          <div>
+            <a href="/admin/amenities/95ddeb3f-bbce-41d3-bcdf-a6f2dec89259/edit">Edit</a>
+            <form action="/admin/amenities/95ddeb3f-bbce-41d3-bcdf-a6f2dec89259/delete" method="POST" style="display:inline;" onsubmit="return confirm('Delete this amenity?');">
+              <button type="submit">Delete</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="amenity-item">
+          <span>golf</span>
+          <div>
+            <a href="/admin/amenities/8c9fba9b-deea-4d3b-96be-be07b9ae80b3/edit">Edit</a>
+            <form action="/admin/amenities/8c9fba9b-deea-4d3b-96be-be07b9ae80b3/delete" method="POST" style="display:inline;" onsubmit="return confirm('Delete this amenity?');">
+              <button type="submit">Delete</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="amenity-item">
+          <span>cocacola</span>
+          <div>
+            <a href="/admin/amenities/beeb5630-6855-4d1c-a032-55b92fe4b52f/edit">Edit</a>
+            <form action="/admin/amenities/beeb5630-6855-4d1c-a032-55b92fe4b52f/delete" method="POST" style="display:inline;" onsubmit="return confirm('Delete this amenity?');">
+              <button type="submit">Delete</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- JS for Notifications -->
+  <script>
+    const TOKEN = "";
+  </script>
+  <script type="module" src="/static/js/modules/notifications.js"></script>
+  <script src="/static/js/main.js"></script>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2025 HBnB. All rights reserved.</p>
+  </footer>
+</body>
+</html>

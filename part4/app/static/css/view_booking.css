@@ -1,0 +1,180 @@
+/* General Styles */
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #fafafa; /* Soft light gray background */
+  color: #333; /* Dark text for readability */
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
+}
+
+/* Booking Details Container */
+.booking-detail-container {
+  max-width: 1200px;
+  margin: 30px auto;
+  padding: 20px;
+  background-color: #fff; /* White background for clarity */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  border-radius: 15px;
+  display: grid;
+  grid-template-columns: 1fr 2fr; /* Two-column layout (1st column smaller for place image, 2nd for booking info) */
+  gap: 30px; /* Space between grid items */
+}
+
+.booking-detail-container:hover {
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2); /* Stronger shadow on hover */
+}
+
+/* Header Section */
+.booking-header {
+  grid-column: span 2; /* Header spans across both columns */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.booking-header h3 {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #0077b6; /* Primary color */
+}
+
+.booking-header p {
+  font-size: 1.2rem;
+  color: #555;
+  margin: 5px 0;
+}
+
+.booking-header .status {
+  text-transform: capitalize;
+  color: #e60000;
+}
+
+/* Place Image Section */
+.place-photo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.place-photo img {
+  width: 100%;
+  max-width: 500px; /* Set max width for images */
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.place-photo img:hover {
+  transform: scale(1.05); /* Smooth zoom effect on hover */
+}
+
+/* Booking Info Section */
+.booking-info {
+  background-color: #f8f8f8;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.booking-info p {
+  font-size: 1.1rem;
+  margin-bottom: 15px;
+}
+
+.booking-info strong {
+  font-weight: 600;
+  color: #333;
+}
+
+/* Guest Info Section */
+.guest-info {
+  grid-column: span 2; /* Guest Info spans across both columns */
+  display: grid;
+  grid-template-columns: auto 1fr; /* Profile picture in left column, text on the right */
+  gap: 20px;
+  align-items: center;
+}
+
+.guest-info h4 {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.profile-pic-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.profile-img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.guest-info p {
+  font-size: 1.2rem;
+  color: #555;
+  margin-bottom: 5px;
+}
+
+/* Action Buttons */
+.actions {
+  grid-column: span 2; /* Actions span across both columns */
+  display: flex;
+  justify-content: flex-start;
+  gap: 15px;
+  margin-top: 30px;
+}
+
+.actions a,
+.actions button {
+  padding: 12px 24px;
+  font-size: 1.1rem;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: bold;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  display: inline-block;
+}
+
+.actions a {
+  background-color: #0077b6; /* Primary color */
+  color: white;
+}
+
+.actions a:hover {
+  background-color: #005f73;
+  transform: scale(1.05);
+}
+
+.actions button {
+  background-color: #e60000; /* Red for cancel */
+  color: white;
+  border: none;
+}
+
+.actions button:hover {
+  background-color: #cc0000;
+  transform: scale(1.05);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .booking-detail-container {
+    grid-template-columns: 1fr; /* Stack sections on smaller screens */
+  }
+
+  .place-photo img {
+    max-width: 100%;
+  }
+
+  .actions {
+    justify-content: center;
+  }
+}

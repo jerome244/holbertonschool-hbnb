@@ -1,0 +1,189 @@
+/* General Styling */
+.booking-section {
+  margin-bottom: 3rem;
+}
+
+.pending-bookings {
+  background-color: #f9f9f9; /* Light background for Pending Bookings */
+  padding: 2rem;
+  border-radius: 8px;
+}
+
+.last-requests {
+  background-color: #eef2f7; /* Different background for Last Requests */
+  padding: 2rem;
+  border-radius: 8px;
+}
+
+/* Booking List Layout */
+.booking-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  padding: 0 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Booking Item */
+.booking-item {
+  display: grid;
+  grid-template-columns: 1fr 2fr; /* Image on left, content on right */
+  gap: 1.5rem;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease-in-out;
+}
+
+.booking-item:hover {
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Booking Header */
+.booking-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 10px;
+}
+
+.booking-header h4 {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.booking-header p {
+  font-size: 1rem;
+  color: #555;
+}
+
+/* Booking Details Section */
+.booking-details {
+  display: grid;
+  grid-template-columns: 1fr 2fr; /* Image and text content side by side */
+  gap: 1rem;
+}
+
+/* Place Image Section */
+.place-photo {
+  flex-shrink: 0;
+  width: 200px;
+  height: 150px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.place-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+/* Booking Info Section */
+.booking-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Guest Info Section */
+.guest-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.profile-pic-container {
+  flex-shrink: 0;
+}
+
+.profile-img {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #ddd;
+}
+
+.guest-info div {
+  display: flex;
+  flex-direction: column;
+}
+
+.guest-info span {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.guest-info p {
+  font-size: 1rem;
+  color: #555;
+}
+
+/* Booking Actions */
+.booking-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-start;
+}
+
+.btn-container {
+  margin: 0;
+}
+
+.btn {
+  padding: 10px 20px;
+  font-size: 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn-success {
+  background-color: #28a745;
+  color: white;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  color: white;
+}
+
+.btn-success:hover {
+  background-color: #218838;
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
+}
+
+/* Responsive Styling */
+@media (max-width: 768px) {
+  .booking-list {
+    grid-template-columns: 1fr;
+    padding: 0 0.5rem;
+  }
+
+  .booking-item {
+    grid-template-columns: 1fr; /* Stack image and details vertically */
+  }
+
+  .booking-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .guest-info {
+    flex-direction: column;
+  }
+
+  .booking-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+}

@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - HBnB{% endblock %}
+
+{% block content %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+
+  <div class="dashboard-container">
+    <h1 class="dashboard-title">Dashboard</h1>
+    <p>Welcome, {{ session.user }}!</p>
+
+    <!-- Main Content Layout -->
+    <div class="dashboard-main">
+      <!-- Stats Overview Section -->
+      <div class="dashboard-stats">
+        <div class="widget">
+          <h3>Total Bookings</h3>
+          <p>{{ total_bookings }}</p>
+        </div>
+        <div class="widget">
+          <h3>Completed Reservations</h3>
+          <p>{{ total_bookings - upcoming_reservations }}</p>
+        </div>
+        <div class="widget">
+          <h3>Total Views</h3>
+          <p>{{ total_views }}</p> <!-- Display dynamic total views -->
+        </div>
+      </div>
+
+      <!-- Your Places Section -->
+      <div class="dashboard-section places-section">
+        <h2>Your Places</h2>
+        {% if places %}
+          <div class="places-grid">
+            {% for place in places %}
+              <div class="place-card">
+                <div class="place-image">
+                  <img src="{{ url_for('static', filename='uploads/' + (place.photos[0].url if place.photos else 'default.jpg')) }}" 
+                       alt="Photo of {{ place.title }}" class="place-img">
+                </div>
+                <div class="place-info">
+                  <!-- Title wrapped in a link for place details -->
+                  <a href="{{ url_for('places.place', place_id=place.id) }}" class="place-title">{{ place.title }}</a>
+                  <span class="place-price">${{ place.price }} per night</span>
+                </div>
+                
+                <!-- Views Section (Eye icon + view count) -->
+                <div class="place-views">
+                  <span class="place-views-icon">👁️</span> <!-- Eye emoji or icon -->
+                  <span class="place-views-count">{{ place.views }}</span> <!-- Display dynamic views for each place -->
+                </div>
+
+                <div class="place-actions">
+                  <a href="{{ url_for('places.edit_place', place_id=place.id) }}" class="btn btn-link">Edit</a>
+                  <form action="{{ url_for('places.delete_place', place_id=place.id) }}" method="post" class="delete-place-form">
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                  </form>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p>You have no places yet.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Sidebar for Actions -->
+    <div class="dashboard-sidebar">
+      <div class="dashboard-item">
+        <p><a href="{{ url_for('places.new_place') }}" class="btn btn-primary">Add a new place</a></p>
+      </div>
+      {% if places %}
+        <div class="dashboard-item">
+          <p><a href="{{ url_for('bookings.host_bookings') }}" class="btn btn-primary">Manage Booking Requests</a></p>
+        </div>
+      {% endif %}
+      <div class="dashboard-item">
+        <p><a href="{{ url_for('bookings.user_bookings') }}" class="btn btn-secondary">My Bookings</a></p>
+      </div>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Chat{% endblock %}
+
+{% block content %}
+  <div class="chat-container">
+    <h2>Chat with {{ other_user_pseudo }}</h2>
+
+    <div id="messages" class="message-box"></div>
+
+    <div class="input-container">
+      <textarea id="messageInput" rows="3" placeholder="Type your message here..."></textarea>
+      <button id="sendBtn" class="send-btn">Send</button>
+    </div>
+  </div>
+
+  <!-- Hidden elements to store user IDs -->
+  <div id="user-data" style="display: none;">
+    <span id="your-user-id">{{ your_user_id }}</span>
+    <span id="other-user-id">{{ other_user_id }}</span>
+  </div>
+
+  <!-- Include the external JS file -->
+  <script src="{{ url_for('static', filename='js/modules/chat.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,99 @@
+/* Profile Container */
+.owner-profile-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.profile-header {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  align-items: flex-start;
+}
+
+.profile-img {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.profile-info {
+  max-width: 800px;
+}
+
+.profile-info p {
+  font-size: 1rem;
+  color: #555;
+  margin-top: 8px;
+}
+
+.profile-info strong {
+  font-weight: bold;
+}
+
+.btn.start-message-btn {
+  background-color: #0077b6;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  display: inline-block;
+  margin-top: 1rem;
+  transition: background-color 0.3s;
+}
+
+.btn.start-message-btn:hover {
+  background-color: #005f73;
+}
+
+/* Places and Reviews Sections */
+.places-section, .reviews-section {
+  margin-top: 2rem;
+}
+
+.places-section ul, .reviews-section ul {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+.places-section li, .reviews-section li {
+  margin-bottom: 10px;
+  font-size: 1rem;
+}
+
+.places-section li a, .reviews-section li a {
+  text-decoration: none;
+  color: #0077b6;
+  font-weight: 600;
+}
+
+.places-section li a:hover, .reviews-section li a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .profile-header {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .profile-info {
+    max-width: 100%;
+  }
+
+  .profile-img {
+    width: 100px;
+    height: 100px;
+  }
+
+  .btn.start-message-btn {
+    width: 100%;
+  }
+}

@@ -1,0 +1,111 @@
+/* Manage Amenities Container */
+.manage-amenities-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Manage Amenities Header */
+.manage-amenities-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.manage-amenities-header h1 {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.add-amenity-btn {
+  background-color: #007bff;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+}
+
+.add-amenity-btn:hover {
+  background-color: #0056b3;
+}
+
+/* Amenities List Layout */
+.amenities-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+.amenity-item {
+  padding: 12px;
+  background-color: #f4f4f4;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.amenity-item span {
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.amenity-item a {
+  text-decoration: none;
+  color: #0077b6;
+  font-weight: 600;
+  margin-right: 15px;
+}
+
+.amenity-item a:hover {
+  text-decoration: underline;
+}
+
+.amenity-item button {
+  background-color: #dc3545;
+  color: white;
+  padding: 8px 15px;
+  border-radius: 6px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.amenity-item button:hover {
+  background-color: #c82333;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  /* Stack the header elements on smaller screens */
+  .manage-amenities-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .add-amenity-btn {
+    width: 100%;  /* Make the button full width on smaller screens */
+    margin-top: 1rem;
+  }
+
+  .amenities-list {
+    grid-template-columns: 1fr;  /* Stack the amenities list items */
+  }
+
+  .amenity-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .amenity-item a {
+    font-size: 1.1rem; /* Adjust font size for mobile view */
+  }
+}
