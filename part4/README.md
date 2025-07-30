@@ -146,36 +146,72 @@ erDiagram
 ```mermaid
 classDiagram
     class User {
-        +id
-        +email
-        +first_name
-        +last_name
+        +id: int
+        +email: string
+        +first_name: string
+        +last_name: string
+        +pseudo: string
+        +password: string
+        +bio: string
+        +profile_pic: string
+        +is_authenticated(): bool
+        +create_place(): void
+        +write_review(): void
     }
+    
     class Place {
-        +id
-        +title
-        +description
-        +host_id
+        +id: int
+        +title: string
+        +description: string
+        +price: float
+        +address: string
+        +latitude: float
+        +longitude: float
+        +host_id: int
+        +photos: list
+        +amenities: list
+        +reviews: list
+        +increment_views(): void
+        +add_amenity(): void
+        +add_review(): void
     }
+    
     class Booking {
-        +id
-        +user_id
-        +place_id
-        +start_date
-        +end_date
+        +id: int
+        +user_id: int
+        +place_id: int
+        +start_date: string
+        +end_date: string
+        +status: string
+        +make_booking(): void
+        +cancel_booking(): void
     }
+    
     class Notification {
-        +id
-        +recipient_id
-        +message
-        +status
+        +id: int
+        +recipient_id: int
+        +message: string
+        +status: string
+        +mark_as_read(): void
     }
+
     class Review {
-        +id
-        +place_id
-        +user_id
-        +text
+        +id: int
+        +place_id: int
+        +user_id: int
+        +text: string
+        +rating: int
+        +create_review(): void
     }
+
+    User "1" -- "0..*" Place : hosts
+    User "1" -- "0..*" Review : writes
+    User "1" -- "0..*" Booking : makes
+    Place "1" -- "0..*" Review : has
+    Place "1" -- "0..*" Booking : has
+    Place "1" -- "0..*" Amenity : has
+    Notification "1" -- "1" User : for
+
 ```
 
 ### 📦 Package Diagram
@@ -186,10 +222,22 @@ graph TD
     A --> C[routes/]
     A --> D[templates/]
     A --> E[static/]
-    C --> F[bookings.py]
-    C --> G[auth.py]
-    C --> H[places.py]
-    C --> I[notifications.py]
+    B --> F[place.py]
+    B --> G[user.py]
+    B --> H[booking.py]
+    B --> I[review.py]
+    C --> J[places.py]
+    C --> K[auth.py]
+    C --> L[bookings.py]
+    C --> M[reviews.py]
+    D --> N[place_detail.html]
+    D --> O[booking_confirmation.html]
+    D --> P[login.html]
+    D --> Q[dashboard.html]
+    E --> R[images/]
+    E --> S[css/]
+    E --> T[js/]
+
 ```
 
 ### 🔁 Sequence Diagram - Booking
@@ -202,10 +250,13 @@ sequenceDiagram
     participant DB
 
     User->>Frontend: Submit booking form
-    Frontend->>API: POST /places/:id/booking
-    API->>DB: Save booking
-    API->>DB: Create notification to host
-    API-->>Frontend: Success message
+    Frontend->>API: POST /places/:id/booking (with user_id, place_id, start_date, end_date)
+    API->>DB: Save booking in the database
+    DB->>API: Return confirmation (booking details)
+    API->>DB: Create notification for host (booking accepted)
+    API-->>Frontend: Return success response
+    Frontend->>User: Show success message
+
 ```
 ---
 
