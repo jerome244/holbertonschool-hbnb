@@ -91,7 +91,7 @@ Your app will be available at [http://127.0.0.1:5000](http://127.0.0.1:5000)
    - The notification feature currently do not work.
 
 - **Future Features:**
-   - Ideas for improving features like **Follow Functions**, **Report System**, **Block Users**, **Choice of Main Place Photo**, **Option for Changing the Language**, or either a **Dark Mode**.
+   - Ideas for improving features like **Follow/Unfollow Functions**, **Report System**, **Block Users**, **Choice of Main Place Photo**, **Option for Changing the Language**, or either a **Dark Mode**.
 
 ---
 
