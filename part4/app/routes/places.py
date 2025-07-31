@@ -12,7 +12,7 @@ from flask import (
     current_app,
     jsonify,
 )
-from flask_login import current_user
+from flask_login import current_user, login_required
 from app.models.place import Place
 from app.models.host import Host
 from app.models.user import User
@@ -32,18 +32,11 @@ from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.exc import ObjectDeletedError
 from functools import wraps
 
+
+
+
 places = Blueprint("places", __name__, url_prefix="/places")
 
-
-def login_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if "user" not in session:
-            flash("Please log in first.")
-            return redirect(url_for("auth.login"))
-        return f(*args, **kwargs)
-
-    return decorated_function
 
 
 # Place-related routes
@@ -52,25 +45,26 @@ def booking_redirect(place_id):
     return redirect(url_for("places.booking", place_id=place_id))
 
 
+
+
 @places.route("/<place_id>/booking", methods=["GET", "POST"])
 @login_required
 def booking(place_id):
     place = Place.query.get_or_404(place_id)
-    user_email = session.get("user")
-    user = User.query.filter_by(email=user_email).first()
-    
-    if not user:
-        flash("User not found.", "error")
+
+    if not current_user.is_authenticated:
+        flash("Please log in first.", "error")
         return redirect(url_for("auth.login"))
 
+    user = current_user
     user_id = user.id
 
-    # Ensure user cannot book their own place
+    # Prevent booking your own listing
     if place.host_id == user_id:
         flash("You cannot book your own place.", "error")
         return redirect(url_for("places.place", place_id=place_id))
 
-    # Prevent multiple pending or accepted bookings for the same place
+    # Check for duplicate booking
     existing_booking = (
         Booking.query.filter_by(user_id=user_id, place_id=place_id)
         .order_by(Booking.created_at.desc())
@@ -84,7 +78,7 @@ def booking(place_id):
         start_date_str = request.form.get("start_date")
         end_date_str = request.form.get("end_date")
         guest_count = request.form.get("guest_count")
-        
+
         try:
             guest_count_int = int(guest_count)
             if guest_count_int < 1:
@@ -97,28 +91,22 @@ def booking(place_id):
         try:
             start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
             end_date = datetime.strptime(end_date_str, "%Y-%m-%d")
-            total_price = calculate_price(
-                place, start_date_str, end_date_str, guest_count_int
-            )
-            
-            # Retrieve host_id from the place object
-            host_id = place.host_id  # Ensure that host_id is passed to the Booking
-            
+            total_price = calculate_price(place, start_date_str, end_date_str, guest_count_int)
+
             new_booking = Booking(
                 user_id=user_id,
                 place_id=place_id,
-                host_id=host_id,  # Pass host_id here
+                host_id=place.host_id,
                 start_date=start_date,
                 end_date=end_date,
                 total_price=total_price,
                 guest_count=guest_count_int,
                 status="pending",
-            ) 
+            )
 
             db.session.add(new_booking)
             db.session.commit()
 
-            
             flash("Booking request sent! Awaiting host approval.", "success")
             return redirect(url_for("places.place", place_id=place_id))
 
@@ -129,56 +117,56 @@ def booking(place_id):
     return render_template("booking.html", place=place)
 
 
+
 @places.route("/<place_id>")
 def place(place_id):
     try:
-        # Fetch the place details, including its photos
         place = Place.query.options(joinedload(Place.photos)).get_or_404(place_id)
+        print(f"[DEBUG] Loaded place: {place.title}, current views: {place.views}")
+        print(f"[DEBUG] Session keys: {list(session.keys())}")
+        print(f"[DEBUG] Session user_id: {session.get('user_id')}")
 
-        # Increment the views count
-        place.increment_views()
-
-        # Make sure the latitude and longitude are being passed correctly
-        print(f"Latitude: {place.latitude}, Longitude: {place.longitude}")  # Debugging line
-
-        # Fetch the owner (host) of the place
-        owner = User.query.get(place.host_id)
-
-        # Calculate the average rating for the place
-        avg_rating = (
-            db.session.query(func.avg(Review.rating))
-            .filter(Review.place_id == place_id)
-            .scalar()
-        )
-        avg_rating = round(avg_rating, 2) if avg_rating else None  # Handle case if no reviews exist
-
-        # Initialize user and confirmed booking
+        # Fetch user from session by user_id
         user = None
         confirmed_booking = None
-
-        # Check if the user is logged in and if they have a confirmed booking for this place
-        user_email = session.get("user")
-        if user_email:
-            user = User.query.filter_by(email=user_email).first()
+        user_id = session.get("user_id")
+        if user_id:
+            user = User.query.get(user_id)
             if user:
+                print(f"[DEBUG] Logged in user: {user.id} - {user.email}")
                 confirmed_booking = Booking.query.filter_by(
                     user_id=user.id, place_id=place.id, status="confirmed"
                 ).first()
+            else:
+                print("[DEBUG] user_id in session but no matching user found")
 
-        # Render the place detail page with latitude and longitude
+        # Increment views if not owner
+        place.increment_views(user=user)
+        db.session.refresh(place)
+
+        owner = User.query.get(place.host_id)
+        if not owner:
+            flash("⚠️ This listing no longer has a valid host account.", "warning")
+
+        avg_rating = (
+            db.session.query(func.avg(Review.rating))
+            .filter(Review.place_id == place.id)
+            .scalar()
+        )
+        avg_rating = round(avg_rating, 2) if avg_rating else None
+
         return render_template(
             "place.html",
             place=place,
             user=user,
             confirmed_booking=confirmed_booking,
             avg_rating=avg_rating,
-            owner=owner,
+            owner=owner,  # can be None
         )
 
     except ObjectDeletedError:
-        flash("The owner of this place no longer exists.", "warning")
+        flash("This place or its owner has been removed.", "warning")
         return redirect(url_for('views.index'))
-
 
 
 
@@ -362,8 +350,9 @@ def new_place():
 @places.route("/host/places/<place_id>/edit", methods=["GET", "POST"])
 @login_required
 def edit_place(place_id):
-    user_email = session.get("user")
-    user = User.query.filter_by(email=user_email).first()
+    user_id = session.get("user_id")
+    user = User.query.get(user_id)
+
     host = Host.query.get(user.id) if user else None
     place = Place.query.options(joinedload(Place.photos)).get_or_404(place_id)
     amenities = Amenity.query.all()
@@ -401,8 +390,9 @@ def edit_place(place_id):
 @places.route("/host/places/<place_id>/delete", methods=["POST"])
 @login_required
 def delete_place(place_id):
-    user_email = session.get("user")
-    user = User.query.filter_by(email=user_email).first()
+    user = current_user
+
+
     host = Host.query.get(user.id) if user else None
     place = Place.query.get_or_404(place_id)
     if not host or place.host.id != host.id:
@@ -428,27 +418,26 @@ def delete_place(place_id):
 @login_required
 def leave_review(place_id):
     place = Place.query.get_or_404(place_id)
-    user_email = session.get("user")
-    user = User.query.filter_by(email=user_email).first()
-    
-    # Check if the user has a confirmed booking for the place
+
+    user = current_user
+    user_id = user.id
+
     confirmed_booking = Booking.query.filter_by(
-        user_id=user.id, place_id=place.id, status="confirmed"
+        user_id=user_id, place_id=place.id, status="confirmed"
     ).first()
     if not confirmed_booking:
         flash("You can only review places you have confirmed bookings for.", "error")
         return redirect(url_for("places.place", place_id=place_id))
-    
-    # Check if the user has already reviewed this place
-    existing_review = Review.query.filter_by(user_id=user.id, place_id=place.id).first()
+
+    existing_review = Review.query.filter_by(user_id=user_id, place_id=place.id).first()
     if existing_review:
         flash("You have already reviewed this place.", "error")
         return redirect(url_for("places.place", place_id=place_id))
 
-    # If the form is submitted
     if request.method == "POST":
         text = request.form.get("content")
         rating = request.form.get("rating")
+
         if not text or not rating:
             flash("Please fill in all fields.", "error")
             return render_template("leave_review.html", place=place)
@@ -461,9 +450,8 @@ def leave_review(place_id):
             flash("Rating must be an integer between 1 and 5.", "error")
             return render_template("leave_review.html", place=place)
 
-        # Remove the created_at field
         review = Review(
-            user_id=user.id,
+            user_id=user_id,
             place_id=place.id,
             text=text,
             rating=rating_int,

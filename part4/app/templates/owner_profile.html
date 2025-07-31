@@ -34,17 +34,21 @@
 
     <!-- Places by Owner Section -->
     <section class="places-section">
-      <h3>Places by this owner:</h3>
-      <div class="place-list">
-        {% for place in places %}
-          <div class="place-card">
-            <img src="{{ url_for('static', filename='uploads/' + (place.photos[0].url if place.photos else 'default.jpg')) }}" 
-                 alt="Place Image" class="place-img">
-            <a href="{{ url_for('places.place', place_id=place.id) }}">{{ place.title }}</a>
-          </div>
-        {% endfor %}
+  <h3>Places by this owner:</h3>
+  <div class="place-cards-grid">
+    {% for place in places %}
+      {% set place_image = place.photos[0].url if place.photos else 'default.jpg' %}
+      <div class="place-card">
+        <a href="{{ url_for('places.place', place_id=place.id) }}">
+          <img src="{{ url_for('static', filename='uploads/' + place_image) }}" alt="{{ place.title }}">
+          <h3>{{ place.title }}</h3>
+          <p><strong>Price:</strong> ${{ place.price }}</p>
+        </a>
       </div>
-    </section>
+    {% endfor %}
+  </div>
+</section>
+
 
     <!-- Reviews Section -->
     <section class="reviews-section">

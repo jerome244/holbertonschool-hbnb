@@ -85,13 +85,16 @@ def load_user(user_id):
 def create_app(config_class: str = "config.DevelopmentConfig") -> Flask:
     from .routes.auth import auth
     app = Flask(__name__)
+    app.config.from_object(config_class)
     app.config["JWT_SECRET_KEY"] = (
         "your-very-secret-key"  # Replace with a strong secret!
     )
+    print("[DEBUG] Secret key:", app.config["SECRET_KEY"])
+
     jwt = JWTManager(app)
     app.debug = True
     CORS(app)
-    app.config.from_object(config_class)
+    
 
     db.init_app(app)
     bcrypt.init_app(app)

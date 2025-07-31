@@ -29,9 +29,11 @@ def login():
             return redirect(url_for("auth.login"))
 
         login_user(user)
-        session["user"] = user.email
         flash("Logged in successfully!", "success")
-        return redirect(url_for("views.index"))
+
+        # Redirect to home or "next" if present
+        next_page = request.args.get("next")
+        return redirect(next_page or url_for("views.index"))
 
     return render_template("login.html")
 
@@ -64,31 +66,28 @@ def register():
                 flash("This nickname is already taken, please choose another.", "error")
                 return render_template("register.html")
 
-        # Create new user
         user = User(email=email, first_name=first_name, last_name=last_name, pseudo=pseudo)
         user.set_password(password)
         db.session.add(user)
         db.session.commit()
 
-        # Log the user in by setting session
-        session["user"] = user.email
+        login_user(user)
         flash("Registration successful! You are now logged in.", "success")
 
-        # Check if user is a host, if not, redirect to become_host page
         if user.type != "host":
             flash("Please become a host to create places.", "info")
             return redirect(url_for("dashboard.become_host"))
 
-        # If the user is a host, redirect to dashboard
         return redirect(url_for("dashboard.dashboard_view"))
 
     return render_template("register.html")
 
 
 @auth.route("/profile", methods=["GET", "POST"])
+@login_required
 def profile():
-    user_email = session.get("user")
-    user = User.query.filter_by(email=user_email).first()
+    user = current_user
+
     if not user:
         flash("You must be logged in to view your profile.", "error")
         return redirect(url_for("auth.login"))
@@ -113,14 +112,14 @@ def profile():
         db.session.commit()
         flash("Profile updated!")
         return redirect(url_for("auth.profile"))
+
     return render_template("profile.html", user=user)
+
 
 @auth.route("/delete_account", methods=["POST"])
 @login_required
 def delete_account():
     user = current_user
-    # Perform account deletion logic
     db.session.delete(user)
     db.session.commit()
     return redirect(url_for("auth.logout"))
-

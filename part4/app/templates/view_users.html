@@ -8,11 +8,11 @@
   <div class="grid-container">
     <!-- Admin Profile Header (1st row) -->
     <div class="admin-profile-header">
-      <img src="{{ url_for('static', filename='uploads/' ~ (user.profile_pic if user.profile_pic else 'default.jpg')) }}"
-           alt="{{ user.pseudo }}'s Profile Picture" class="profile-img">
+      <img src="{{ url_for('static', filename='uploads/' ~ (admin.profile_pic if admin.profile_pic else 'default.jpg')) }}"
+           alt="{{ admin.pseudo }}'s Profile Picture" class="profile-img">
       <div>
-        <h2>{{ user.pseudo }}</h2>
-        <p>{{ user.email }}</p>
+        <h2>{{ admin.pseudo }}</h2>
+        <p>{{ admin.email }}</p>
       </div>
     </div>
 
@@ -25,7 +25,7 @@
             <th>Username</th>
             <th>Email</th>
             <th>Role</th>
-            <th>Creation Date</th> <!-- New column for creation date -->
+            <th>Creation Date</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -39,7 +39,7 @@
               <td>{{ user.pseudo }}</td>
               <td>{{ user.email }}</td>
               <td>{{ 'Admin' if user.is_admin else 'User' }}</td>
-              <td>{{ user.created_at.strftime('%Y-%m-%d') }}</td> <!-- Display creation date -->
+              <td>{{ user.created_at.strftime('%Y-%m-%d') }}</td>
               <td class="actions">
                 <a href="{{ url_for('admin.edit_user', user_id=user.id) }}" class="btn btn-warning">Edit</a>
                 <form action="{{ url_for('admin.delete_user', user_id=user.id) }}" method="POST" style="display:inline;">

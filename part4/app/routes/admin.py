@@ -11,16 +11,29 @@ from app.models.message import Message
 admin = Blueprint("admin", __name__, url_prefix="/admin")
 
 
-# Admin access decorator
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if not current_user.is_authenticated or not current_user.is_admin:
+        print("=== [DEBUG] admin_required ===")
+        print("current_user.is_authenticated:", current_user.is_authenticated)
+        print("current_user:", current_user)
+        print("current_user.is_admin:", getattr(current_user, 'is_admin', None))
+
+        if not current_user.is_authenticated:
+            flash("You must be logged in.", "warning")
+            return redirect(url_for("auth.login"))
+
+        if not getattr(current_user, 'is_admin', False):
             flash("Admin access required.", "danger")
             return redirect(url_for("auth.login"))
-        return f(*args, **kwargs)
 
+        return f(*args, **kwargs)
     return decorated_function
+
+@admin.route("/whoami")
+@login_required
+def whoami():
+    return f"Logged in as: {current_user.email}, Admin: {current_user.is_admin}"
 
 
 # Route to view reported reviews
@@ -164,12 +177,14 @@ def delete_place(place_id):
         return jsonify({"error": str(e)}), 500
 
 
+from flask_login import current_user
+
 @admin.route('/users')
 @login_required
 @admin_required
 def view_users():
     users = User.query.all()  # Get all users
-    return render_template('view_users.html', users=users)
+    return render_template('view_users.html', users=users, admin=current_user)
 
 @admin.route('/edit_user/<uuid:user_id>', methods=['GET', 'POST'])
 @login_required

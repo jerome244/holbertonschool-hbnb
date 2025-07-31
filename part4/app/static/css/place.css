@@ -271,3 +271,64 @@ body {
     height: 150px;
   }
 }
+
+
+.review-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 1rem;
+}
+
+.review-card .user-img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.review-card a {
+  color: #0077b6;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.review-card a:hover {
+  text-decoration: underline;
+}
+
+.review-rating {
+  margin-left: 6px;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.review-text {
+  margin-top: 0.5rem;
+  font-size: 1rem;
+  color: #333;
+}
+
+
+.amenities-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.amenity-card {
+  background-color: #f8f9fa;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  color: #333;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  min-width: 120px;
+  text-align: center;
+}
+
+

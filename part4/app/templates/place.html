@@ -83,40 +83,46 @@
     <div class="place-amenities-reviews">
       <!-- Amenities Section -->
       <div class="place-amenities">
-        <h3>Amenities</h3>
-        <ul>
-          {% for amenity in place.amenities %}
-            <li>{{ amenity.name }}</li>
-          {% endfor %}
-        </ul>
-      </div>
+  <h3>Amenities</h3>
+  <div class="amenities-grid">
+    {% for amenity in place.amenities %}
+      <div class="amenity-card">{{ amenity.name }}</div>
+    {% endfor %}
+  </div>
+</div>
+
 
       <!-- Reviews Section -->
       <div class="place-reviews">
-        <h3>Reviews</h3>
-        {% if place.reviews %}
-          <ul>
-            {% for review in place.reviews %}
-              <li>
-                <strong>
-                  {% if review.user %}
-                    <img src="{{ url_for('static', filename='uploads/' + (review.user.profile_pic if review.user.profile_pic else 'default.jpg')) }}" 
-                         alt="Reviewer's Profile Picture" class="user-img">
-                    {{ review.user.pseudo or (review.user.first_name ~ ' ' ~ review.user.last_name) }}
-                  {% else %}
-                    Guest
-                  {% endif %}
-                </strong>
-                rated {{ review.rating }}/5<br>
-                {{ review.text }}<br>
-                <small>Posted on {{ review.created_at.strftime('%Y-%m-%d') if review.created_at else 'Unknown date' }}</small><br>
-              </li>
-            {% endfor %}
-          </ul>
-        {% else %}
-          <p>No reviews yet.</p>
-        {% endif %}
-      </div>
+  <h3>Reviews</h3>
+  {% if place.reviews %}
+    <ul>
+      {% for review in place.reviews %}
+        <li class="review-card">
+          {% if review.user %}
+            <img src="{{ url_for('static', filename='uploads/' + (review.user.profile_pic or 'images/default-profile.png')) }}"
+                 alt="Reviewer's Picture" class="user-img">
+
+            <strong>
+              <a href="{{ url_for('views.user_profile', user_id=review.user.id) }}">
+                {{ review.user.pseudo or review.user.first_name }}
+              </a>
+            </strong>
+          {% else %}
+            <strong>Guest</strong>
+          {% endif %}
+
+          <span class="review-rating">({{ review.rating }}/5)</span><br>
+          <p class="review-text">{{ review.text }}</p>
+          <small>Posted on {{ review.created_at.strftime('%Y-%m-%d') if review.created_at else 'Unknown date' }}</small>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No reviews yet.</p>
+  {% endif %}
+</div>
+
     </div>
   </div>
 

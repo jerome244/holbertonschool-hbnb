@@ -55,12 +55,17 @@ class Place(BaseModel):
             db.session.delete(photo_to_remove)
             db.session.commit()
 
-    # Method to increment view count for the place
     def increment_views(self, user=None):
-        # Only increment views if the user is not the owner
-        if user and user.id != self.host_id:
-            self.views += 1
-            db.session.commit()
+        # Don't count views by the place's owner (if user is known)
+        if user and user.id == self.host_id:
+            print("[DEBUG] Skipping increment: user is owner")
+            return
+
+        # Count view if anonymous or non-owner user
+        self.views = self.views + 1 if self.views else 1
+        db.session.commit()
+        print(f"[DEBUG] View incremented to {self.views}")
+
 
     # Serialize the Place object, including photos
     def to_dict(self):

@@ -7,7 +7,8 @@
 
   <div class="dashboard-container">
     <h1 class="dashboard-title">Dashboard</h1>
-    <p>Welcome, {{ session.user }}!</p>
+    <p>Welcome, {{ current_user.pseudo or current_user.first_name or current_user.email }}!</p>
+
 
     <!-- Main Content Layout -->
     <div class="dashboard-main">

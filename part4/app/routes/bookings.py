@@ -133,17 +133,17 @@ def decline_booking(booking_id):
 @login_required
 def cancel_booking(booking_id):
     booking = Booking.query.get_or_404(booking_id)
-    user_email = session.get("user")
-    user = User.query.filter_by(email=user_email).first()
+    user = current_user  # ✅ use Flask-Login
 
-    if not user or booking.user_id != user.id:
+    # Verify user owns the booking
+    if booking.user_id != user.id:
         flash("Unauthorized cancellation.", "danger")
         return redirect(url_for("bookings.user_bookings"))
 
     if booking.status == "cancelled":
         flash("Booking is already cancelled.", "info")
         return redirect(url_for("bookings.user_bookings"))
-    
+
     if booking.status == "accepted":
         flash("Cannot cancel an accepted booking.", "danger")
         return redirect(url_for("bookings.user_bookings"))
@@ -155,6 +155,8 @@ def cancel_booking(booking_id):
         place = booking.place
         host = User.query.get(place.host_id)
         message = f"{user.first_name} {user.last_name} has cancelled their booking for '{place.title}'."
+
+        # Notify host
         facade.notify_host_booking_cancelled(booking)
 
         db.session.commit()
@@ -165,17 +167,12 @@ def cancel_booking(booking_id):
 
     return redirect(url_for("bookings.user_bookings"))
 
-
 # --- User Bookings ---
 
 @bookings.route("/user/bookings")
 @login_required
 def user_bookings():
-    user_email = session.get("user")
-    user = User.query.filter_by(email=user_email).first()
-    if not user:
-        flash("User not found.", "error")
-        return redirect(url_for("auth.login"))
+    user = current_user
     bookings = Booking.query.filter_by(user_id=user.id).all()
     return render_template("user_bookings.html", bookings=bookings)
 

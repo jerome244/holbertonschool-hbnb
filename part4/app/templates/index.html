@@ -35,7 +35,13 @@
         {% for place in places %}
   {% set place_image = place.photos[0].url if place.photos else 'default.jpg' %}
   <div class="place-card">
+
+
+
     <a href="{{ url_for('places.place', place_id=place.id) }}">
+
+
+      
       <img src="{{ url_for('static', filename='uploads/' + place_image) }}" alt="{{ place.title }}" />
       <h3>{{ place.title }}</h3>
       <p><strong>Price: </strong>${{ place.price }}</p>

@@ -167,3 +167,12 @@ textarea {
     margin-top: 10px;
   }
 }
+
+.review a {
+  color: #0077b6;
+  text-decoration: none;
+  font-weight: 600;
+}
+.review a:hover {
+  text-decoration: underline;
+}

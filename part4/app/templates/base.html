@@ -31,6 +31,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/register.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/search_places.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/user_bookings.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/user_profile.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/view_booking.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/view_users.css') }}">
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
@@ -47,7 +48,8 @@
       <ul class="nav-links" id="nav-links">
         <li><a href="{{ url_for('views.index') }}">Home</a></li>
         
-        {% if 'user' in session %}
+        {% if current_user.is_authenticated %}
+
           <li><a href="{{ url_for('messages_bp.messages_list') }}">Messages</a></li>
           <li><a href="{{ url_for('dashboard.dashboard_view') }}">Dashboard</a></li>
           <li><a href="{{ url_for('places.search_places') }}">Search Places</a></li>
@@ -62,11 +64,13 @@
             <div id="notification-list"></div>
           </li>
 
-          {% if user and user.is_admin %}
+          {% if current_user.is_authenticated and current_user.is_admin %}
+
             <li class="dropdown">
               <a href="#" class="dropbtn">Admin</a>
               <div class="dropdown-content">
-                <a href="{{ url_for('dashboard.manage_amenities') }}">Manage Amenities</a>
+                <a href="{{ url_for('admin.amenities_list') }}">Manage Amenities</a>
+
                 <a href="{{ url_for('admin.view_users') }}">See All Users</a>
               </div>
             </li>

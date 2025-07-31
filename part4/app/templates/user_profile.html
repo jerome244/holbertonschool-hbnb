@@ -1,47 +1,71 @@
 {% extends "base.html" %}
 
-{% block content %}
-  <h2>{{ user.pseudo }}</h2>
+{% block title %}User Profile - HBnB{% endblock %}
 
+{% block content %}
+<div class="user-profile-container">
+
+  <!-- User Name -->
+  <h2>{{ user.pseudo or user.first_name or user.email }}</h2>
+
+  <!-- Profile Picture -->
   {% if user.profile_pic %}
     <img src="{{ url_for('static', filename='uploads/' + user.profile_pic) }}"
-         alt="Profile Picture" width="120" style="border-radius:50%">
+         alt="Profile Picture">
   {% else %}
     <img src="{{ url_for('static', filename='images/default-profile.png') }}"
-         alt="Default Profile Picture" width="120" style="border-radius:50%">
+         alt="Default Profile Picture">
   {% endif %}
 
+  <!-- Bio -->
   {% if user.bio %}
     <p><strong>Bio:</strong> {{ user.bio }}</p>
   {% endif %}
 
+  <!-- Listed Places -->
   {% if places %}
     <h3>Places listed by this user:</h3>
     <ul>
       {% for place in places %}
         <li>
-          <a href="{{ url_for('places.place', place_id=place.id) }}">{{ place.title }}</a>
+          <a href="{{ url_for('places.place', place_id=place.id) }}">
+            {{ place.title }}
+          </a>
         </li>
       {% endfor %}
     </ul>
   {% endif %}
 
+  <!-- User Reviews -->
   {% if reviews %}
-    <h3>Reviews by this user:</h3>
-    <ul>
-      {% for review in reviews %}
-        <li>
-          <strong>
-            <a href="{{ url_for('places.place', place_id=review.place.id) }}">
-              {{ review.place.title }}
-            </a>
-          </strong>
-          <br>
-          Rating: {{ review.rating }} / 5
-          <br>
-          Review: {{ review.content }}  <!-- Assuming 'content' is the review text -->
-        </li>
-      {% endfor %}
-    </ul>
-  {% endif %}
+  <h3>Places Reviewed by {{ user.pseudo or user.first_name }}:</h3>
+  <div class="reviewed-places-grid">
+    {% for review in reviews %}
+      <div class="place-card">
+        <!-- Place Image -->
+        <div class="place-image">
+          <img src="{{ url_for('static', filename='uploads/' + (review.place.photos[0].url if review.place.photos else 'default.jpg')) }}"
+               alt="Photo of {{ review.place.title }}" class="place-img">
+        </div>
+
+        <!-- Place Info -->
+        <div class="place-info">
+          <a href="{{ url_for('places.place', place_id=review.place.id) }}" class="place-title">
+            {{ review.place.title }}
+          </a>
+          <p class="review-rating">Rating: {{ review.rating }} / 5</p>
+<p class="review-comment">“{{ review.text }}”</p>
+          <small class="review-date">
+            Reviewed on {{ review.created_at.strftime('%Y-%m-%d') if review.created_at else 'Unknown date' }}
+          </small>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <p>This user has not reviewed any places yet.</p>
+{% endif %}
+
+
+</div>
 {% endblock %}
