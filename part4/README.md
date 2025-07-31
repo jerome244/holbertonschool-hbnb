@@ -137,97 +137,246 @@ CORS(app, origins=["https://yourdomain.com"])
 
 ```mermaid
 erDiagram
-    User ||--o{ Booking : makes
-    User ||--o{ Notification : receives
-    User ||--o{ Review : writes
-    User ||--o{ Place : hosts
-    Place ||--o{ Review : has
-    Place ||--o{ Booking : has
-    Place ||--o{ Amenity : has
+	direction TB
+	USER {
+		string id  ""  
+		string first_name  ""  
+		string last_name  ""  
+		string email  ""  
+		string password  ""  
+		boolean is_admin  ""  
+		string pseudo  ""  
+		string profile_pic  ""  
+	}
+
+	HOST {
+		string id FK ""  
+	}
+
+	PLACE {
+		string id  ""  
+		string title  ""  
+		string description  ""  
+		float price  ""  
+		float latitude  ""  
+		float longitude  ""  
+		int capacity  ""  
+		string address  ""  
+		int views  ""  
+		string user_id  ""  
+		string host_id  ""  
+	}
+
+	AMENITY {
+		string id  ""  
+		string name  ""  
+	}
+
+	BOOKING {
+		string id  ""  
+		string user_id  ""  
+		string place_id  ""  
+		string host_id  ""  
+		datetime start_date  ""  
+		datetime end_date  ""  
+		float total_price  ""  
+		int guest_count  ""  
+		string status  ""  
+	}
+
+	REVIEW {
+		string id  ""  
+		string text  ""  
+		string user_id  ""  
+		string place_id  ""  
+		string booking_id  ""  
+		int rating  ""  
+		boolean reported  ""  
+	}
+
+	MESSAGE {
+		int id  ""  
+		string sender_id  ""  
+		string receiver_id  ""  
+		string place_id  ""  
+		string content  ""  
+		datetime timestamp  ""  
+		boolean is_read  ""  
+	}
+
+	PLACEPHOTO {
+		string id  ""  
+		string url  ""  
+		string place_id  ""  
+	}
+
+	USER||--o{BOOKING:"has"
+	USER||--o{REVIEW:"writes"
+	USER||--o{MESSAGE:"sends"
+	USER||--o{PLACE:"owns"
+	HOST||--o{PLACE:"manages"
+	PLACE||--o{BOOKING:"receives"
+	PLACE||--o{REVIEW:"gets"
+	PLACE||--o{MESSAGE:"involved_in"
+	PLACE||--o{PLACEPHOTO:"has"
+	PLACE||--o{AMENITY:"contains"
+	BOOKING||--||REVIEW:"has"
+
+
 ```
 
 ### 🧱 Class Diagram
 
 ```mermaid
 classDiagram
+direction TB
     class User {
-        +id
-        +email
-        +first_name
-        +last_name
+	    +String id
+	    +String first_name
+	    +String last_name
+	    +String email
+	    +String password
+	    +Boolean is_admin
+	    +String pseudo
+	    +String profile_pic
+	    +leave_review()
+	    +to_dict()
     }
+
+    class Host {
+	    +set_password()
+	    +check_password()
+	    +to_dict()
+    }
+
     class Place {
-        +id
-        +title
-        +description
-        +host_id
+	    +String title
+	    +String description
+	    +Float price
+	    +Float latitude
+	    +Float longitude
+	    +Integer capacity
+	    +String address
+	    +Integer views
+	    +add_photo()
+	    +remove_photo()
+	    +to_dict()
     }
+
     class Booking {
-        +id
-        +user_id
-        +place_id
-        +start_date
-        +end_date
+	    +DateTime start_date
+	    +DateTime end_date
+	    +Float total_price
+	    +Integer guest_count
+	    +String status
     }
-    class Notification {
-        +id
-        +recipient_id
-        +message
-        +status
-    }
+
     class Review {
-        +id
-        +place_id
-        +user_id
-        +text
+	    +String text
+	    +Integer rating
+	    +Boolean reported
     }
+
+    class Message {
+	    +String content
+	    +Boolean is_read
+    }
+
+    class Amenity {
+	    +String name
+    }
+
+    class PlacePhoto {
+	    +String url
+    }
+
+    User <|-- Host
+    User "1" --> "0..*" Booking : books >
+    User "1" --> "0..*" Review : writes >
+    User "1" --> "0..*" Message : sends >
+    User "1" --> "0..*" Place : owns >
+    Host "1" --> "0..*" Place : manages >
+    Place "1" --> "0..*" Booking
+    Place "1" --> "0..*" Review
+    Place "1" --> "0..*" Message
+    Place "1" --> "0..*" PlacePhoto
+    Place "*" --> "*" Amenity : uses >
+    Booking "1" --> "0..1" Review
+
+
 ```
 
 ### 📦 Package Diagram
 
 ```mermaid
 graph TD
-    A[app/] --> B[models/]
-    A --> C[routes/]
-    A --> D[templates/]
-    A --> E[static/]
-    C --> F[bookings.py]
-    C --> G[auth.py]
-    C --> H[places.py]
-    C --> I[notifications.py]
-```
+  Part4 --> App
+  Part4 --> Instance
+  Part4 --> Migrations
+  Part4 --> Diagram
+
+  App --> Models
+  App --> Routes
+  App --> Services
+  App --> Static
+  App --> Templates
+  App --> Utils
+  App --> Persistence
+  App --> API
+
+  Static --> CSS
+  Static --> JS
+  Static --> Images
+  Static --> Uploads
+
+  API --> V1
+  ```
+
 
 ### 🔁 Sequence Diagram - Booking
 
 ```mermaid
 sequenceDiagram
-    participant User
-    participant Frontend
-    participant API
-    participant DB
+  participant User
+  participant AuthAPI
+  participant BookingAPI
+  participant DB
+  participant ReviewAPI
 
-    User->>Frontend: Submit booking form
-    Frontend->>API: POST /places/:id/booking
-    API->>DB: Save booking
-    API->>DB: Create notification to host
-    API-->>Frontend: Success message
+  User->>AuthAPI: POST /login
+  AuthAPI->>DB: Validate credentials
+  DB-->>AuthAPI: OK
+  AuthAPI-->>User: Auth token
+
+  User->>BookingAPI: POST /bookings (token)
+  BookingAPI->>DB: Create Booking
+  DB-->>BookingAPI: Booking ID
+  BookingAPI-->>User: Booking Confirmed
+
+  User->>ReviewAPI: POST /reviews (text, rating, booking_id)
+  ReviewAPI->>DB: Save Review
+  DB-->>ReviewAPI: Review Saved
+  ReviewAPI-->>User: Thank You!
 ```
 
 ---
 
 ## 📸 Screenshots
 
+Here are some screenshots of the application in action:
+
+
 ### Dashboard Page
-![Dashboard](static/images/dashboard.png)
+![Dashboard](https://github.com/jerome244/holbertonschool-hbnb/raw/main/part4/app/static/images/dashboard.png)
 
 ### Admin: All Users List
-![Admin Users](static/images/admin_all_users_list.png)
+![Admin Users](https://github.com/jerome244/holbertonschool-hbnb/raw/main/part4/app/static/images/admin_all_users_list.png)
 
 ### Index Page
-![Index](static/images/index.png)
+![Index](https://github.com/jerome244/holbertonschool-hbnb/raw/main/part4/app/static/images/index.png)
 
 ### Place Details Page
-![Place Details](static/images/place.png)
+![Place Details](https://github.com/jerome244/holbertonschool-hbnb/raw/main/part4/app/static/images/place.png)
 
 ---
 
