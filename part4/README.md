@@ -1,4 +1,3 @@
-
 # 🏡 HBnB - Simple Web Client (Part 4)
 
 This is the front-end implementation of the HBnB project (Part 4). It connects to the API and provides a user-friendly interface for booking, reviewing, and managing places.
@@ -8,45 +7,54 @@ This is the front-end implementation of the HBnB project (Part 4). It connects t
 ## 🛠 Setup & Installation
 
 ### 1. **Clone the Repository**
-   - Clone the repository to your local machine:
-     ```bash
-     git clone https://github.com/jerome244/holbertonschool-hbnb.git
-     ```
+Clone the repository to your local machine:
+```bash
+git clone https://github.com/jerome244/holbertonschool-hbnb.git
+```
 
 ### 2. **Set up the Backend and Frontend**
-
-   - Navigate to the `part4` directory and follow the installation steps:
-
-   ```bash
-   cd part4
-   python3 -m venv venv
-   source venv/bin/activate
-   pip install -r requirements.txt
-   ```
+Navigate to the `part4` directory and follow the installation steps:
+```bash
+cd holbertonschool-hbnb/part4
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
 
 ### 3. **Set Environment Variables**
-   ```bash
-   export FLASK_APP=run.py
-   export FLASK_ENV=development
-   ```
+```bash
+export FLASK_APP=run.py
+export FLASK_ENV=development
+```
 
-### 4. **Initialize the Database**
-   ```bash
-   flask db init
-   flask db migrate
-   flask db upgrade
-   ```
+### 4. **Recreate the Database (Fresh Start)**
+If you want to reset and start with a clean database:
+
+```bash
+rm -f instance/development.db
+rm -rf migrations
+flask db init
+flask db migrate -m "initial"
+flask db upgrade
+flask init-db
+```
+
+You can also just run flask run after setting up your environment — 
+but the steps above ensure a fully clean and initialized database.
+
+This process will:
+- Recreate the SQLite database
+- Apply your latest schema
+- Create a default admin user:
+  - **Email**: `admin@hbnb.io`
+  - **Password**: `admin1234`
 
 ### 5. **Run the Application**
-   ```bash
-   flask run
-   ```
+```bash
+flask run
+```
 
-### 6. **Reset DB (For Testing Purposes)**
-   ```bash
-   flask db downgrade
-   flask db upgrade
-   ```
+Your app will be available at [http://127.0.0.1:5000](http://127.0.0.1:5000)
 
 ---
 
@@ -73,11 +81,11 @@ This is the front-end implementation of the HBnB project (Part 4). It connects t
    - Admin users can manage amenities available for places.
 
 7. **Reset DB Command**
-   - You can reset the database with `flask db downgrade` and `flask db upgrade`.
+   - Use `flask init-db` to reset the database and recreate the default admin.
 
 ---
 
-## 🚧 **Things Not Fully Implemented**
+## 🚧 Things Not Fully Implemented
 
 - **Notifications and Views Counter:**
    - The notification feature and views counter currently do not work and are pending development.
@@ -88,17 +96,18 @@ This is the front-end implementation of the HBnB project (Part 4). It connects t
 
 ---
 
-## 🚨 **Security Recommendations**
+## 🚨 Security Recommendations
 
 1. **CORS Configuration:**
    - For development, CORS is enabled, but you should **restrict origins** in production for better security.
-   ```python
-   CORS(app, origins=["https://yourdomain.com"])
-   ```
+
+```python
+CORS(app, origins=["https://yourdomain.com"])
+```
 
 ---
 
-## 🧑‍💼 **Testing Instructions**
+## 🧑‍💼 Testing Instructions
 
 1. **For Testing Reviews:**
    - You must first **book** a place for a review to be submitted.
@@ -107,18 +116,18 @@ This is the front-end implementation of the HBnB project (Part 4). It connects t
 
 2. **For Admin Access:**
    - Log in as an admin (`admin@hbnb.io`, password `admin1234`).
-   - To manage amenities go to the **Admin Manage Amenities** section in `admin` green header tab.
-   - Admins can view all users, add amenities and grant admin access to other users.
+   - To manage amenities go to the **Admin Manage Amenities** section in the green `admin` header tab.
+   - Admins can view all users, add amenities, and grant admin access to other users.
 
 ---
 
-## 🛠 **Critique on Project Structure**
+## 🧠 Critique on Project Structure
 
 - **Modularization Needed:**
    - It would be better to modularize the code, breaking down the large components into smaller, reusable components. This would improve the maintainability of the project.
 
 - **View Counter and Notification System:**
-   - The view counter and notification system would need additional work for full functionality.
+   - The notification system would need additional work for full functionality.
 
 - **Clean Up Uploaded Photos Folder:**
    - Currently, there is no system to clean up the uploaded images in the `uploads/` folder, especially after places or user data are deleted. 
@@ -126,7 +135,7 @@ This is the front-end implementation of the HBnB project (Part 4). It connects t
 
 ---
 
-## 📊 **Diagrams**
+## 📊 Diagrams
 
 ### 🗃 Entity-Relationship Diagram
 
@@ -146,72 +155,36 @@ erDiagram
 ```mermaid
 classDiagram
     class User {
-        +id: int
-        +email: string
-        +first_name: string
-        +last_name: string
-        +pseudo: string
-        +password: string
-        +bio: string
-        +profile_pic: string
-        +is_authenticated(): bool
-        +create_place(): void
-        +write_review(): void
+        +id
+        +email
+        +first_name
+        +last_name
     }
-    
     class Place {
-        +id: int
-        +title: string
-        +description: string
-        +price: float
-        +address: string
-        +latitude: float
-        +longitude: float
-        +host_id: int
-        +photos: list
-        +amenities: list
-        +reviews: list
-        +increment_views(): void
-        +add_amenity(): void
-        +add_review(): void
+        +id
+        +title
+        +description
+        +host_id
     }
-    
     class Booking {
-        +id: int
-        +user_id: int
-        +place_id: int
-        +start_date: string
-        +end_date: string
-        +status: string
-        +make_booking(): void
-        +cancel_booking(): void
+        +id
+        +user_id
+        +place_id
+        +start_date
+        +end_date
     }
-    
     class Notification {
-        +id: int
-        +recipient_id: int
-        +message: string
-        +status: string
-        +mark_as_read(): void
+        +id
+        +recipient_id
+        +message
+        +status
     }
-
     class Review {
-        +id: int
-        +place_id: int
-        +user_id: int
-        +text: string
-        +rating: int
-        +create_review(): void
+        +id
+        +place_id
+        +user_id
+        +text
     }
-
-    User "1" -- "0..*" Place : hosts
-    User "1" -- "0..*" Review : writes
-    User "1" -- "0..*" Booking : makes
-    Place "1" -- "0..*" Review : has
-    Place "1" -- "0..*" Booking : has
-    Place "1" -- "0..*" Amenity : has
-    Notification "1" -- "1" User : for
-
 ```
 
 ### 📦 Package Diagram
@@ -222,22 +195,10 @@ graph TD
     A --> C[routes/]
     A --> D[templates/]
     A --> E[static/]
-    B --> F[place.py]
-    B --> G[user.py]
-    B --> H[booking.py]
-    B --> I[review.py]
-    C --> J[places.py]
-    C --> K[auth.py]
-    C --> L[bookings.py]
-    C --> M[reviews.py]
-    D --> N[place_detail.html]
-    D --> O[booking_confirmation.html]
-    D --> P[login.html]
-    D --> Q[dashboard.html]
-    E --> R[images/]
-    E --> S[css/]
-    E --> T[js/]
-
+    C --> F[bookings.py]
+    C --> G[auth.py]
+    C --> H[places.py]
+    C --> I[notifications.py]
 ```
 
 ### 🔁 Sequence Diagram - Booking
@@ -250,32 +211,27 @@ sequenceDiagram
     participant DB
 
     User->>Frontend: Submit booking form
-    Frontend->>API: POST /places/:id/booking (with user_id, place_id, start_date, end_date)
-    API->>DB: Save booking in the database
-    DB->>API: Return confirmation (booking details)
-    API->>DB: Create notification for host (booking accepted)
-    API-->>Frontend: Return success response
-    Frontend->>User: Show success message
-
+    Frontend->>API: POST /places/:id/booking
+    API->>DB: Save booking
+    API->>DB: Create notification to host
+    API-->>Frontend: Success message
 ```
+
 ---
 
 ## 📸 Screenshots
 
-Here are some screenshots of the application in action:
-
 ### Dashboard Page
-![Dashboard](https://github.com/jerome244/holbertonschool-hbnb/raw/main/part4/app/static/images/dashboard.png)
+![Dashboard](static/images/dashboard.png)
 
 ### Admin: All Users List
-![Admin Users](https://github.com/jerome244/holbertonschool-hbnb/raw/main/part4/app/static/images/admin_all_users_list.png)
+![Admin Users](static/images/admin_all_users_list.png)
 
 ### Index Page
-![Index](https://github.com/jerome244/holbertonschool-hbnb/raw/main/part4/app/static/images/index.png)
+![Index](static/images/index.png)
 
 ### Place Details Page
-![Place Details](https://github.com/jerome244/holbertonschool-hbnb/raw/main/part4/app/static/images/place.png)
-
+![Place Details](static/images/place.png)
 
 ---
 
@@ -285,7 +241,7 @@ This project is part of Holberton School curriculum and is available for educati
 
 ---
 
-## 👩‍💼 **Author**
+## 👩‍💼 Author
 
 **Jerome TRAN**  
 GitHub: [jerome244](https://github.com/jerome244)
