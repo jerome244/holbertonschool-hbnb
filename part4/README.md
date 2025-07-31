@@ -87,12 +87,11 @@ Your app will be available at [http://127.0.0.1:5000](http://127.0.0.1:5000)
 
 ## 🚧 Things Not Fully Implemented
 
-- **Notifications and Views Counter:**
-   - The notification feature and views counter currently do not work and are pending development.
+- **Notifications:**
+   - The notification feature currently do not work.
 
 - **Future Features:**
-   - Implement features like **Follow Functions**, **Report System**, and **Block Users**.
-   - These features are planned for future updates.
+   - Ideas for improving features like **Follow Functions**, **Report System**, **Block Users**, and **Choice of Main Place Photo**.
 
 ---
 
@@ -125,9 +124,6 @@ CORS(app, origins=["https://yourdomain.com"])
 
 - **Modularization Needed:**
    - It would be better to modularize the code, breaking down the large components into smaller, reusable components. This would improve the maintainability of the project.
-
-- **View Counter and Notification System:**
-   - The notification system would need additional work for full functionality.
 
 - **Clean Up Uploaded Photos Folder:**
    - Currently, there is no system to clean up the uploaded images in the `uploads/` folder, especially after places or user data are deleted. 

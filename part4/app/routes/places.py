@@ -350,15 +350,14 @@ def new_place():
 @places.route("/host/places/<place_id>/edit", methods=["GET", "POST"])
 @login_required
 def edit_place(place_id):
-    user_id = session.get("user_id")
-    user = User.query.get(user_id)
-
-    host = Host.query.get(user.id) if user else None
+    user = current_user
     place = Place.query.options(joinedload(Place.photos)).get_or_404(place_id)
     amenities = Amenity.query.all()
-    if not host or place.host.id != host.id:
+
+    if place.host_id != user.id:
         flash("You can't edit this place.")
         return redirect(url_for("dashboard.dashboard_view"))
+
     if request.method == "POST":
         place.title = request.form.get("title")
         place.description = request.form.get("description")
@@ -366,10 +365,10 @@ def edit_place(place_id):
         place.latitude = float(request.form.get("latitude"))
         place.longitude = float(request.form.get("longitude"))
         place.capacity = int(request.form.get("capacity"))
+
         selected_amenity_ids = request.form.getlist("amenities")
-        place.amenities = Amenity.query.filter(
-            Amenity.id.in_(selected_amenity_ids)
-        ).all()
+        place.amenities = Amenity.query.filter(Amenity.id.in_(selected_amenity_ids)).all()
+
         uploaded_files = request.files.getlist("photos")
         for file in uploaded_files:
             if file and file.filename:
@@ -380,10 +379,10 @@ def edit_place(place_id):
                 file.save(os.path.join(upload_folder, unique_filename))
                 photo = PlacePhoto(url=unique_filename, place=place)
                 db.session.add(photo)
-        db.session.commit()
 
-        
+        db.session.commit()
         return redirect(url_for("dashboard.dashboard_view"))
+
     return render_template("edit_place.html", place=place, amenities=amenities)
 
 
