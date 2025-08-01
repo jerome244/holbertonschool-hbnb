@@ -80,6 +80,7 @@ Your app will be available at [http://127.0.0.1:5000](http://127.0.0.1:5000)
 2. **List of Places**
    - The homepage displays a list of places available for booking.
    - Filters are available to view the places by price and location.
+   - The four Newest and Top-Rated places sections
 
 3. **Place Details**
    - Clicking on a place provides detailed information about that place including reviews and amenities.
