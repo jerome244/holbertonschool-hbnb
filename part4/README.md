@@ -148,7 +148,7 @@ CORS(app, origins=["https://yourdomain.com"])
    - Log in as an admin (`admin@hbnb.io`, password `admin1234`).
    - To manage amenities go to the **Admin Manage Amenities** section in the green `admin` header tab.
    - Admins can view all users, add amenities, and grant admin access to other users.
-
+   
 ---
 
 ## 🧠 Critique on Project Structure
