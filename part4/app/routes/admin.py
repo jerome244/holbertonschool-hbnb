@@ -116,12 +116,12 @@ def edit_amenity(amenity_id):
     return render_template("admin_edit_amenity.html", amenity=amenity)
 
 
-# Route to delete an amenity
-@admin.route("/amenities/<amenity_id>/delete", methods=["POST"])
+
+@admin.route("/amenities/<uuid:amenity_id>/delete", methods=["POST"])
 @login_required
 @admin_required
 def delete_amenity(amenity_id):
-    amenity = Amenity.query.get_or_404(amenity_id)
+    amenity = Amenity.query.get_or_404(str(amenity_id))  # Ensure string if needed
     db.session.delete(amenity)
     db.session.commit()
     flash("Amenity deleted successfully.", "success")

@@ -56,12 +56,10 @@ class Place(BaseModel):
             db.session.commit()
 
     def increment_views(self, user=None):
-        # Don't count views by the place's owner (if user is known)
         if user and user.id == self.host_id:
-            print("[DEBUG] Skipping increment: user is owner")
+            print("[DEBUG] Skipping increment: user is the host")
             return
 
-        # Count view if anonymous or non-owner user
         self.views = self.views + 1 if self.views else 1
         db.session.commit()
         print(f"[DEBUG] View incremented to {self.views}")

@@ -121,27 +121,26 @@ def booking(place_id):
 @places.route("/<place_id>")
 def place(place_id):
     try:
-        place = Place.query.options(joinedload(Place.photos)).get_or_404(place_id)
+        place = Place.query.options(
+            joinedload(Place.photos),
+        ).get_or_404(place_id)
+
         print(f"[DEBUG] Loaded place: {place.title}, current views: {place.views}")
-        print(f"[DEBUG] Session keys: {list(session.keys())}")
-        print(f"[DEBUG] Session user_id: {session.get('user_id')}")
 
-        # Fetch user from session by user_id
-        user = None
+        user = current_user if current_user.is_authenticated else None
         confirmed_booking = None
-        user_id = session.get("user_id")
-        if user_id:
-            user = User.query.get(user_id)
-            if user:
-                print(f"[DEBUG] Logged in user: {user.id} - {user.email}")
-                confirmed_booking = Booking.query.filter_by(
-                    user_id=user.id, place_id=place.id, status="confirmed"
-                ).first()
-            else:
-                print("[DEBUG] user_id in session but no matching user found")
 
-        # Increment views if not owner
+        if user:
+            print(f"[DEBUG] Logged in user: {user.id} - {user.email}")
+            confirmed_booking = Booking.query.filter_by(
+                user_id=user.id, place_id=place.id, status="confirmed"
+            ).first()
+        else:
+            print("[DEBUG] No authenticated user")
+
+        # Call the view increment logic with the actual current_user
         place.increment_views(user=user)
+
         db.session.refresh(place)
 
         owner = User.query.get(place.host_id)
@@ -161,7 +160,7 @@ def place(place_id):
             user=user,
             confirmed_booking=confirmed_booking,
             avg_rating=avg_rating,
-            owner=owner,  # can be None
+            owner=owner,
         )
 
     except ObjectDeletedError:
