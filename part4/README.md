@@ -27,26 +27,7 @@ export FLASK_APP=run.py
 export FLASK_ENV=development
 ```
 
-### 4. **(option 1) Run the Application**
-
-After setting up your environment you have 2 options, first is to run the app with the already built-in database by running :
-
-```bash
-flask run
-```
-
-If you meet an "no such table: places" error try to run then :
-
-```bash
-flask db upgrade
-```
-and re-run :
-
-```bash
-flask run
-```
-
-### 5. **(option 2) Recreate the Database (Fresh Start)**
+### 4. **Recreate the Database (Fresh Start)**
 If you want to reset and start with a clean database:
 
 ```bash
@@ -61,7 +42,7 @@ This process will:
 - Recreate the SQLite database
 - Apply your latest schema
 
-### 6. **Login**
+### 5. **Login**
 
 After all of that try to login with the default admin user:
   - **Email**: `admin@hbnb.io`
