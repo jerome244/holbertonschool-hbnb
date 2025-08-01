@@ -71,6 +71,16 @@ Your app will be available at [http://127.0.0.1:5000](http://127.0.0.1:5000)
 
 ---
 
+## 🚨 Security Recommendations
+
+1. **CORS Configuration:**
+   - For development, CORS is enabled, but you should **restrict origins** in production for better security.
+
+```python
+CORS(app, origins=["https://yourdomain.com"])
+```
+
+---
 ## 🚀 Features
 
 1. **Login (JWT Authentication)**
@@ -80,21 +90,26 @@ Your app will be available at [http://127.0.0.1:5000](http://127.0.0.1:5000)
 2. **List of Places**
    - The homepage displays a list of places available for booking.
    - Filters are available to view the places by price and location.
-   - The four Newest and Top-Rated places sections
+   - The four Newest and Top-Rated places sections.
 
 3. **Place Details**
    - Clicking on a place provides detailed information about that place including reviews and amenities.
+   - An interactiive map for geolocalising an address.
+   - A photo carousel for swiping the place photos.
 
 4. **Add Reviews**
    - Authenticated users can add reviews to places they have visited.
 
-5. **Notifications**
-   - Notifications can be marked as read and interact with booking statuses.
+5. **Admin: Manage Amenities and Grant Users to Admins**
+   - Admin users can manage amenities available for places and Users.
 
-6. **Admin: Add Amenities**
-   - Admin users can manage amenities available for places.
+6. **Visitors Views counting system**
+	- A visited place increments a counter reported in the place owners Dashboards. This counter isn't affected by the place owner visit.
 
-7. **Reset DB Command**
+7. **A Messaging system**
+	- Send and receive messages beween users with a listing of chat threads.
+
+8. **Reset DB Command**
    - Use `flask init-db` to reset the database and recreate the default admin.
 
 ---
@@ -105,18 +120,7 @@ Your app will be available at [http://127.0.0.1:5000](http://127.0.0.1:5000)
    - The notification feature currently do not work.
 
 - **Future Features:**
-   - Ideas for improving features like **Follow/Unfollow Functions**, **Report System**, **Block Users**, **Choice of Main Place Photo**, **Option for Changing the Language**, or either a **Dark Mode**.
-
----
-
-## 🚨 Security Recommendations
-
-1. **CORS Configuration:**
-   - For development, CORS is enabled, but you should **restrict origins** in production for better security.
-
-```python
-CORS(app, origins=["https://yourdomain.com"])
-```
+   - Ideas for improving features like **Follow/Unfollow Functions**, **Report System**, **Block Users**, **Forum**, **Choice of Main Place Photo**, **Option for Changing the Language**, or either a **Dark Mode**.
 
 ---
 
