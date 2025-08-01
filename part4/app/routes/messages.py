@@ -3,6 +3,8 @@ from flask_login import login_required, current_user
 from app.database import db
 from app.models.message import Message
 from app.models.user import User
+from app.models.notification import Notification
+
 from datetime import datetime
 import logging
 
@@ -70,6 +72,10 @@ def send_message():
         return jsonify({"error": "Receiver not found"}), 404
 
     try:
+        # ✅ Capture sender's name before commit to avoid detached instance error
+        sender_pseudo = current_user.pseudo
+
+        # Create and save the message
         msg = Message(
             sender_id=current_user.id,
             receiver_id=receiver_id,
@@ -81,12 +87,22 @@ def send_message():
         db.session.add(msg)
         db.session.commit()
 
+        # ✅ Create a notification for the receiver
+        from app.models.notification import Notification
+        notif = Notification(
+            recipient_id=receiver_id,
+            recipient_type="user",  # or "host" if applicable
+            message=f"New message from {sender_pseudo}"
+        )
+        db.session.add(notif)
+        db.session.commit()
+
         return jsonify({"message": "Message sent", "id": msg.id}), 201
+
     except Exception as e:
         logging.error("Failed to send message", exc_info=True)
         db.session.rollback()
         return jsonify({"error": "Failed to send message", "details": str(e)}), 500
-
 
 # API route to get conversation messages
 @messages_bp.route("/api/messages/conversation", methods=["GET"])
