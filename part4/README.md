@@ -109,7 +109,7 @@ CORS(app, origins=["https://yourdomain.com"])
 	cancel them, place visits.
 
 7. **Admin: Manage Amenities and Grant Users to Admins**
-   - Admin can manages amenities available for places and Users.
+   - Admin can manage amenities available for places and Users.
 
 8. **Visitors Views counting system**
 	- A visited place increments a counter reported in the place owners Dashboards. This counter isn't affected by the place owner visit.
