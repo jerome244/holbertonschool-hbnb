@@ -106,7 +106,7 @@ CORS(app, origins=["https://yourdomain.com"])
 ## 🚧 Things Not Fully Implemented
 
 - **Notifications:**
-   - The notification feature currently do not work.
+   - The notification feature currently only works for new chat message.
 
 - **Future Features:**
    - Ideas for improving features like **Follow/Unfollow Functions**, **Report System**, **Block Users**, **Forum**, **Choice of Main Place Photo**, **Option for Changing the Language**, or either a **Dark Mode**.
