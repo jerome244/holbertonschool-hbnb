@@ -74,11 +74,8 @@ def register():
         login_user(user)
         flash("Registration successful! You are now logged in.", "success")
 
-        if user.type != "host":
-            flash("Please become a host to create places.", "info")
-            return redirect(url_for("dashboard.become_host"))
-
-        return redirect(url_for("dashboard.dashboard_view"))
+        # Redirect to index page after registration
+        return redirect(url_for("views.index"))
 
     return render_template("register.html")
 

@@ -100,16 +100,24 @@ CORS(app, origins=["https://yourdomain.com"])
 4. **Add Reviews**
    - Authenticated users can add reviews to places they have visited.
 
-5. **Admin: Manage Amenities and Grant Users to Admins**
+5. **User Profile**
+	- User can edit its profile's picture, informations.
+	- consult the place owner profile.
+
+6. **Dashboard**
+	-User can manage its booking requests, places, income bookings, 
+	cancel them, place visits.
+
+6. **Admin: Manage Amenities and Grant Users to Admins**
    - Admin users can manage amenities available for places and Users.
 
-6. **Visitors Views counting system**
+7. **Visitors Views counting system**
 	- A visited place increments a counter reported in the place owners Dashboards. This counter isn't affected by the place owner visit.
 
-7. **A Messaging system**
+8. **A Messaging system**
 	- Send and receive messages beween users with a listing of chat threads.
 
-8. **Reset DB Command**
+9. **Reset DB Command**
    - Use `flask init-db` to reset the database and recreate the default admin.
 
 ---
@@ -127,9 +135,14 @@ CORS(app, origins=["https://yourdomain.com"])
 ## 🧑‍💼 Testing Instructions
 
 1. **For Testing Reviews:**
-   - You must first **book** a place for a review to be submitted.
-   - The booking must be accepted by the host to enable the review submission.
-   - Once the booking is confirmed, go to your **Dashboard** and navigate to **My Bookings** to access your bookings.
+   - A Place must be already created first, for that you must create an User, in Dashboard click on "Add a new place" button, then accept to become a Host. After that return to Dashboard a try to re-create a place, fill the asked informations.
+
+   - After that you must create a second User account. You will see the earlier created place, you can consultate its details page, then you can now **book** it. A booking request will be sent to the place owner (the Host).
+
+   - Return to the Host account, go to Dashboard, then a new button appears "Manage booking requests". Click on it and accept the booking request.
+
+   - Come back to User account, in Dashboard access to My Bookings, you can now see your accepted booking, and Leave a Review. The note will impacts the place rate note on the global places classement and will appear on its details consultable by Users or visitors without registration.
+   
 
 2. **For Admin Access:**
    - Log in as an admin (`admin@hbnb.io`, password `admin1234`).
