@@ -27,7 +27,20 @@ export FLASK_APP=run.py
 export FLASK_ENV=development
 ```
 
-### 4. **Recreate the Database (Fresh Start)**
+### 4. **(option 1) use the actual database'**
+2 options are presenting to you, first would be to use the actual database i last pushed on github:
+
+```bash
+flask init-db
+```
+
+then:
+
+```bash
+flask run
+```
+
+### 5. **(option 2) Recreate the Database (Hard Refresh)**
 If you want to reset and start with a clean database:
 
 ```bash
@@ -41,8 +54,9 @@ flask init-db
 This process will:
 - Recreate the SQLite database
 - Apply your latest schema
+- Initialize the pre-built admin
 
-### 5. **Login**
+### 6. **Login**
 
 After all of that try to login with the default admin user:
   - **Email**: `admin@hbnb.io`
