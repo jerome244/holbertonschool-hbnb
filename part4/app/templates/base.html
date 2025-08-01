@@ -39,51 +39,56 @@
 </head>
 <body>
   <!-- Navbar -->
-  <header class="navbar">
-    <a href="{{ url_for('views.index') }}">
-      <img src="{{ url_for('static', filename='images/logo.png') }}" class="logo" alt="HBnB Logo" >
-    </a>
+<header class="navbar">
+  <a href="{{ url_for('views.index') }}">
+    <img src="{{ url_for('static', filename='images/logo.png') }}" class="logo" alt="HBnB Logo">
+  </a>
 
-    <nav aria-label="Primary navigation">
-      <ul class="nav-links" id="nav-links">
-        <li><a href="{{ url_for('views.index') }}">Home</a></li>
-        
-        {% if current_user.is_authenticated %}
+  <nav aria-label="Primary navigation">
+    <ul class="nav-links" id="nav-links">
+      <li><a href="{{ url_for('views.index') }}">Home</a></li>
 
-          <li><a href="{{ url_for('messages_bp.messages_list') }}">Messages</a></li>
-          <li><a href="{{ url_for('dashboard.dashboard_view') }}">Dashboard</a></li>
-          <li><a href="{{ url_for('places.search_places') }}">Search Places</a></li>
-          <li><a href="{{ url_for('auth.profile') }}">Profile</a></li>
-          
-          <!-- Notifications -->
-          <li style="position: relative;">
-            <div id="notification-bell" title="Notifications" style="cursor:pointer; font-size:24px;">
-              🔔
-              <span id="unread-count"></span>
+      {% if current_user.is_authenticated %}
+        <li><a href="{{ url_for('messages_bp.messages_list') }}">Messages</a></li>
+        <li><a href="{{ url_for('dashboard.dashboard_view') }}">Dashboard</a></li>
+        <li><a href="{{ url_for('places.search_places') }}">Search Places</a></li>
+        <li><a href="{{ url_for('auth.profile') }}">Profile</a></li>
+
+        <!-- ✅ Notifications -->
+        <li style="position: relative;">
+          <div id="notification-bell" title="Notifications" style="cursor:pointer; font-size:24px;">
+            🔔
+            <span id="unread-count">0</span>
+          </div>
+
+          <div id="notification-list" class="notification-dropdown">
+            <h3>Recent Notifications</h3>
+            <div id="notification-items">
+              <!-- JS will load notifications here -->
             </div>
-            <div id="notification-list"></div>
+            <button id="mark-all-btn" class="mark-all-btn">Mark All as Read</button>
+          </div>
+        </li>
+
+        {% if current_user.is_admin %}
+          <li class="dropdown">
+            <a href="#" class="dropbtn">Admin</a>
+            <div class="dropdown-content">
+              <a href="{{ url_for('admin.amenities_list') }}">Manage Amenities</a>
+              <a href="{{ url_for('admin.view_users') }}">See All Users</a>
+            </div>
           </li>
-
-          {% if current_user.is_authenticated and current_user.is_admin %}
-
-            <li class="dropdown">
-              <a href="#" class="dropbtn">Admin</a>
-              <div class="dropdown-content">
-                <a href="{{ url_for('admin.amenities_list') }}">Manage Amenities</a>
-
-                <a href="{{ url_for('admin.view_users') }}">See All Users</a>
-              </div>
-            </li>
-          {% endif %}
-
-          <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
-        {% else %}
-          <li><a href="{{ url_for('auth.login') }}">Login</a></li>
-          <li><a href="{{ url_for('auth.register') }}">Register</a></li>
         {% endif %}
-      </ul>
-    </nav>
-  </header>
+
+        <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
+      {% else %}
+        <li><a href="{{ url_for('auth.login') }}">Login</a></li>
+        <li><a href="{{ url_for('auth.register') }}">Register</a></li>
+      {% endif %}
+    </ul>
+  </nav>
+</header>
+
 
   <!-- Flash Messages -->
   {% with messages = get_flashed_messages() %}
@@ -131,6 +136,8 @@
   <!-- Add jQuery and Bootstrap JS -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js"></script>
+<!-- Notifications JS (API-driven) -->
+<script type="module" src="{{ url_for('static', filename='js/modules/notifications.js') }}"></script>
 
 
 </body>

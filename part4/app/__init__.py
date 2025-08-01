@@ -21,6 +21,7 @@ from .routes.bookings import bookings as bookings_routes_blueprint
 from app.models.user import User
 from .routes.place_photo import place_photo_bp
 from app.routes.notifications import notifications_bp
+from app.api.v1.notifications import notifications_ns
 
 bcrypt = Bcrypt()
 jwt = JWTManager()
@@ -146,6 +147,7 @@ def create_app(config_class: str = "config.DevelopmentConfig") -> Flask:
     from .api.v1.reviews import ns as reviews_ns
     from .api.v1.auth import ns as auth_ns
     from .api.v1.admins import ns as admin_ns
+    from app.api.v1.notifications import notifications_ns
 
     api.add_namespace(users_ns, path="/api/v1/users")
     api.add_namespace(places_ns, path="/api/v1/places")
@@ -155,6 +157,7 @@ def create_app(config_class: str = "config.DevelopmentConfig") -> Flask:
     api.add_namespace(auth_ns, path="/api/v1/auth")
     api.add_namespace(admin_ns, path="/api/v1/admins")
     api.add_namespace(messages.ns, path="/api/v1/messages")
+    api.add_namespace(notifications_ns, path="/api/v1/notifications")
 
     app.cli.add_command(init_db_command)
 
