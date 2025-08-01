@@ -108,16 +108,16 @@ CORS(app, origins=["https://yourdomain.com"])
 	-User can manage its booking requests, places, income bookings, 
 	cancel them, place visits.
 
-6. **Admin: Manage Amenities and Grant Users to Admins**
-   - Admin users can manage amenities available for places and Users.
+7. **Admin: Manage Amenities and Grant Users to Admins**
+   - Admin can manages amenities available for places and Users.
 
-7. **Visitors Views counting system**
+8. **Visitors Views counting system**
 	- A visited place increments a counter reported in the place owners Dashboards. This counter isn't affected by the place owner visit.
 
-8. **A Messaging system**
+9. **A Messaging system**
 	- Send and receive messages beween users with a listing of chat threads.
 
-9. **Reset DB Command**
+10. **Reset DB Command**
    - Use `flask init-db` to reset the database and recreate the default admin.
 
 ---
@@ -148,7 +148,7 @@ CORS(app, origins=["https://yourdomain.com"])
    - Log in as an admin (`admin@hbnb.io`, password `admin1234`).
    - To manage amenities go to the **Admin Manage Amenities** section in the green `admin` header tab.
    - Admins can view all users, add amenities, and grant admin access to other users.
-   
+
 ---
 
 ## 🧠 Critique on Project Structure
